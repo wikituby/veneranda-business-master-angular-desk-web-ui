@@ -46,7 +46,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{lowStockItems}}</div>
-        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-label">Low Stock Products</div>
       </div>
     </div>
     <div class="stat-card stat-revenue">
@@ -80,7 +80,7 @@
 
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input type="text" placeholder="Search by patient name or prescription ID..." [(ngModel)]="searchQuery">
+        <input type="text" placeholder="Search by client name or prescription ID..." [(ngModel)]="searchQuery">
       </div>
 
       <div class="prescription-list">
@@ -92,11 +92,11 @@
             <div class="prescription-id">RX-{{prescription.id}}</div>
             <div class="prescription-date">{{prescription.date}}</div>
           </div>
-          <div class="prescription-patient">
-            <div class="patient-avatar-small">{{prescription.patient.initials}}</div>
-            <div class="patient-info">
-              <div class="patient-name">{{prescription.patient.name}}</div>
-              <div class="patient-meta">File: {{prescription.patient.fileNo}} | Age: {{prescription.patient.age}}</div>
+          <div class="prescription-client">
+            <div class="client-avatar-small">{{prescription.client.initials}}</div>
+            <div class="client-info">
+              <div class="client-name">{{prescription.client.name}}</div>
+              <div class="client-meta">File: {{prescription.client.fileNo}} | Age: {{prescription.client.age}}</div>
             </div>
           </div>
           <div class="prescription-details">
@@ -126,12 +126,12 @@
       </div>
 
       <div class="dispensing-form" *ngIf="selectedPrescription; else noPrescriptionSelected">
-        <!-- Patient Info Card -->
-        <div class="patient-info-card">
-          <div class="patient-avatar-large">{{selectedPrescription.patient.initials}}</div>
-          <div class="patient-details-large">
-            <h3>{{selectedPrescription.patient.name}}</h3>
-            <p>File No: {{selectedPrescription.patient.fileNo}} | Age: {{selectedPrescription.patient.age}} | Gender: {{selectedPrescription.patient.gender}}</p>
+        <!-- Client Info Card -->
+        <div class="client-info-card">
+          <div class="client-avatar-large">{{selectedPrescription.client.initials}}</div>
+          <div class="client-details-large">
+            <h3>{{selectedPrescription.client.name}}</h3>
+            <p>File No: {{selectedPrescription.client.fileNo}} | Age: {{selectedPrescription.client.age}} | Gender: {{selectedPrescription.client.gender}}</p>
             <p class="prescription-info">Prescription ID: RX-{{selectedPrescription.id}} | Date: {{selectedPrescription.date}}</p>
           </div>
         </div>

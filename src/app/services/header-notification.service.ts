@@ -50,7 +50,7 @@ export class HeaderNotificationService {
       : of([] as HeaderNotification[]);
 
     const queue$ = options.includeQueue
-      ? this.api.getLatestPatientQueueEntries(20, 'current', null).pipe(
+      ? this.api.getLatestClientQueueEntries(20, 'current', null).pipe(
           map((entries) => this.buildQueueNotifications(entries)),
           catchError(() => of([] as HeaderNotification[]))
         )
@@ -159,16 +159,16 @@ export class HeaderNotificationService {
 
     return waiting.map((e, index) => {
       const name =
-        `${e?.patientSurname || ''} ${e?.patientOtherNames || ''}`.trim() ||
-        e?.patientName ||
-        'Patient';
+        `${e?.clientSurname || ''} ${e?.clientOtherNames || ''}`.trim() ||
+        e?.clientName ||
+        'Client';
       const dest = e?.toModuleName || 'queue';
       const from = e?.fromModuleName ? ` from ${e.fromModuleName}` : '';
       const qNo = e?.queueNumber ? `#${e.queueNumber} ` : '';
       return {
         id: `queue-${e?.id ?? index}`,
         kind: 'queue',
-        title: 'Patient added to queue',
+        title: 'Client added to queue',
         message: `${qNo}${name} → ${dest}${from}`,
         timeLabel: this.formatRelativeTime(e?.queuedAt),
         route: '/overview/queue-management',

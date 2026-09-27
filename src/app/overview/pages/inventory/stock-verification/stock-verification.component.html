@@ -63,7 +63,7 @@
       <div
         class="mode-pill"
         *ngIf="modeResolved"
-        [title]="useStockBatch ? 'Facility setting: stock batches' : 'Facility setting: shop items'">
+        [title]="useStockBatch ? 'Facility setting: stock batches' : 'Facility setting: shop products'">
         <i class="bi" [ngClass]="useStockBatch ? 'bi-layers' : 'bi-box'"></i>
         {{ useStockBatch ? 'Stock batch mode' : 'Item mode' }}
       </div>
@@ -162,7 +162,7 @@
     <div class="empty-state" *ngIf="!isLoading && modeResolved && !filteredRows.length">
       <i class="bi bi-clipboard2-check"></i>
       <p *ngIf="useStockBatch">No stock batches found for this filter.</p>
-      <p *ngIf="!useStockBatch">No shop items found for verification.</p>
+      <p *ngIf="!useStockBatch">No shop products found for verification.</p>
     </div>
   </div>
 </div>

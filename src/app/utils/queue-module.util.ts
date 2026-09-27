@@ -13,7 +13,7 @@ export function queueDestinationOptions(modules: any[]): any[] {
 }
 
 /** Normalize hospital module rows for queue select [ngValue] binding. */
-export function normalizeHospitalModules(res: unknown): any[] {
+export function normalizeBusinessModules(res: unknown): any[] {
   const list = Array.isArray(res) ? res : [];
   return list
     .filter((m: any) => m?.active !== false)

@@ -1,4 +1,4 @@
-﻿import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CartapiService } from '../services/cartapi.service';
 import { DataService } from '../services/data.service';
 import { NavigationEnd, Router } from '@angular/router';
@@ -94,8 +94,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   profession:string = "Veneranda Hospital Staff"
   isDarkMode = false;
   moreMenuOpen = false;
+  /** Wide Inventory mega menu (landing-page style). */
+  inventoryMenuOpen = false;
   profileMenuOpen = false;
   notificationsMenuOpen = false;
+  isAppFullscreen = false;
 
   openSubmenu: string | null = null;
   openSubmenus = new Set<string>();
@@ -111,7 +114,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     icon: string;
   }[] = [
     {
-      label: 'Item Management',
+      label: 'Product Management',
       route: '/overview/shop-item-management',
       pageKey: 'consumable-items',
       icon: 'bi-box',
@@ -121,6 +124,170 @@ export class HeaderComponent implements OnInit, OnDestroy {
       route: '/overview/shop-item-receive',
       pageKey: 'stock-receive',
       icon: 'bi-box-arrow-in-down',
+    },
+  ];
+
+  /** Overview inventory submodules, grouped for the header mega dropdown. */
+  readonly inventoryMegaGroups: {
+    title: string;
+    links: {
+      label: string;
+      description: string;
+      route: string;
+      pageKey: string;
+      icon: string;
+    }[];
+  }[] = [
+    {
+      title: 'Overview',
+      links: [
+        {
+          label: 'Inventory Dashboard',
+          description: 'Stock overview and alerts',
+          route: '/overview/inventory-dashboard',
+          pageKey: 'inventory-dashboard',
+          icon: 'bi-speedometer2',
+        },
+      ],
+    },
+    {
+      title: 'Products',
+      links: [
+        {
+          label: 'Consumable Products',
+          description: 'Products and sellable items',
+          route: '/overview/consumable-items',
+          pageKey: 'consumable-items',
+          icon: 'bi-box',
+        },
+        {
+          label: 'Assets Management',
+          description: 'Fixed assets register',
+          route: '/overview/asset-management',
+          pageKey: 'asset-management',
+          icon: 'bi-pc-display',
+        },
+        {
+          label: 'Expired Products',
+          description: 'Expired and near-expiry',
+          route: '/overview/expired-items',
+          pageKey: 'expired-items',
+          icon: 'bi-calendar-x',
+        },
+      ],
+    },
+    {
+      title: 'Stock Management',
+      links: [
+        {
+          label: 'Stock Receive',
+          description: 'Receive goods into stores',
+          route: '/overview/stock-receive',
+          pageKey: 'stock-receive',
+          icon: 'bi-box-arrow-in-down',
+        },
+        {
+          label: 'Stock Batch',
+          description: 'Batches and expiry',
+          route: '/overview/stock-batch',
+          pageKey: 'stock-batch',
+          icon: 'bi-layers',
+        },
+        {
+          label: 'Stock Transfer',
+          description: 'Move stock between stores',
+          route: '/overview/stock-transfer',
+          pageKey: 'stock-transfer',
+          icon: 'bi-arrow-left-right',
+        },
+        {
+          label: 'Stock Tracking',
+          description: 'In and out history',
+          route: '/overview/stock-tracking',
+          pageKey: 'stock-tracking',
+          icon: 'bi-clock-history',
+        },
+        {
+          label: 'Stock Verification',
+          description: 'Verify on-hand quantities',
+          route: '/overview/stock-verification',
+          pageKey: 'stock-verification',
+          icon: 'bi-check2-square',
+        },
+        {
+          label: 'Stock Initializer',
+          description: 'Opening stock setup',
+          route: '/overview/stock-initializer',
+          pageKey: 'stock-initializer',
+          icon: 'bi-play-circle',
+        },
+        {
+          label: 'Stock Taking',
+          description: 'Physical count sessions',
+          route: '/overview/stock-taking',
+          pageKey: 'stock-taking',
+          icon: 'bi-clipboard-check',
+        },
+        {
+          label: 'Reorder Levels',
+          description: 'Low-stock thresholds',
+          route: '/overview/reorder-levels',
+          pageKey: 'reorder-levels',
+          icon: 'bi-exclamation-triangle',
+        },
+        {
+          label: 'Adjustments',
+          description: 'Stock quantity adjustments',
+          route: '/overview/adjustments',
+          pageKey: 'adjustments',
+          icon: 'bi-sliders',
+        },
+      ],
+    },
+    {
+      title: 'Stores',
+      links: [
+        {
+          label: 'Store Management',
+          description: 'Stores and locations',
+          route: '/overview/store-management',
+          pageKey: 'store-management',
+          icon: 'bi-shop',
+        },
+        {
+          label: 'Store Reports',
+          description: 'Store stock reports',
+          route: '/overview/store-reports',
+          pageKey: 'store-reports',
+          icon: 'bi-file-earmark-bar-graph',
+        },
+        {
+          label: 'Store Analytics',
+          description: 'Store performance',
+          route: '/overview/store-analytics',
+          pageKey: 'store-analytics',
+          icon: 'bi-graph-up',
+        },
+      ],
+    },
+    {
+      title: 'Partners',
+      links: [
+        {
+          label: 'Stock Suppliers',
+          description: 'Supplier directory',
+          route: '/overview/suppliers',
+          pageKey: 'suppliers',
+          icon: 'bi-truck',
+        },
+        {
+          label: 'Manufacturers',
+          description: 'Manufacturer directory',
+          route: '/overview/manufacturers',
+          pageKey: 'manufacturers',
+          icon: 'bi-gear',
+        },
+      ],
     },
   ];
 
@@ -136,7 +303,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { id: 'referred', label: 'Referred today' },
   ];
   queueModules: any[] = [];
-  /** All active hospital modules (unfiltered) — used to match any page to a department. */
+  /** All active business modules (unfiltered) — used to match any page to a department. */
   private allHospitalModules: any[] = [];
   showQueueEditModal = false;
   queueEditSaving = false;
@@ -244,6 +411,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.syncAppFullscreenState();
     this.isDarkMode = this.themeService.getCurrentTheme();
     this.themeSub = this.themeService.isDarkMode$.subscribe((isDark) => {
       this.isDarkMode = isDark;
@@ -334,7 +502,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  /** Clinical toolbar (Patient, Services, More, notifications, messages). */
+  /** Clinical toolbar (Client, Services, More, notifications, messages). */
   private shouldShowStaffToolbar(): boolean {
     const userType = (sessionStorage.getItem('userType') || '').trim().toUpperCase();
     if (userType === 'AGENT' || userType === 'ADMIN' || userType === 'STAFF') {
@@ -356,19 +524,83 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.notificationsMenuOpen = false;
   }
 
+  @HostListener('document:fullscreenchange')
+  @HostListener('document:webkitfullscreenchange')
+  onFullscreenChange(): void {
+    this.syncAppFullscreenState();
+  }
+
+  toggleAppFullscreen(event?: Event): void {
+    event?.stopPropagation();
+    const doc: any = document;
+    const el: any = document.documentElement;
+    if (this.isAppFullscreen) {
+      const exit =
+        doc.exitFullscreen ||
+        doc.webkitExitFullscreen ||
+        doc.msExitFullscreen;
+      exit?.call(doc)?.catch?.(() => undefined);
+    } else {
+      const enter =
+        el.requestFullscreen ||
+        el.webkitRequestFullscreen ||
+        el.msRequestFullscreen;
+      enter?.call(el)?.catch?.(() => undefined);
+    }
+    // State also updates via fullscreenchange; sync immediately for responsive UI.
+    setTimeout(() => this.syncAppFullscreenState(), 0);
+  }
+
+  private syncAppFullscreenState(): void {
+    const doc: any = document;
+    this.isAppFullscreen = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.msFullscreenElement
+    );
+  }
+
   toggleMoreMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.profileMenuOpen = false;
     this.notificationsMenuOpen = false;
+    this.inventoryMenuOpen = false;
     this.moreMenuOpen = !this.moreMenuOpen;
     if (!this.moreMenuOpen) {
       this.closeSubmenu();
     }
   }
 
+  toggleInventoryMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.profileMenuOpen = false;
+    this.notificationsMenuOpen = false;
+    this.moreMenuOpen = false;
+    this.inventoryMenuOpen = !this.inventoryMenuOpen;
+  }
+
+  visibleInventoryMegaGroups() {
+    return this.inventoryMegaGroups
+      .map((group) => ({
+        title: group.title,
+        links: group.links.filter((link) => this.canAccessDepartment(link.pageKey)),
+      }))
+      .filter((group) => group.links.length > 0);
+  }
+
+  hasAnyInventoryMegaLink(): boolean {
+    return this.visibleInventoryMegaGroups().length > 0;
+  }
+
+  onInventoryMegaLinkClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.inventoryMenuOpen = false;
+  }
+
   toggleProfileMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.moreMenuOpen = false;
+    this.inventoryMenuOpen = false;
     this.notificationsMenuOpen = false;
     this.profileMenuOpen = !this.profileMenuOpen;
     this.buttonClickIconChange();
@@ -377,6 +609,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toggleNotificationsMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.moreMenuOpen = false;
+    this.inventoryMenuOpen = false;
     this.profileMenuOpen = false;
     this.notificationsMenuOpen = !this.notificationsMenuOpen;
     if (this.notificationsMenuOpen) {
@@ -386,6 +619,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   closeToolbarMenus(): void {
     this.moreMenuOpen = false;
+    this.inventoryMenuOpen = false;
     this.profileMenuOpen = false;
     this.notificationsMenuOpen = false;
     this.closeSubmenu();
@@ -685,11 +919,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const scope = dept ? ` for ${dept}` : ' for this department';
     switch (this.queueTab) {
       case 'discharged':
-        return `No patients discharged today${scope}.`;
+        return `No clients discharged today${scope}.`;
       case 'referred':
-        return `No patients referred out today${scope}.`;
+        return `No clients referred out today${scope}.`;
       default:
-        return `No patients in queue${scope}.`;
+        return `No clients in queue${scope}.`;
     }
   }
 
@@ -708,7 +942,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   loadQueueModules(): void {
-    this.api.getAllHospitalModules().subscribe({
+    this.api.getAllBusinessModules().subscribe({
       next: (res: any) => {
         this.cacheAllHospitalModules(res);
         this.setQueueModulesFromApi(res);
@@ -738,7 +972,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       cb();
       return;
     }
-    this.api.getAllHospitalModules().subscribe({
+    this.api.getAllBusinessModules().subscribe({
       next: (res: any) => {
         this.setQueueModulesFromApi(res);
         cb();
@@ -788,7 +1022,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return allowed.includes(this.currentRole);
   }
 
-  /** Match current URL to a hospital module — queue shows only patients sent there (toModule). */
+  /** Match current URL to a hospital module — queue shows only clients sent there (toModule). */
   resolveCurrentPageModuleId(): number | null {
     const ctx = resolvePageContextFromUrl(
       this.router.url,
@@ -824,7 +1058,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     };
 
     if (!this.allHospitalModules.length) {
-      this.api.getAllHospitalModules().subscribe({
+      this.api.getAllBusinessModules().subscribe({
         next: (res: any) => {
           this.cacheAllHospitalModules(res);
           this.setQueueModulesFromApi(res);
@@ -849,7 +1083,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       applyQueuePageModuleToSession(pageModuleId);
     }
     this.queueLoading = true;
-    this.api.getLatestPatientQueueEntries(200, this.queueTab, pageModuleId).subscribe({
+    this.api.getLatestClientQueueEntries(200, this.queueTab, pageModuleId).subscribe({
       next: (res: any) => {
         const entries = Array.isArray(res) ? res : [];
         this.queueEntries =
@@ -1009,7 +1243,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.refreshWorkContextLabels();
   }
 
-  /** Apply assigned department/room to header context, then open the department page with patient. */
+  /** Apply assigned department/room to header context, then open the department page with client. */
   private navigateTakeClientWithWorkContext(
     dept: AccessibleDepartment,
     room: AccessibleRoom | null
@@ -1038,36 +1272,36 @@ export class HeaderComponent implements OnInit, OnDestroy {
       go();
       return;
     }
-    this.storeQueuePatientSessionFlags(entry, dept);
-    const item = this.buildPatientItemFromQueueEntry(entry);
+    this.storeQueueClientSessionFlags(entry, dept);
+    const item = this.buildClientItemFromQueueEntry(entry);
     sessionStorage.setItem('item', JSON.stringify(item));
-    const visitId = entry?.patientVisitId;
-    const patientId = entry?.patientId ?? entry?.patient?.id;
+    const visitId = entry?.clientVisitId;
+    const clientId = entry?.clientId ?? entry?.client?.id;
     if (visitId) {
-      this.api.getPatientVisitByVisitId(visitId).subscribe({
+      this.api.getClientVisitByVisitId(visitId).subscribe({
         next: (visitRes) => {
           const initialVisit =
             visitRes != null && typeof visitRes === 'object' ? visitRes : { id: visitId };
-          sessionStorage.setItem('initialPatientVisit', JSON.stringify(initialVisit));
+          sessionStorage.setItem('initialClientVisit', JSON.stringify(initialVisit));
           go();
         },
         error: () => {
-          sessionStorage.setItem('initialPatientVisit', JSON.stringify({ id: visitId }));
+          sessionStorage.setItem('initialClientVisit', JSON.stringify({ id: visitId }));
           go();
         },
       });
       return;
     }
-    if (patientId) {
-      this.api.getInitialVisitForPatientId(patientId).subscribe({
+    if (clientId) {
+      this.api.getInitialVisitForClientId(clientId).subscribe({
         next: (visitRes) => {
           const initialVisit =
             visitRes != null && typeof visitRes === 'object' && visitRes.id != null ? visitRes : {};
-          sessionStorage.setItem('initialPatientVisit', JSON.stringify(initialVisit));
+          sessionStorage.setItem('initialClientVisit', JSON.stringify(initialVisit));
           go();
         },
         error: () => {
-          sessionStorage.setItem('initialPatientVisit', JSON.stringify({}));
+          sessionStorage.setItem('initialClientVisit', JSON.stringify({}));
           go();
         },
       });
@@ -1097,7 +1331,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const routeKey = (mod?.routeKey || dept.code || '').toString().toLowerCase();
     const code = (mod?.code || dept.code || '').toString().toUpperCase();
     return (
-      routeKey === 'patient-visit' ||
+      routeKey === 'client-visit' ||
       routeKey === 'consultations-center' ||
       routeKey === 'consultation' ||
       routeKey === 'triage' ||
@@ -1106,9 +1340,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
   }
 
-  private storeQueuePatientSessionFlags(entry: any, dept: AccessibleDepartment): void {
+  private storeQueueClientSessionFlags(entry: any, dept: AccessibleDepartment): void {
     if (this.isPharmacyDepartment(dept)) {
-      sessionStorage.removeItem('patientVisitOpenTab');
+      sessionStorage.removeItem('clientVisitOpenTab');
       sessionStorage.removeItem('pharmacistDispenseMode');
       return;
     }
@@ -1120,10 +1354,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       (role === 'pharmacist' || role === 'pharmacy') &&
       this.accessControl.isPharmacistDispenseOnlyMode()
     ) {
-      sessionStorage.setItem('patientVisitOpenTab', 'pharmacy');
+      sessionStorage.setItem('clientVisitOpenTab', 'pharmacy');
       sessionStorage.setItem('pharmacistDispenseMode', 'true');
     } else {
-      sessionStorage.removeItem('patientVisitOpenTab');
+      sessionStorage.removeItem('clientVisitOpenTab');
       sessionStorage.removeItem('pharmacistDispenseMode');
     }
   }
@@ -1143,35 +1377,35 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     const byKey: Record<string, string> = {
-      'patient-visit': '/overview/consultations-center',
-      'consultations-center': '/overview/consultations-center',
-      consultation: '/overview/consultations-center',
-      triage: '/overview/consultations-center',
+      'client-visit': '/overview/otc-dispensary',
+      'consultations-center': '/overview/otc-dispensary',
+      consultation: '/overview/otc-dispensary',
+      triage: '/overview/otc-dispensary',
       pharmacy: '/overview/otc-dispensary',
       'otc-dispensary': '/overview/otc-dispensary',
-      lab: '/overview/lab-v2',
-      scan: '/overview/scan-v2',
-      dental: '/overview/dental-v2',
-      'lab-mobile': '/overview/lab-mobile',
-      'maternal-child-health-requests': '/overview/mch-v2',
-      mch: '/overview/mch-v2',
-      'scan-v2': '/overview/scan-v2',
-      'lab-v2': '/overview/lab-v2',
-      'dental-v2': '/overview/dental-v2',
-      'mch-v2': '/overview/mch-v2',
-      reception: '/overview/all-patients',
+      lab: '/overview/otc-dispensary',
+      scan: '/overview/otc-dispensary',
+      dental: '/overview/otc-dispensary',
+      'lab-mobile': '/overview/otc-dispensary',
+      'maternal-child-health-requests': '/overview/otc-dispensary',
+      mch: '/overview/otc-dispensary',
+      'scan-v2': '/overview/otc-dispensary',
+      'lab-v2': '/overview/otc-dispensary',
+      'dental-v2': '/overview/otc-dispensary',
+      'mch-v2': '/overview/otc-dispensary',
+      reception: '/overview/all-clients',
       cashier: '/overview/dashboard',
       dashboard: '/overview/dashboard',
     };
     const byCode: Record<string, string> = {
       PHARMACY: '/overview/otc-dispensary',
-      CONSULTATION: '/overview/consultations-center',
-      TRIAGE: '/overview/consultations-center',
-      LAB: '/overview/lab-v2',
-      SCAN: '/overview/scan-v2',
-      DENTAL: '/overview/dental-v2',
-      MCH: '/overview/mch-v2',
-      RECEPTION: '/overview/all-patients',
+      CONSULTATION: '/overview/otc-dispensary',
+      TRIAGE: '/overview/otc-dispensary',
+      LAB: '/overview/otc-dispensary',
+      SCAN: '/overview/otc-dispensary',
+      DENTAL: '/overview/otc-dispensary',
+      MCH: '/overview/otc-dispensary',
+      RECEPTION: '/overview/all-clients',
       CASHIER: '/overview/dashboard',
     };
     if (routeKey && byKey[routeKey]) {
@@ -1180,45 +1414,45 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (code && byCode[code]) {
       return byCode[code];
     }
-    return '/overview/all-patients';
+    return '/overview/all-clients';
   }
 
   /**
-   * Open patient visit for a queue row (same sessionStorage flow as all-patients / patient list).
+   * Open client order for a queue row (same sessionStorage flow as all-clients / client list).
    */
-  openQueuePatientVisit(entry: any): void {
-    const patientId = entry?.patientId ?? entry?.patient?.id;
-    if (!patientId) {
+  openQueueClientVisit(entry: any): void {
+    const clientId = entry?.clientId ?? entry?.client?.id;
+    if (!clientId) {
       return;
     }
     if (this.queueVisitLoadingEntryId != null) {
       return;
     }
-    this.queueVisitLoadingEntryId = entry.id ?? patientId;
-    const item = this.buildPatientItemFromQueueEntry(entry);
-    const visitId = entry?.patientVisitId;
+    this.queueVisitLoadingEntryId = entry.id ?? clientId;
+    const item = this.buildClientItemFromQueueEntry(entry);
+    const visitId = entry?.clientVisitId;
     const visit$ = visitId
-      ? this.api.getPatientVisitByVisitId(visitId)
-      : this.api.getInitialVisitForPatientId(patientId);
+      ? this.api.getClientVisitByVisitId(visitId)
+      : this.api.getInitialVisitForClientId(clientId);
 
     visit$.subscribe({
       next: (visitRes) => {
         const initialVisit =
           visitRes != null && typeof visitRes === 'object' && visitRes.id != null ? visitRes : {};
         sessionStorage.setItem('item', JSON.stringify(item));
-        sessionStorage.setItem('initialPatientVisit', JSON.stringify(initialVisit));
+        sessionStorage.setItem('initialClientVisit', JSON.stringify(initialVisit));
         this.applyPharmacistVisitNavigationFlags();
         this.queueVisitLoadingEntryId = null;
         this.closeQueueModal();
-        this.router.navigate(['/patient-visit']);
+        this.router.navigate(['/client-visit']);
       },
       error: () => {
         sessionStorage.setItem('item', JSON.stringify(item));
-        sessionStorage.setItem('initialPatientVisit', JSON.stringify({}));
+        sessionStorage.setItem('initialClientVisit', JSON.stringify({}));
         this.applyPharmacistVisitNavigationFlags();
         this.queueVisitLoadingEntryId = null;
         this.closeQueueModal();
-        this.router.navigate(['/patient-visit']);
+        this.router.navigate(['/client-visit']);
       },
     });
   }
@@ -1229,28 +1463,28 @@ export class HeaderComponent implements OnInit, OnDestroy {
       (role === 'pharmacist' || role === 'pharmacy') &&
       this.accessControl.isPharmacistDispenseOnlyMode()
     ) {
-      sessionStorage.setItem('patientVisitOpenTab', 'pharmacy');
+      sessionStorage.setItem('clientVisitOpenTab', 'pharmacy');
       sessionStorage.setItem('pharmacistDispenseMode', 'true');
     } else {
-      sessionStorage.removeItem('patientVisitOpenTab');
+      sessionStorage.removeItem('clientVisitOpenTab');
       sessionStorage.removeItem('pharmacistDispenseMode');
     }
   }
 
-  private buildPatientItemFromQueueEntry(entry: any): any {
-    const patientId = entry?.patientId ?? entry?.patient?.id;
-    const otherNames = (entry?.patientOtherNames ?? '').toString().trim();
-    const surname = (entry?.patientSurname ?? '').toString().trim();
+  private buildClientItemFromQueueEntry(entry: any): any {
+    const clientId = entry?.clientId ?? entry?.client?.id;
+    const otherNames = (entry?.clientOtherNames ?? '').toString().trim();
+    const surname = (entry?.clientSurname ?? '').toString().trim();
     return {
-      id: patientId,
-      patientId,
-      patientFirstName: otherNames,
-      patientSecondName: surname,
-      patientFileNo: entry?.patientFileNo ?? '',
-      patientAge: entry?.patientAge ?? null,
-      patientGroupId: entry?.patientGroupId ?? null,
-      patientGroupName: entry?.visitDefaultScheme ?? entry?.patientGroupName ?? '',
-      patientProfilePic: 'assets/images/vector.jpeg',
+      id: clientId,
+      clientId,
+      clientFirstName: otherNames,
+      clientSecondName: surname,
+      clientFileNo: entry?.clientFileNo ?? '',
+      clientAge: entry?.clientAge ?? null,
+      clientGroupId: entry?.clientGroupId ?? null,
+      clientGroupName: entry?.visitDefaultScheme ?? entry?.clientGroupName ?? '',
+      clientProfilePic: 'assets/images/vector.jpeg',
     };
   }
 
@@ -1279,8 +1513,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const username = sessionStorage.getItem('username') || this.accountUserName || '';
 
     if (isQueueDischargeDestination(this.queueEditForm.toModuleId)) {
-      this.api.dischargePatientFromQueue({
-        patientId: this.editingQueueEntry.patientId,
+      this.api.dischargeClientFromQueue({
+        clientId: this.editingQueueEntry.clientId,
         note: this.queueEditForm.note,
         dischargedBy: username,
       }).subscribe({
@@ -1305,7 +1539,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.queueEditForm.toModuleId != null) {
       payload.toModuleId = this.queueEditForm.toModuleId;
     }
-    this.api.updatePatientQueueEntry(this.editingQueueEntry.id, payload).subscribe({
+    this.api.updateClientQueueEntry(this.editingQueueEntry.id, payload).subscribe({
       next: () => {
         this.queueEditSaving = false;
         this.closeQueueEditModal();

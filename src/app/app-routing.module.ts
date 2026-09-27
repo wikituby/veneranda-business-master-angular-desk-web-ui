@@ -16,13 +16,13 @@ import { FormarrayexampleComponent } from './formarrayexample/formarrayexample.c
 import { Login2Component } from './login2/login2.component';
 import { Login3Component } from './login3/login3.component';
 import { Login4Component } from './auth/login4/login4.component';
-import { PatientComponent } from './patient/patient.component';
-import { PatientVisitComponent } from './patient-visit/patient-visit.component';
+import { ClientComponent } from './client/client.component';
+import { ClientVisitComponent } from './client-visit/client-visit.component';
 import { ServicesOfferedComponent } from './services-offered/services-offered.component';
 import { OverviewComponent } from './overview/overview.component';
 import { MainDashboardComponent } from './overview/dashboards/main-dashboard/main-dashboard.component';
 import { LabDashboardComponent } from './overview/dashboards/lab-dashboard/lab-dashboard.component';
-import { PatientDashboardComponent } from './overview/dashboards/patient-dashboard/patient-dashboard.component';
+import { ClientDashboardComponent } from './overview/dashboards/client-dashboard/client-dashboard.component';
 import { FinanceDashboardComponent } from './overview/dashboards/finance-dashboard/finance-dashboard.component';
 import { InventoryDashboardComponent } from './overview/dashboards/inventory-dashboard/inventory-dashboard.component';
 import { ReorderLevelsComponent as OverviewReorderLevelsComponent } from './overview/pages/inventory/reorder-levels/reorder-levels.component';
@@ -45,22 +45,17 @@ import { ExpiredItemsComponent } from './overview/pages/inventory/expired-items/
 import { ShopItemManagementComponent } from './overview/pages/inventory/shop-item-management/shop-item-management.component';
 import { ShopItemReceiveComponent as OverviewShopItemReceiveComponent } from './overview/pages/inventory/shop-item-receive/shop-item-receive.component';
 import { ManufacturersComponent } from './overview/pages/inventory/manufacturers/manufacturers.component';
-import { AllPatientsComponent } from './overview/pages/patient-management/all-patients/all-patients.component';
+import { AllClientsComponent } from './overview/pages/client-management/all-clients/all-clients.component';
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { AboutPageComponent } from './about-page/about-page.component';
 import { BookAppointmentComponent } from './book-appointment/book-appointment.component';
 import { ContactPageComponent } from './contact-page/contact-page.component';
-import { ConsultationsCenterComponent } from './overview/pages/consultations-center/consultations-center.component';
 import { ConsultationV2Component } from './overview/pages/consultation-v2/consultation-v2.component';
-import { ScanV2Component } from './overview/pages/scan-v2/scan-v2.component';
-import { LabV2Component } from './overview/pages/lab-v2/lab-v2.component';
-import { DentalV2Component } from './overview/pages/dental-v2/dental-v2.component';
-import { MchV2Component } from './overview/pages/mch-v2/mch-v2.component';
 import { ServicesManagementComponent } from './overview/pages/services-management/services-management.component';
 import { ServiceCategoriesComponent } from './overview/pages/services-management/service-categories/service-categories.component';
 import { ServiceTypesComponent } from './overview/pages/services-management/service-types/service-types.component';
-import { PatientGroupsComponent } from './overview/pages/patient-management/patient-groups/patient-groups.component';
+import { ClientGroupsComponent } from './overview/pages/client-management/client-groups/client-groups.component';
 // OPD Components
 import { ConsultationComponent } from './overview/pages/opd/consultation/consultation.component';
 import { PrescriptionsComponent } from './overview/pages/opd/prescriptions/prescriptions.component';
@@ -76,13 +71,13 @@ import { DoctorRoundsComponent } from './overview/pages/ipd/doctor-rounds/doctor
 import { MedicationChartsComponent } from './overview/pages/ipd/medication-charts/medication-charts.component';
 import { ProceduresComponent } from './overview/pages/ipd/procedures/procedures.component';
 import { TransfersComponent } from './overview/pages/ipd/transfers/transfers.component';
-// Patient Management Additional
-import { PatientRegistrationComponent } from './overview/pages/patient-management/patient-registration/patient-registration.component';
-import { PatientProfileComponent } from './overview/pages/patient-management/patient-profile/patient-profile.component';
-import { VisitHistoryComponent } from './overview/pages/patient-management/visit-history/visit-history.component';
-import { AppointmentSchedulingComponent } from './overview/pages/patient-management/appointment-scheduling/appointment-scheduling.component';
-import { QueueManagementComponent } from './overview/pages/patient-management/queue-management/queue-management.component';
-import { ReferralManagementComponent } from './overview/pages/patient-management/referral-management/referral-management.component';
+// Client Management Additional
+import { ClientRegistrationComponent } from './overview/pages/client-management/client-registration/client-registration.component';
+import { ClientProfileComponent } from './overview/pages/client-management/client-profile/client-profile.component';
+import { VisitHistoryComponent } from './overview/pages/client-management/visit-history/visit-history.component';
+import { AppointmentSchedulingComponent } from './overview/pages/client-management/appointment-scheduling/appointment-scheduling.component';
+import { QueueManagementComponent } from './overview/pages/client-management/queue-management/queue-management.component';
+import { ReferralManagementComponent } from './overview/pages/client-management/referral-management/referral-management.component';
 // Laboratory Components
 import { LabTestRequestsComponent } from './overview/pages/laboratory/test-requests/lab-test-requests.component';
 import { SampleCollectionComponent } from './overview/pages/laboratory/sample-collection/sample-collection.component';
@@ -99,7 +94,6 @@ import { RadiologistWorklistComponent } from './overview/pages/radiology/radiolo
 import { PharmacyDispensingComponent } from './overview/pages/pharmacy/dispensing/pharmacy-dispensing.component';
 import { PharmacyPrescriptionManagementComponent } from './overview/pages/pharmacy/prescription-management/pharmacy-prescription-management.component';
 import { PharmacyPricingComponent } from './overview/pages/pharmacy/pricing/pharmacy-pricing.component';
-import { PharmacyStockTrackingComponent } from './overview/pages/pharmacy/stock-tracking/pharmacy-stock-tracking.component';
 import { PharmacyPurchaseOrdersComponent } from './overview/pages/pharmacy/purchase-orders/pharmacy-purchase-orders.component';
 import { PharmacyExpiryAlertsComponent } from './overview/pages/pharmacy/expiry-alerts/pharmacy-expiry-alerts.component';
 import { PharmacySuppliersComponent } from './overview/pages/pharmacy/suppliers/pharmacy-suppliers.component';
@@ -113,7 +107,6 @@ import { PayrollComponent } from './overview/pages/hr/payroll/payroll.component'
 import { PerformanceTrackingComponent } from './overview/pages/hr/performance/performance-tracking.component';
 // Finance Components
 import { ServiceChargesComponent } from './overview/pages/finance/service-charges/service-charges.component';
-import { PatientBillingComponent } from './overview/pages/finance/patient-billing/patient-billing.component';
 import { CashierComponent } from './overview/pages/finance/cashier/cashier.component';
 import { InsuranceBillingComponent } from './overview/pages/finance/insurance-billing/insurance-billing.component';
 import { RefundsComponent } from './overview/pages/finance/refunds/refunds.component';
@@ -167,7 +160,7 @@ import { OnlineConsultationsComponent } from './overview/pages/telemedicine/onli
 import { EPrescriptionsComponent } from './overview/pages/telemedicine/e-prescriptions/e-prescriptions.component';
 import { VideoSchedulingComponent } from './overview/pages/telemedicine/video-scheduling/video-scheduling.component';
 import { RemoteMonitoringComponent } from './overview/pages/telemedicine/remote-monitoring/remote-monitoring.component';
-import { PatientPortalComponent } from './overview/pages/telemedicine/patient-portal/patient-portal.component';
+import { ClientPortalComponent } from './overview/pages/telemedicine/client-portal/client-portal.component';
 // Clinical Decision Support Components
 import { DrugInteractionsComponent } from './overview/pages/clinical-decision-support/drug-interactions/drug-interactions.component';
 import { DiseaseProtocolsComponent } from './overview/pages/clinical-decision-support/protocols/disease-protocols.component';
@@ -189,16 +182,14 @@ import { TheatreScheduleComponent } from './overview/pages/theatre/schedule/thea
 import { TheatreRecordsComponent } from './overview/pages/theatre/records/theatre-records.component';
 import { TheatreManagementComponent } from './overview/pages/theatre/management/theatre-management.component';
 import { DialysisSessionsComponent } from './overview/pages/dialysis/sessions/dialysis-sessions.component';
-import { DialysisPatientDataComponent } from './overview/pages/dialysis/patient-data/dialysis-patient-data.component';
+import { DialysisClientDataComponent } from './overview/pages/dialysis/client-data/dialysis-client-data.component';
 import { EquipmentMaintenanceComponent } from './overview/pages/equipment-maintenance/schedules/equipment-maintenance.component';
 import { BusinessIntelligenceComponent } from './overview/pages/business-intelligence/dashboards/business-intelligence.component';
 import { IntegrationHubComponent } from './overview/pages/integration-hub/external-lab/integration-hub.component';
 // New components from old project
 import { ExpiryDrugsComponent } from './expiry-drugs/expiry-drugs.component';
-import { LabMobilePageComponent } from './lab-mobile-page/lab-mobile-page.component';
 import { MessagesComponent } from './messages/messages.component';
 import { HelpSupportComponent } from './help/help-support.component';
-import { PatientVisitsListComponent } from './patient-visits-list/patient-visits-list.component';
 import { SettingsPrivacyComponent } from './settings-privacy/settings-privacy.component';
 import { StoreManagementComponent as StandaloneStoreManagementComponent } from './store-management/store-management.component';
 import { LoginMobileComponent } from './auth/login-mobile/login-mobile.component';
@@ -206,7 +197,6 @@ import { blockDashboardForClinicalRoleGuard } from './guards/block-dashboard-for
 import { pageAccessGuard, topLevelPageAccessGuard } from './guards/page-access.guard';
 import { subscriptionGuard, subscriptionChildGuard } from './guards/subscription.guard';
 import { UserProfileComponent } from './user-profile/user-profile.component';
-import { DoctorAssistantComponent } from './doctor-assistant/doctor-assistant.component';
 
 const routes: Routes = [
   {path:'', redirectTo:'landingpage', pathMatch:'full'},
@@ -219,7 +209,7 @@ const routes: Routes = [
   {path:'stock-receive', component: StockReceiveComponent},
   {path:'services-offered', component:ServicesOfferedComponent, canActivate: [subscriptionGuard]},
   {path:'reorder-levels', redirectTo:'overview/reorder-levels', pathMatch:'full'},
-  {path:'patient-visit', component: PatientVisitComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
+  {path:'client-visit', component: ClientVisitComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
 
   { path: 'dashboard', redirectTo: 'overview/dashboard', pathMatch: 'full' },
   {
@@ -231,7 +221,7 @@ const routes: Routes = [
       {path: '', redirectTo: 'main-dashboard', pathMatch:'full'},
       {path: 'main-dashboard', component: MainDashboardComponent},
       {path: 'lab-dashboard', component: LabDashboardComponent},
-      {path: 'patient-dashboard', component: PatientDashboardComponent},
+      {path: 'client-dashboard', component: ClientDashboardComponent},
       {path: 'finance-dashboard', component: FinanceDashboardComponent},
       {path: 'inventory-dashboard', component: InventoryDashboardComponent},
       {path: 'reorder-levels', component: OverviewReorderLevelsComponent},
@@ -254,10 +244,10 @@ const routes: Routes = [
       {path: 'stock-batch', component: StockBatchComponent},
       {path: 'adjustments', component: StockAdjustmentsComponent},
       {path: 'manufacturers', component: ManufacturersComponent},
-      {path: 'all-patients', component: AllPatientsComponent},
-      {path: 'patient-groups', component: PatientGroupsComponent},
-      {path: 'patient-registration', component: PatientRegistrationComponent},
-      {path: 'patient-profile', component: PatientProfileComponent},
+      {path: 'all-clients', component: AllClientsComponent},
+      {path: 'client-groups', component: ClientGroupsComponent},
+      {path: 'client-registration', component: ClientRegistrationComponent},
+      {path: 'client-profile', component: ClientProfileComponent},
       {path: 'visit-history', component: VisitHistoryComponent},
       {path: 'appointment-scheduling', component: AppointmentSchedulingComponent},
       {path: 'queue-management', component: QueueManagementComponent},
@@ -289,7 +279,6 @@ const routes: Routes = [
       {path: 'otc-dispensary', component: OtcDispensaryComponent},
       {path: 'pharmacy-prescription-management', component: PharmacyPrescriptionManagementComponent},
       {path: 'pharmacy-pricing', component: PharmacyPricingComponent},
-      {path: 'pharmacy-stock-tracking', component: PharmacyStockTrackingComponent},
       {path: 'pharmacy-purchase-orders', component: PharmacyPurchaseOrdersComponent},
       {path: 'pharmacy-expiry-alerts', component: PharmacyExpiryAlertsComponent},
       {path: 'pharmacy-suppliers', component: PharmacySuppliersComponent},
@@ -300,7 +289,6 @@ const routes: Routes = [
       {path: 'payroll', component: PayrollComponent},
       {path: 'performance-tracking', component: PerformanceTrackingComponent},
       {path: 'service-charges', component: ServiceChargesComponent},
-      {path: 'patient-billing', component: PatientBillingComponent},
       {path: 'cashier', component: CashierComponent},
       {path: 'insurance-billing', component: InsuranceBillingComponent},
       {path: 'refunds', component: RefundsComponent},
@@ -353,7 +341,7 @@ const routes: Routes = [
       {path: 'e-prescriptions', component: EPrescriptionsComponent},
       {path: 'video-scheduling', component: VideoSchedulingComponent},
       {path: 'remote-monitoring', component: RemoteMonitoringComponent},
-      {path: 'patient-portal', component: PatientPortalComponent},
+      {path: 'client-portal', component: ClientPortalComponent},
       {path: 'drug-interactions', component: DrugInteractionsComponent},
       {path: 'disease-protocols', component: DiseaseProtocolsComponent},
       {path: 'treatment-guidelines', component: TreatmentGuidelinesComponent},
@@ -372,44 +360,26 @@ const routes: Routes = [
       {path: 'theatre-records', component: TheatreRecordsComponent},
       {path: 'theatre-management', component: TheatreManagementComponent},
       {path: 'dialysis-sessions', component: DialysisSessionsComponent},
-      {path: 'dialysis-patient-data', component: DialysisPatientDataComponent},
+      {path: 'dialysis-client-data', component: DialysisClientDataComponent},
       {path: 'equipment-maintenance', component: EquipmentMaintenanceComponent},
       {path: 'business-intelligence', component: BusinessIntelligenceComponent},
       {path: 'integration-hub', component: IntegrationHubComponent},
-      {path:'consultations-center', component: ConsultationsCenterComponent},
-      {path:'consultation-v2', component: ConsultationV2Component},
-      {path: 'scan-v2', component: ScanV2Component},
-      {path: 'lab-v2', component: LabV2Component},
-      {path: 'dental-v2', component: DentalV2Component},
-      {path: 'mch-v2', component: MchV2Component},
-      {path:'maternal-child-health', redirectTo: 'mch-v2', pathMatch: 'full'},
-      {path:'maternal-child-health-requests', redirectTo: 'mch-v2', pathMatch: 'full'},
+      {path:'clienttransactions', component: ConsultationV2Component},
+      {path:'consultation-v2', redirectTo: 'clienttransactions', pathMatch: 'full'},
       {path:'services-management', component: ServicesManagementComponent},
       {path:'service-categories', component: ServiceCategoriesComponent},
       {path:'service-types', component: ServiceTypesComponent},
-      {path: 'lab', redirectTo: 'lab-v2', pathMatch: 'full'},
-      {path: 'scan', redirectTo: 'scan-v2', pathMatch: 'full'},
-      {path: 'dental', redirectTo: 'dental-v2', pathMatch: 'full'},
-      {path: 'lab-mobile', component: LabMobilePageComponent},
       {path: 'messages', component: MessagesComponent},
       {path: 'user-profile', component: UserProfileComponent},
       {path: 'dashboard', component: BalanceSheetComponent, canActivate: [blockDashboardForClinicalRoleGuard]},
       {path: 'legacy-dashboard', component: DashboardComponent, canActivate: [blockDashboardForClinicalRoleGuard]}
     ]
   },
-  {path:'patient', component:PatientComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
-  {path:'scan', redirectTo: 'overview/scan-v2', pathMatch: 'full'},
-  {path:'lab', redirectTo: 'overview/lab-v2', pathMatch: 'full'},
-  {path:'dental', redirectTo: 'overview/dental-v2', pathMatch: 'full'},
+  {path:'client', component:ClientComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
   {path:'near-expiry', component:ExpiryDrugsComponent, data:{tab:'near'}, canActivate: [subscriptionGuard]},
   {path:'expired-drugs', component:ExpiryDrugsComponent, data:{tab:'expired'}, canActivate: [subscriptionGuard]},
-  {path:'lab-mobile', redirectTo: 'overview/lab-mobile', pathMatch: 'full'},
-  {path:'maternal-child-health', redirectTo: 'overview/mch-v2', pathMatch: 'full'},
-  {path:'maternal-child-health-requests', redirectTo: 'overview/mch-v2', pathMatch: 'full'},
   {path:'messages', redirectTo: 'overview/messages', pathMatch: 'full'},
   {path:'help', component:HelpSupportComponent, canActivate: [subscriptionGuard]},
-  {path:'patient-visits-list', component:PatientVisitsListComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
-  {path:'doctor-assistant', component:DoctorAssistantComponent, canActivate: [subscriptionGuard, topLevelPageAccessGuard]},
   {path:'settings-privacy', component:SettingsPrivacyComponent, canActivate: [subscriptionGuard]},
   {path:'store-management', component:StandaloneStoreManagementComponent, canActivate: [subscriptionGuard]},
   {path:'user-management', redirectTo: 'overview/user-management', pathMatch: 'full'},
@@ -475,8 +445,8 @@ const routes: Routes = [
   
   {
     path: 'signup',
-    component: SignupComponent,
-    data: { signup: true } // Indicate that this route is related to signup
+    component: LoginComponent,
+    data: { signup: true, authTab: 'signup' }
   },
   {
     path: 'login4',

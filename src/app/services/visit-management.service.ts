@@ -1,31 +1,31 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseService } from './base.service';
-import { VitalSigns, LabTest, Scan, Procedure, Payment, Invoice, ApiResponse, PaginatedResponse } from '../interfaces/patient-visit.interface';
+import { VitalSigns, LabTest, Scan, Procedure, Payment, Invoice, ApiResponse, PaginatedResponse } from '../interfaces/client-visit.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisitManagementService extends BaseService {
-  private readonly patientEndpoint = '/course/Patient-management';
+  private readonly clientEndpoint = '/course/Client-management';
   private readonly financialEndpoint = '/course/financial-management';
   private readonly diagnosticsEndpoint = '/course/diagnostics-management';
 
   // Vital Signs Management
   getVitalSigns(visitId: number): Observable<ApiResponse<VitalSigns[]>> {
-    return this.get<ApiResponse<VitalSigns[]>>(`${this.patientEndpoint}/get-vitals/${visitId}`);
+    return this.get<ApiResponse<VitalSigns[]>>(`${this.clientEndpoint}/get-vitals/${visitId}`);
   }
 
   createVitalSigns(vitalSigns: Omit<VitalSigns, 'id'>): Observable<ApiResponse<VitalSigns>> {
-    return this.post<ApiResponse<VitalSigns>>(`${this.patientEndpoint}/create-vitals`, vitalSigns);
+    return this.post<ApiResponse<VitalSigns>>(`${this.clientEndpoint}/create-vitals`, vitalSigns);
   }
 
   updateVitalSigns(id: number, vitalSigns: Partial<VitalSigns>): Observable<ApiResponse<VitalSigns>> {
-    return this.put<ApiResponse<VitalSigns>>(`${this.patientEndpoint}/update-vitals/${id}`, vitalSigns);
+    return this.put<ApiResponse<VitalSigns>>(`${this.clientEndpoint}/update-vitals/${id}`, vitalSigns);
   }
 
   deleteVitalSigns(id: number): Observable<ApiResponse<void>> {
-    return this.delete<ApiResponse<void>>(`${this.patientEndpoint}/delete-vitals/${id}`);
+    return this.delete<ApiResponse<void>>(`${this.clientEndpoint}/delete-vitals/${id}`);
   }
 
   // Lab Tests Management
@@ -64,19 +64,19 @@ export class VisitManagementService extends BaseService {
 
   // Procedures Management
   getProcedures(visitId: number): Observable<ApiResponse<Procedure[]>> {
-    return this.get<ApiResponse<Procedure[]>>(`${this.patientEndpoint}/get-procedures/${visitId}`);
+    return this.get<ApiResponse<Procedure[]>>(`${this.clientEndpoint}/get-procedures/${visitId}`);
   }
 
   createProcedure(procedure: Omit<Procedure, 'id'>): Observable<ApiResponse<Procedure>> {
-    return this.post<ApiResponse<Procedure>>(`${this.patientEndpoint}/create-procedure`, procedure);
+    return this.post<ApiResponse<Procedure>>(`${this.clientEndpoint}/create-procedure`, procedure);
   }
 
   updateProcedure(id: number, procedure: Partial<Procedure>): Observable<ApiResponse<Procedure>> {
-    return this.put<ApiResponse<Procedure>>(`${this.patientEndpoint}/update-procedure/${id}`, procedure);
+    return this.put<ApiResponse<Procedure>>(`${this.clientEndpoint}/update-procedure/${id}`, procedure);
   }
 
   deleteProcedure(id: number): Observable<ApiResponse<void>> {
-    return this.delete<ApiResponse<void>>(`${this.patientEndpoint}/delete-procedure/${id}`);
+    return this.delete<ApiResponse<void>>(`${this.clientEndpoint}/delete-procedure/${id}`);
   }
 
   // Payment Management

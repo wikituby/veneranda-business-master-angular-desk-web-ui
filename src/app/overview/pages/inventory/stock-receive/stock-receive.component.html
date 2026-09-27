@@ -281,7 +281,7 @@
       <div class="stock-item-new-modal-body">
         <div class="stock-item-new-info-message">
           <i class="bi bi-info-circle"></i>
-          <p>Stock items require detailed information including brand, formulation, ingredients, and more. For a complete stock item creation experience, please use the <strong>Consumable Items</strong> management page.</p>
+          <p>Stock items require detailed information including brand, formulation, ingredients, and more. For a complete stock item creation experience, please use the <strong>Consumable Products</strong> management page.</p>
         </div>
 
         <div class="stock-item-new-modal-actions">
@@ -294,7 +294,7 @@
                   class="stock-item-new-btn-primary" 
                   (click)="navigateToConsumableItems()">
             <i class="bi bi-box-arrow-up-right"></i>
-            Go to Consumable Items
+            Go to Consumable Products
           </button>
         </div>
       </div>
@@ -426,65 +426,8 @@
                      required>
             </div>
 
-            <!-- Store Dropdown -->
-            <div class="stock-item-form-field">
-              <label for="storeId" class="stock-item-form-label">
-                Store <span class="required">*</span>
-              </label>
-              <div class="store-dropdown-wrapper">
-                <div class="store-dropdown-input" 
-                     (click)="toggleStoreDropdown()"
-                     [class.open]="isStoreDropdownOpen">
-                  <span class="store-selected-text" *ngIf="currentStoreName && currentStoreName !== 'Select store'; else storePlaceholder">
-                    {{ currentStoreName }}
-                  </span>
-                  <ng-template #storePlaceholder>
-                    <span class="store-placeholder">Select store</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isStoreDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="store-dropdown-menu" *ngIf="isStoreDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="store-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="store-search-input" 
-                           placeholder="Search stores..." 
-                           [ngModel]="storeSearchQuery"
-                           (ngModelChange)="storeSearchQuery = $event"
-                           [ngModelOptions]="{standalone: true}"
-                           (input)="filterStores()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="store-add-button" (click)="openStoreModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                  </div>
-                  
-                  <div class="store-list-container">
-                    <div class="store-item" 
-                         *ngFor="let store of filteredStoreList">
-                      <div class="store-item-content" (click)="selectStore(store)">
-                        <div class="store-name">{{ store.name }}</div>
-                        <div class="store-location" *ngIf="store.location">{{ store.location }}</div>
-                      </div>
-                    </div>
-                    <div class="store-no-results" *ngIf="filteredStoreList.length === 0">
-                      <i class="bi bi-inbox"></i>
-                      <p>No stores found</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <input type="hidden" 
-                     [ngModel]="currentStockReceive.storeId || currentStoreId" 
-                     (ngModelChange)="currentStockReceive.storeId = $event"
-                     name="storeId"
-                     required>
-            </div>
-
             <!-- Supplier Dropdown -->
-            <div class="stock-item-form-field">
+            <div class="stock-item-form-field full-width">
               <label for="supplierId" class="stock-item-form-label">
                 Supplier <span class="required">*</span>
               </label>
@@ -561,20 +504,54 @@
               </div>
 
               <div class="stock-item-form-field">
-                <label for="totalCostPrice" class="stock-item-form-label">
-                  Total Cost Price <span class="required">*</span>
-                </label>
-                <input type="number" 
-                       [ngModel]="currentStockReceive.totalCostPrice" 
-                       (ngModelChange)="onTotalCostPriceChange($event)"
-                       (blur)="onTotalCostPriceBlur()"
-                       name="totalCostPrice" 
-                       class="stock-item-form-input" 
-                       id="totalCostPrice" 
-                       placeholder="Enter total cost" 
-                       required
-                       step="1"
-                       min="0">
+                <label class="stock-item-form-label">Purchase order number</label>
+                <div class="supplier-dropdown-wrapper">
+                  <div class="supplier-dropdown-input"
+                       (click)="togglePurchaseOrderDropdown()"
+                       [class.open]="isPurchaseOrderDropdownOpen">
+                    <span class="supplier-selected-text" *ngIf="currentPurchaseOrderNo; else purchaseOrderPlaceholder">
+                      {{ currentPurchaseOrderNo }}
+                    </span>
+                    <ng-template #purchaseOrderPlaceholder>
+                      <span class="supplier-placeholder">Select purchase order</span>
+                    </ng-template>
+                    <i class="bi" [ngClass]="isPurchaseOrderDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                  </div>
+                  <div class="supplier-dropdown-menu" *ngIf="isPurchaseOrderDropdownOpen" (click)="$event.stopPropagation()">
+                    <div class="supplier-search-container">
+                      <i class="bi bi-search"></i>
+                      <input type="text"
+                             class="supplier-search-input"
+                             placeholder="Search purchase orders..."
+                             [ngModel]="purchaseOrderSearchQuery"
+                             (ngModelChange)="purchaseOrderSearchQuery = $event"
+                             [ngModelOptions]="{standalone: true}"
+                             (input)="filterPurchaseOrders()"
+                             (click)="$event.stopPropagation()">
+                      <button type="button" class="supplier-add-button" (click)="openNewPurchaseOrder($event)">
+                        <i class="bi bi-plus-circle"></i>
+                        New
+                      </button>
+                    </div>
+                    <div class="supplier-list-container">
+                      <div class="supplier-item">
+                        <div class="supplier-item-content" (click)="selectPurchaseOrder(null)">
+                          <div class="supplier-name">No purchase order</div>
+                        </div>
+                      </div>
+                      <div class="supplier-item" *ngFor="let order of filteredPurchaseOrderList">
+                        <div class="supplier-item-content" (click)="selectPurchaseOrder(order)">
+                          <div class="supplier-name">{{ order.orderNo }}</div>
+                          <div class="supplier-contact" *ngIf="order.supplierName">{{ order.supplierName }}</div>
+                        </div>
+                      </div>
+                      <div class="supplier-no-results" *ngIf="filteredPurchaseOrderList.length === 0 && purchaseOrderSearchQuery">
+                        <i class="bi bi-inbox"></i>
+                        <p>No purchase orders found</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="stock-item-form-field">
@@ -589,6 +566,23 @@
                        class="stock-item-form-input" 
                        id="unitCostPrice" 
                        placeholder="Enter unit cost" 
+                       required
+                       step="1"
+                       min="0">
+              </div>
+
+              <div class="stock-item-form-field">
+                <label for="totalCostPrice" class="stock-item-form-label">
+                  Total Cost Price <span class="required">*</span>
+                </label>
+                <input type="number" 
+                       [ngModel]="currentStockReceive.totalCostPrice" 
+                       (ngModelChange)="onTotalCostPriceChange($event)"
+                       (blur)="onTotalCostPriceBlur()"
+                       name="totalCostPrice" 
+                       class="stock-item-form-input" 
+                       id="totalCostPrice" 
+                       placeholder="Enter total cost" 
                        required
                        step="1"
                        min="0">
@@ -627,7 +621,7 @@
             </div>
 
             <!-- Batch Number, Packaging, and Invoice Number on same line -->
-            <div class="three-column-wrapper">
+            <div class="four-column-wrapper">
               <div class="stock-item-form-field">
                 <label for="batchNumber" class="stock-item-form-label">Batch Number</label>
                 <input type="text" 
@@ -637,6 +631,59 @@
                        class="stock-item-form-input" 
                        id="batchNumber" 
                        placeholder="Enter batch number">
+              </div>
+
+              <div class="stock-item-form-field">
+                <label for="storeId" class="stock-item-form-label">
+                  Store <span class="required">*</span>
+                </label>
+                <div class="store-dropdown-wrapper">
+                  <div class="store-dropdown-input"
+                       (click)="toggleStoreDropdown()"
+                       [class.open]="isStoreDropdownOpen">
+                    <span class="store-selected-text" *ngIf="currentStoreName && currentStoreName !== 'Select store'; else storePlaceholder">
+                      {{ currentStoreName }}
+                    </span>
+                    <ng-template #storePlaceholder>
+                      <span class="store-placeholder">Select store</span>
+                    </ng-template>
+                    <i class="bi" [ngClass]="isStoreDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                  </div>
+                  <div class="store-dropdown-menu" *ngIf="isStoreDropdownOpen" (click)="$event.stopPropagation()">
+                    <div class="store-search-container">
+                      <i class="bi bi-search"></i>
+                      <input type="text"
+                             class="store-search-input"
+                             placeholder="Search stores..."
+                             [ngModel]="storeSearchQuery"
+                             (ngModelChange)="storeSearchQuery = $event"
+                             [ngModelOptions]="{standalone: true}"
+                             (input)="filterStores()"
+                             (click)="$event.stopPropagation()">
+                      <button type="button" class="store-add-button" (click)="openStoreModal()">
+                        <i class="bi bi-plus-circle"></i>
+                        Add New
+                      </button>
+                    </div>
+                    <div class="store-list-container">
+                      <div class="store-item" *ngFor="let store of filteredStoreList">
+                        <div class="store-item-content" (click)="selectStore(store)">
+                          <div class="store-name">{{ store.name }}</div>
+                          <div class="store-location" *ngIf="store.location">{{ store.location }}</div>
+                        </div>
+                      </div>
+                      <div class="store-no-results" *ngIf="filteredStoreList.length === 0">
+                        <i class="bi bi-inbox"></i>
+                        <p>No stores found</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <input type="hidden"
+                       [ngModel]="currentStockReceive.storeId || currentStoreId"
+                       (ngModelChange)="currentStockReceive.storeId = $event"
+                       name="storeId"
+                       required>
               </div>
 
               <div class="stock-item-form-field">

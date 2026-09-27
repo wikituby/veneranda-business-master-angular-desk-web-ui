@@ -1,34 +1,47 @@
-# Hospital Management System — Documentation
+# Business Manager — Documentation
 
-Welcome to the documentation set for the **Hospital Management System (HMS)** web application. These guides are written for facility staff, administrators, and technical support.
+Welcome to the documentation for **Veneranda Business Master**, a complete business manager that combines a **CRM** (customer relationship management) with an **ERP** (enterprise resource planning) in one desk.
 
-The application is **multi-tenant**: each hospital or clinic can configure its own name, branding, and business rules under **Administration → Business settings**.
+These guides are for counter staff, storekeepers, finance officers, managers, and the people who set the system up.
+
+Each business can set its own name, branding, and working rules under **Administration → Business settings**.
+
+## How the product is organised
+
+| Side | What it covers | Start here |
+|------|----------------|------------|
+| **CRM** | Who you sell to: client accounts, contacts, groups, balances, and follow-up | [CRM — clients & relationships](./03-client-care-workflows.md) |
+| **ERP — sell** | What you sell and how you bill: quotations, invoices, receipts, delivery, and POS | [ERP — sales, stock & stores](./04-pharmacy-and-inventory.md) |
+| **ERP — stock** | What you hold: catalogue, stores, receive, transfer, counts | [ERP — sales, stock & stores](./04-pharmacy-and-inventory.md) |
+| **ERP — money** | What you spend and what is still owed: expenses, debt, loans | [ERP — finance](./07-expense-management.md) |
+| **Control** | Who may do what, and how the business is configured | [Administration & security](./05-administration-and-security.md) |
 
 ## Document index
 
 | Document | Audience | Description |
 |----------|----------|-------------|
-| [01-system-overview.md](./01-system-overview.md) | All users | What the system does, main modules, and how areas connect |
-| [02-getting-started.md](./02-getting-started.md) | New users | Login, navigation, roles, and daily basics |
-| [03-patient-care-workflows.md](./03-patient-care-workflows.md) | Clinical staff | Queue, patient visit, consultations, procedures, pharmacy tab |
-| [04-pharmacy-and-inventory.md](./04-pharmacy-and-inventory.md) | Pharmacy & stores | Stock receive, batches, transfers, OTC, dispensing |
-| [05-administration-and-security.md](./05-administration-and-security.md) | Admins / MD | Users, access control, business settings, subscriptions |
-| [06-technical-guide.md](./06-technical-guide.md) | IT / developers | Architecture, deployment, API connection, support |
-| [07-expense-management.md](./07-expense-management.md) | Finance staff | Categories, expense accounts, recording expenses, dropdown |
+| [01-system-overview.md](./01-system-overview.md) | All users | The business manager map: CRM, ERP, reports, and multi-store |
+| [02-getting-started.md](./02-getting-started.md) | New users | Sign in, navigation, and a normal working day |
+| [03-client-care-workflows.md](./03-client-care-workflows.md) | Sales & accounts | Client registry, groups, profiles, and account activity |
+| [04-pharmacy-and-inventory.md](./04-pharmacy-and-inventory.md) | Sales, stores, buyers | Commercial documents, POS, stock, and partners |
+| [07-expense-management.md](./07-expense-management.md) | Finance | Categories, accounts, expenses, debt, and loans |
+| [05-administration-and-security.md](./05-administration-and-security.md) | Owners / admins | Users, permissions, settings, backup |
+| [06-technical-guide.md](./06-technical-guide.md) | IT | Desktop console, mobile app, and the shared API |
 
 ## How to use these files
 
-- **In the application:** Overview → **Administration & Setup** → **System Documentation** (or account menu → Documentation).
-- **PDF or print:** Open any `.md` file in VS Code, Cursor, or a Markdown viewer and export to PDF, or paste into Word/Google Docs.
-- **Share with clients:** Copy the whole `documentation` folder; paths are relative and work offline.
-- **Updates:** When features change, update the relevant numbered guide and note the date at the bottom of that file.
+- **In the application:** Overview → **Administration & Setup** → **System Documentation** (or the account menu → Documentation).
+- **Print or share:** Open any guide in this folder. Paths are relative and work offline.
+- **Updates:** When a screen changes, update the matching guide and the date at the bottom of that file.
 
-## Version information
+## Version
 
 | Item | Value |
 |------|--------|
-| Frontend | Angular 16 (project: `wiki` / ngwiki) |
-| Backend API context | `/health_care` (default port 8080) |
-| Documentation pack | 1.0 — June 2026 |
+| Product | Veneranda Business Master |
+| Format | CRM + ERP business manager |
+| Frontend | Angular web console |
+| Mobile | Flutter business app on the same backend |
+| Documentation pack | 2.0 — September 2026 |
 
-For questions about a specific screen, start with **02-getting-started**, then the module guide that matches your role.
+New staff should read **Getting started**, then the CRM or ERP guide that matches their job.

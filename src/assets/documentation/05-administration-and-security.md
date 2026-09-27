@@ -1,132 +1,68 @@
 # Administration and Security
 
-For facility administrators, medical directors (MD), and IT staff who manage users, access, and configuration.
+Administrators configure the business manager: who can sign in, which CRM and ERP pages they see, and how the business presents itself.
 
-## Administration menu (Overview)
+**Path:** Overview → **Administration & Setup**.
 
-Common paths under **Overview → Administration**:
+## Administration menu
 
 | Module | Purpose |
 |--------|---------|
-| User management | Create and maintain user accounts |
-| Access control | Page-level and API endpoint permissions |
-| Business settings | Facility name, branding, sidebar, OTC options |
-| Department setup | Departments, modules, rooms for queue routing |
-| Subscription | License / expiry status |
-| System configuration | Global technical options |
-| Data backup | Backup operations |
-| Audit logs | Review user actions |
+| User management | Create and maintain staff accounts |
+| Access permissions | Which pages and actions a role may use |
+| Special privileges | Exceptions, such as assigning a restricted client group |
+| Business settings | Business name, logo, and working options |
+| Department setup | How work is grouped in the console |
+| Subscription | Which modules the business has enabled |
+| Backup | Copy of business data |
+| Audit | Review of sensitive actions where logging is on |
 
-Access to these screens is typically limited to **admin** and **MD** roles.
+Limit these screens to owners and administrators.
 
-## User management
+## Users
 
-Tasks:
+- Create each person with their own username. Do not share a cashier login.
+- Set a primary role. Add secondary roles only when one person truly covers two jobs.
+- Remove or disable access when someone leaves. Do not keep a former employee’s password “for the shop”.
 
-- Register staff with username, email, role, department
-- Assign departments and rooms the user can work in
-- Deactivate users who leave the facility
+## Access
 
-**Policy recommendations:**
+Page access follows the modules you subscribed to and the permissions on the role:
 
-- One account per person; no shared passwords
-- Remove access the same day employment ends
-- Use strong passwords; enforce periodic changes if supported
+| Area | Typical pages |
+|------|----------------|
+| CRM | Clients, groups, profiles |
+| ERP sales | POS, products orders |
+| ERP stock | Products, stock, stores, partners |
+| ERP finance | Expenses, debt, loans, reports |
+| Control | Users, permissions, settings, documentation |
 
-## Access control
-
-**Path:** Overview → **Access control**
-
-Two layers work together:
-
-### 1. User access (pages)
-
-Grants individual users access to Overview pages (modules) beyond their role default.
-
-Use when:
-
-- A nurse needs a one-off finance report
-- A pharmacist needs stock transfer page without full admin rights
-
-### 2. Role access (API endpoints)
-
-Maps **roles** to sensitive API operations independent of the UI.
-
-Example endpoints in the catalog:
-
-| Key | Operation |
-|-----|-----------|
-| `stock.transfer.create` | POST stock transfer |
-| `stock.transfer.list` | GET transfer history |
-
-Users with the linked **page** (e.g. stock-transfer) may also inherit endpoint rights via page key mapping.
-
-**Enforcement:** The backend checks JWT-authenticated requests against role endpoint rules. Unauthorized calls return forbidden responses.
+If **More** is opened from the header, it only offers **Help** and **FAQ**. Documentation itself stays under Administration and the account menu.
 
 ## Business settings
 
-**Path:** Overview → **Business settings**
+Set the name and logo clients see on login and on printed documents. Keep printed quotations, invoices, and receipts in the business name, not a placeholder.
 
-Typical configuration:
+## Orders as a control
 
-- **Facility name** — shown in headers and documents
-- **Medical records header line** — printed forms
-- **Contact / inquiry line** — footer on records
-- **Sidebar stacked** — docked sidebar vs overlay
-- **OTC include prescribing** — full dosing fields on OTC counter
+Supervisors can turn an order off. That is an operational lock:
 
-Changes are saved to the server and cached in the browser session (`facilityBranding`).
+- Documents remain available to view, print, and share.
+- Edit and new documents on that order stop.
+- Turning it back on is a confirmed action, not a silent toggle.
 
-## Department setup
+Payment reversal is the financial equivalent: the row remains, the totals change.
 
-Defines:
+## Backup and care
 
-- Departments and clinical modules
-- Rooms used as queue destinations
-- Which areas appear in the header department links
+- Run backup on a schedule the owner understands, and test that a file was produced.
+- Customer care and contact options live on the help page, linked from **More → Help** and **More → FAQ**.
 
-Coordinate with queue workflow training so reception sends patients to the correct **to module**.
+## Recommended policy
 
-## Subscription
+- Cashiers sell and attach clients. They do not change permissions.
+- Storekeepers receive and count. They do not delete history.
+- Finance reverses payments and posts expenses.
+- One administrator owns user accounts.
 
-The **subscription guard** blocks core clinical routes when subscription is invalid or expired.
-
-Administrators should:
-
-- Monitor expiry warnings in Overview
-- Renew before clinical staff are locked out
-- Plan read-only export if migration is needed
-
-## Queue configuration
-
-Queue behavior depends on:
-
-- Active room / department selection in the header
-- Module definitions from department setup
-- Staff permissions to edit queue entries
-
-Train staff on status values: **WAITING**, in progress, completed, referred, etc.
-
-## Audit and compliance
-
-- Review **audit logs** regularly for unusual edits (stock, billing, user changes)
-- Run **data backup** on a schedule defined by your IT policy
-- Restrict MD/admin accounts; use lower-privilege accounts for daily work
-
-## Security checklist
-
-| Control | Status |
-|---------|--------|
-| HTTPS in production | Recommended |
-| JWT on protected APIs | Enabled for sensitive endpoints |
-| Role-based endpoint map | Configure per facility policy |
-| Session logout on shared PCs | User training |
-| Backup tested restore | IT procedure |
-
-## Branding per facility
-
-The same software build can present different names (e.g. clinic name on login) via business settings and assets. Marketing landing pages may use a separate public brand; operational screens use **facility name** from settings.
-
----
-
-*Document 05 — Administration and security — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

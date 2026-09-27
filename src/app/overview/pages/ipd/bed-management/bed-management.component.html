@@ -15,7 +15,7 @@
       </button>
       <button class="btn-secondary">
         <i class="bi bi-arrow-left-right"></i>
-        Transfer Patient
+        Transfer Client
       </button>
     </div>
   </div>
@@ -106,13 +106,13 @@
             {{bed.status | titlecase}}
           </div>
         </div>
-        <div class="bed-body" *ngIf="bed.patient">
-          <div class="patient-info-mini">
-            <div class="patient-avatar-mini">{{bed.patient.initials}}</div>
+        <div class="bed-body" *ngIf="bed.client">
+          <div class="client-info-mini">
+            <div class="client-avatar-mini">{{bed.client.initials}}</div>
             <div>
-              <div class="patient-name-mini">{{bed.patient.name}}</div>
-              <div class="patient-meta-mini">
-                File: {{bed.patient.fileNo}} | Age: {{bed.patient.age}}
+              <div class="client-name-mini">{{bed.client.name}}</div>
+              <div class="client-meta-mini">
+                File: {{bed.client.fileNo}} | Age: {{bed.client.age}}
               </div>
             </div>
           </div>
@@ -121,15 +121,15 @@
             <span><i class="bi bi-clock"></i> {{bed.daysOccupied}} days</span>
           </div>
         </div>
-        <div class="bed-empty" *ngIf="!bed.patient">
+        <div class="bed-empty" *ngIf="!bed.client">
           <i class="bi bi-dash-circle"></i>
           <span>Available</span>
         </div>
-        <div class="bed-actions" *ngIf="bed.patient">
-          <button class="btn-icon" (click)="viewPatientDetails(bed.patient)">
+        <div class="bed-actions" *ngIf="bed.client">
+          <button class="btn-icon" (click)="viewClientDetails(bed.client)">
             <i class="bi bi-eye"></i>
           </button>
-          <button class="btn-icon" (click)="transferPatient(bed)">
+          <button class="btn-icon" (click)="transferClient(bed)">
             <i class="bi bi-arrow-left-right"></i>
           </button>
         </div>
@@ -141,7 +141,7 @@
       <div class="bed-list-header">
         <div class="col-bed">Bed Number</div>
         <div class="col-status">Status</div>
-        <div class="col-patient">Patient</div>
+        <div class="col-client">Client</div>
         <div class="col-admission">Admission Date</div>
         <div class="col-days">Days</div>
         <div class="col-actions">Actions</div>
@@ -158,16 +158,16 @@
             {{bed.status | titlecase}}
           </span>
         </div>
-        <div class="col-patient" *ngIf="bed.patient">
-          <div class="patient-info-list">
-            <div class="patient-avatar-list">{{bed.patient.initials}}</div>
+        <div class="col-client" *ngIf="bed.client">
+          <div class="client-info-list">
+            <div class="client-avatar-list">{{bed.client.initials}}</div>
             <div>
-              <div class="patient-name-list">{{bed.patient.name}}</div>
-              <div class="patient-meta-list">File: {{bed.patient.fileNo}}</div>
+              <div class="client-name-list">{{bed.client.name}}</div>
+              <div class="client-meta-list">File: {{bed.client.fileNo}}</div>
             </div>
           </div>
         </div>
-        <div class="col-patient" *ngIf="!bed.patient">
+        <div class="col-client" *ngIf="!bed.client">
           <span class="text-muted">Available</span>
         </div>
         <div class="col-admission">
@@ -177,13 +177,13 @@
           {{bed.daysOccupied || '-'}}
         </div>
         <div class="col-actions">
-          <button class="btn-icon" *ngIf="bed.patient" (click)="viewPatientDetails(bed.patient)">
+          <button class="btn-icon" *ngIf="bed.client" (click)="viewClientDetails(bed.client)">
             <i class="bi bi-eye"></i>
           </button>
-          <button class="btn-icon" *ngIf="bed.patient" (click)="transferPatient(bed)">
+          <button class="btn-icon" *ngIf="bed.client" (click)="transferClient(bed)">
             <i class="bi bi-arrow-left-right"></i>
           </button>
-          <button class="btn-icon" *ngIf="!bed.patient" (click)="assignBedToWard(bed)">
+          <button class="btn-icon" *ngIf="!bed.client" (click)="assignBedToWard(bed)">
             <i class="bi bi-plus-circle"></i>
           </button>
         </div>

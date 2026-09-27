@@ -12,7 +12,7 @@ import {
   styleUrls: ['./site-nav.component.css']
 })
 export class SiteNavComponent {
-  readonly venerandaLogo = 'assets/images/veneranda-logo.png';
+  readonly venerandaLogo = 'assets/images/veneranda-nav-logo.png';
   readonly offeredServices: LandingServiceItem[] = getOfferedServices();
   readonly upcomingServices: LandingServiceItem[] = getUpcomingServices();
 
@@ -22,6 +22,11 @@ export class SiteNavComponent {
 
   navigateToOverview(): void {
     this.router.navigate(['/login']);
+  }
+
+  navigateToRegister(): void {
+    this.closeMenus();
+    this.router.navigate(['/login'], { queryParams: { tab: 'signup' } });
   }
 
   toggleMenu(menu: 'services' | 'upcoming', event?: Event): void {

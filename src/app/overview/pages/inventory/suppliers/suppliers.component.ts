@@ -89,7 +89,7 @@ export class SuppliersComponent implements OnInit {
 
   initializeTableData() {
     this.isLoadingService = true;
-    this.api.getAllSuppliersHospitalItem().subscribe({
+    this.api.getAllSuppliersBusinessItem().subscribe({
       next: (res) => {
         this.isLoadingService = false;
         console.log("Raw suppliers response:", res);
@@ -274,7 +274,7 @@ export class SuppliersComponent implements OnInit {
     console.log("Supplier data to save:", data);
 
     if (this.saveButtonStatus === "Add New Supplier") {
-      this.api.saveSupplierHospitalItem(data).subscribe({
+      this.api.saveSupplierBusinessItem(data).subscribe({
         next: (response) => {
           console.log("Supplier saved successfully:", response);
 

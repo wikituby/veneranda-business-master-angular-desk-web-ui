@@ -137,7 +137,7 @@ export class DepartmentSetupComponent implements OnInit {
 
   loadModules(): void {
     this.isLoading = true;
-    this.api.getAllHospitalModules().subscribe({
+    this.api.getAllBusinessModules().subscribe({
       next: (res: any) => {
         this.modules = Array.isArray(res) ? res : [];
         this.totalDepartments = this.modules.length;
@@ -152,7 +152,7 @@ export class DepartmentSetupComponent implements OnInit {
   }
 
   loadClinics(): void {
-    this.api.getHospitalClinics().subscribe({
+    this.api.getBusinessClinics().subscribe({
       next: (res: any) => {
         this.clinics = Array.isArray(res) ? res : [];
       },
@@ -208,8 +208,8 @@ export class DepartmentSetupComponent implements OnInit {
       allowedRoles: this.rolesArrayToCsv(this.moduleForm.allowedRoles),
     };
     const req = this.editingModule
-      ? this.api.updateHospitalModule(this.editingModule.id, payload)
-      : this.api.createHospitalModule(payload);
+      ? this.api.updateBusinessModule(this.editingModule.id, payload)
+      : this.api.createBusinessModule(payload);
 
     req.subscribe({
       next: () => {
@@ -229,7 +229,7 @@ export class DepartmentSetupComponent implements OnInit {
     if (!confirm(`Delete department "${item.name}"?`)) {
       return;
     }
-    this.api.deleteHospitalModule(item.id).subscribe({
+    this.api.deleteBusinessModule(item.id).subscribe({
       next: () => {
         this.loadModules();
         this.loadClinics();
@@ -274,8 +274,8 @@ export class DepartmentSetupComponent implements OnInit {
       allowedRoles: this.rolesArrayToCsv(this.clinicForm.allowedRoles),
     };
     const req = this.editingClinic
-      ? this.api.updateHospitalClinic(this.editingClinic.id, clinicPayload)
-      : this.api.createHospitalClinic(clinicPayload as { hospitalModuleId: number; name: string; active?: boolean; allowedRoles?: string | null });
+      ? this.api.updateBusinessClinic(this.editingClinic.id, clinicPayload)
+      : this.api.createBusinessClinic(clinicPayload as { hospitalModuleId: number; name: string; active?: boolean; allowedRoles?: string | null });
 
     req.subscribe({
       next: () => {
@@ -294,7 +294,7 @@ export class DepartmentSetupComponent implements OnInit {
     if (!confirm(`Delete room "${clinic.name}"?`)) {
       return;
     }
-    this.api.deleteHospitalClinic(clinic.id).subscribe({
+    this.api.deleteBusinessClinic(clinic.id).subscribe({
       next: () => this.loadClinics(),
       error: (err: any) => alert(err?.error?.message || 'Could not delete room')
     });

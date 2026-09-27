@@ -11,8 +11,93 @@
   font-size: 14px;
   font-weight: 500;
   color: #374151;
+  margin-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usm-picker-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
-  display: block;
+  flex-wrap: wrap;
+}
+
+.usm-price-mode-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  vertical-align: middle;
+}
+
+.usm-price-mode-switch:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.usm-price-mode-switch.on {
+  background: #00aeef;
+}
+
+.usm-price-mode-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.usm-price-mode-switch.on .usm-price-mode-knob {
+  transform: translateX(16px);
+}
+
+.usm-price-mode-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.01em;
+}
+
+.usm-free-price-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
+  color: #0f172a;
+  min-height: 42px;
+}
+
+.usm-free-price-input:focus {
+  outline: none;
+  border-color: #00aeef;
+  box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
+}
+
+.usm-free-price-input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.usm-picker--open-price .usm-picker-label {
+  margin-bottom: 0;
 }
 
 .usm-item-dropdown {
@@ -82,14 +167,26 @@
   grid-template-columns: 1fr auto;
 }
 
-.usm-toolbar .dropdown-search {
+.usm-dropdown-search {
   grid-column: 1;
   grid-row: 1;
-  flex: 1;
-  padding: 8px 12px;
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 6px 10px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 15px;
+  font-size: 14px;
+  background: #fff;
+  color: #0f172a;
+  outline: none;
+  box-shadow: none;
+}
+
+.usm-dropdown-search:focus {
+  border-color: #667eea;
+  box-shadow: none;
+  outline: none;
 }
 
 .usm-add-btn {

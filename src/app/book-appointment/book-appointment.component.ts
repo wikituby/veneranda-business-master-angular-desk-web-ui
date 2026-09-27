@@ -9,7 +9,7 @@ export class BookAppointmentComponent {
   readonly contact = {
     phones: ['+256 784 411 848', '+256 704 968 736'],
     phoneLinks: ['tel:+256784411848', 'tel:+256704968736'],
-    email: 'venerandahospital@gmail.com'
+    email: 'venerandabusinessmaster@gmail.com'
   };
 
   form = {
@@ -18,19 +18,19 @@ export class BookAppointmentComponent {
     email: '',
     preferredDate: '',
     preferredTime: '',
-    serviceType: 'General doctor consultation',
+    serviceType: 'Product demo',
     notes: ''
   };
 
   submitted = false;
 
   readonly serviceOptions = [
-    'General doctor consultation',
-    'Dental',
-    'Maternity',
-    'Paediatrics',
-    'Ultrasound / scan',
-    'Laboratory',
+    'Product demo',
+    'Register a business',
+    'Inventory & stock walkthrough',
+    'Sales & checkout training',
+    'Desktop + mobile setup',
+    'Billing & subscription',
     'Other'
   ];
 
@@ -40,14 +40,14 @@ export class BookAppointmentComponent {
     }
 
     const subject = encodeURIComponent(
-      `Appointment request — ${this.form.serviceType}`
+      `Veneranda Business Master — ${this.form.serviceType}`
     );
     const body = encodeURIComponent(
       [
         `Name: ${this.form.fullName}`,
         `Phone: ${this.form.phone}`,
         `Email: ${this.form.email || 'Not provided'}`,
-        `Service: ${this.form.serviceType}`,
+        `Request: ${this.form.serviceType}`,
         `Preferred date: ${this.form.preferredDate || 'Flexible'}`,
         `Preferred time: ${this.form.preferredTime || 'Flexible'}`,
         '',

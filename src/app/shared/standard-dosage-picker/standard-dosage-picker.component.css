@@ -101,7 +101,7 @@
   cursor: pointer;
 }
 
-.pv-standard-dose-patient {
+.pv-standard-dose-client {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -113,7 +113,7 @@
   border-radius: 10px;
 }
 
-.pv-standard-dose-patient span,
+.pv-standard-dose-client span,
 .pv-standard-dose-grid span {
   display: block;
   margin-bottom: 2px;
@@ -124,7 +124,7 @@
   letter-spacing: 0.04em;
 }
 
-.pv-standard-dose-patient-row {
+.pv-standard-dose-client-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -1,4 +1,4 @@
-/** Shared pharmacy prescription line shape (OTC Rx tab + patient visit pharmacy tab). */
+/** Shared pharmacy prescription line shape (OTC Rx tab + client order pharmacy tab). */
 export interface PharmacyPrescriptionLine {
   id: number;
   itemName?: string;
@@ -71,7 +71,7 @@ function shopItemName(item: any): string {
 /**
  * Total stock for a drug.
  * - Batch mode (`itemList` rows have `_stockBatchId`): sum stock across batches for the same stock item.
- * - Shop-item mode: resolve by `itemId` or item name against shop items.
+ * - Shop-item mode: resolve by `itemId` or item name against shop products.
  */
 export function getPharmacyItemTotalStock(
   row: { stockBatchId?: number | null; itemId?: number | null; itemName?: string },
@@ -130,7 +130,7 @@ export function getPharmacyItemTotalStock(
   if (name) {
     return sumStockAtHand(list.filter((item) => shopItemName(item) === name));
   }
-  // Legacy: Rx still has stockBatchId but list is shop items — ignore batch id, try name only.
+  // Legacy: Rx still has stockBatchId but list is shop products — ignore batch id, try name only.
   return 0;
 }
 

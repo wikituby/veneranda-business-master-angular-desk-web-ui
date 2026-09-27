@@ -251,8 +251,12 @@
                   [unitCostPrice]="currentService.unitCostPrice"
                   [allowDraft]="!isEditingService"
                   [(selectedModelId)]="selectedUnitSellingModelId"
+                  [showPriceModeSwitch]="true"
+                  [(useUnitSellingModel)]="serviceUseUnitSellingModel"
+                  [(freeSellingPrice)]="serviceFreeSellingPrice"
                   (selectedModelChange)="onServiceUnitSellingModelSelected($event)"
-                  (unitSellingPriceChange)="onServiceUnitSellChange($event)">
+                  (unitSellingPriceChange)="onServiceUnitSellChange($event)"
+                  label="Selling price">
                 </app-unit-selling-model-picker>
               </div>
             </div>

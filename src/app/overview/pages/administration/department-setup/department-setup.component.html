@@ -3,9 +3,9 @@
     <div class="header-left">
       <h1 class="page-title">
         <i class="bi bi-building"></i>
-        Hospital Directory Setup
+        Business Directory Setup
       </h1>
-      <p class="page-subtitle">Configure departments, rooms, and clinics used by the patient queue</p>
+      <p class="page-subtitle">Configure departments, rooms, and clinics used by the client queue</p>
     </div>
     <div class="header-right">
       <button class="btn-primary" (click)="createNew()">
@@ -103,7 +103,7 @@
             </td>
           </tr>
           <tr *ngIf="filteredItems.length === 0">
-            <td colspan="6" class="empty-row">No departments found. Create one to start the hospital directory.</td>
+            <td colspan="6" class="empty-row">No departments found. Create one to start the business directory.</td>
           </tr>
         </tbody>
       </table>

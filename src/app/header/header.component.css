@@ -34,7 +34,7 @@
   overflow: visible;
 }
 
-/* Outside overview (patient visit, messages, etc.): fixed full-width bar */
+/* Outside overview (client visit, messages, etc.): fixed full-width bar */
 :host-context(body:not(.app-overview-shell)) .app-toolbar {
   position: fixed;
   top: 0;
@@ -107,11 +107,13 @@
 }
 
 .header-dark .header-notifications-toggle,
-.header-dark .header-messages-toggle {
+.header-dark .header-messages-toggle,
+.header-dark .header-fullscreen-toggle {
   color: #c4cbde !important;
 }
 .header-dark .header-notifications-toggle:hover,
-.header-dark .header-messages-toggle:hover {
+.header-dark .header-messages-toggle:hover,
+.header-dark .header-fullscreen-toggle:hover {
   background: rgba(255, 255, 255, .08) !important;
   color: #fff !important;
 }
@@ -391,10 +393,215 @@
 
 .toolbar-pill-caret.rotated { transform: rotate(180deg); }
 
-/* Pharmacy icon rotated */
+/* ─── Inventory mega menu (landing-page style) ─── */
+.toolbar-inventory-wrap {
+  position: relative;
+  z-index: 3;
+}
+
+.toolbar-inventory-mega {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(920px, calc(100vw - 48px));
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 20px 56px rgba(15, 23, 42, 0.16);
+  z-index: 1300;
+  overflow: hidden;
+  animation: panelIn .14s ease;
+}
+
+.toolbar-inventory-mega-inner {
+  padding: 16px 18px 18px;
+}
+
+.toolbar-inventory-mega-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.toolbar-inventory-mega-head h3 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.toolbar-inventory-mega-head p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.toolbar-inventory-mega-head > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.toolbar-inventory-mega-head > a:hover {
+  color: #1e40af;
+}
+
+.toolbar-inventory-mega-groups {
+  column-count: 3;
+  column-gap: 20px;
+  max-height: min(68vh, 560px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.toolbar-inventory-mega-group {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+  margin: 0 0 14px;
+}
+
+.toolbar-inventory-mega-group h4 {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.toolbar-inventory-mega-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+.toolbar-inventory-mega-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.toolbar-inventory-mega-item:hover {
+  background: #f8fafc;
+}
+
+.toolbar-inventory-mega-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toolbar-inventory-mega-thumb .bi {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.toolbar-inventory-mega-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toolbar-inventory-mega-copy strong {
+  font-size: 0.84rem;
+  font-weight: 650;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.toolbar-inventory-mega-copy small {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.25;
+}
+
+.header-dark .toolbar-inventory-mega {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.45);
+}
+
+.header-dark .toolbar-inventory-mega-head {
+  border-bottom-color: #334155;
+}
+
+.header-dark .toolbar-inventory-mega-head h3 {
+  color: #e2e8f0;
+}
+
+.header-dark .toolbar-inventory-mega-head p,
+.header-dark .toolbar-inventory-mega-copy small,
+.header-dark .toolbar-inventory-mega-group h4 {
+  color: #94a3b8;
+}
+
+.header-dark .toolbar-inventory-mega-item:hover {
+  background: #0f172a;
+}
+
+.header-dark .toolbar-inventory-mega-copy strong {
+  color: #f1f5f9;
+}
+
+.header-dark .toolbar-inventory-mega-thumb {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+.header-dark .toolbar-inventory-mega-head > a {
+  color: #93c5fd;
+}
+
+@media (max-width: 900px) {
+  .toolbar-inventory-mega {
+    width: min(640px, calc(100vw - 24px));
+  }
+  .toolbar-inventory-mega-groups {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar-inventory-mega {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 16px);
+  }
+  .toolbar-inventory-mega-groups {
+    column-count: 1;
+  }
+  .toolbar-inventory-mega-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* POS icon */
 .toolbar-otc-icon {
-  transform: rotate(-90deg);
-  transform-origin: center;
   display: inline-block;
 }
 
@@ -627,9 +834,10 @@
 }
 
 
-/* ─── Notification / Messages icon buttons ─── */
+/* ─── Notification / Messages / Fullscreen icon buttons ─── */
 .header-notifications-toggle,
-.header-messages-toggle {
+.header-messages-toggle,
+.header-fullscreen-toggle {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -645,7 +853,8 @@
 }
 
 .header-notifications-toggle:hover,
-.header-messages-toggle:hover {
+.header-messages-toggle:hover,
+.header-fullscreen-toggle:hover {
   background: rgba(0, 0, 0, .055) !important;
   color: #1d4ed8 !important;
 }
@@ -1291,7 +1500,7 @@
 
 .queue-row-emergency { background: #fef2f2; }
 
-.queue-patient-link {
+.queue-client-link {
   color: inherit;
   font-weight: inherit;
   text-align: left;
@@ -1299,7 +1508,7 @@
   vertical-align: baseline;
 }
 
-.queue-patient-link:hover:not(:disabled) {
+.queue-client-link:hover:not(:disabled) {
   color: #1d4ed8;
   text-decoration: underline;
 }
@@ -1314,7 +1523,7 @@
 .queue-open-visit-btn:hover:not(:disabled) { color: #047857; }
 .queue-edit-btn                     { color: #467de4; }
 .queue-edit-btn:hover               { color: #1d4ed8; }
-.queue-edit-patient                 { margin: 0 0 12px; }
+.queue-edit-client                 { margin: 0 0 12px; }
 
 .queue-status-badge {
   display: inline-block;

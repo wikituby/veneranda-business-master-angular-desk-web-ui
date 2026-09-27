@@ -508,12 +508,12 @@
             </span>
           </div>
           <p class="assignment-hint">
-            Select which hospital departments and rooms this user can see in the patient queue.
-            Leave empty to fall back to role-based access from Hospital Directory Setup.
+            Select which hospital departments and rooms this user can see in the client queue.
+            Leave empty to fall back to role-based access from Business Directory Setup.
           </p>
 
-          <div class="assignment-list" *ngIf="hospitalModules.length; else noDepartmentsTpl">
-            <div class="assignment-dept" *ngFor="let module of hospitalModules">
+          <div class="assignment-list" *ngIf="businessModules.length; else noDepartmentsTpl">
+            <div class="assignment-dept" *ngFor="let module of businessModules">
               <label class="assignment-dept-label">
                 <input
                   type="checkbox"
@@ -534,7 +534,7 @@
             </div>
           </div>
           <ng-template #noDepartmentsTpl>
-            <p class="assignment-empty">No departments configured yet. Add them under Hospital Directory Setup.</p>
+            <p class="assignment-empty">No departments configured yet. Add them under Business Directory Setup.</p>
           </ng-template>
         </div>
 

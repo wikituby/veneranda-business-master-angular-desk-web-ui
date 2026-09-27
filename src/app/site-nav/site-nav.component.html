@@ -2,13 +2,16 @@
   <nav class="site-navbar">
     <div class="site-nav-container">
       <a class="site-logo" routerLink="/landingpage" fragment="home" (click)="closeMenus()">
-        <img class="site-logo-img" [src]="venerandaLogo" alt="Veneranda Hospital logo" />
-        <span>Veneranda Hospital</span>
+        <img class="site-logo-img" [src]="venerandaLogo" alt="Veneranda" />
+        <span class="site-logo-word">
+          <strong>Veneranda</strong>
+          <small>Business Master</small>
+        </span>
       </a>
 
       <ul class="site-nav-menu">
         <li><a routerLink="/landingpage" fragment="home" (click)="closeMenus()">Home</a></li>
-        <li><a routerLink="/about" (click)="closeMenus()">About Us</a></li>
+        <li><a routerLink="/landingpage" fragment="platforms" (click)="closeMenus()">Platforms</a></li>
 
         <li
           class="site-nav-dropdown"
@@ -19,17 +22,17 @@
             class="site-nav-trigger"
             (click)="toggleMenu('services', $event)"
             [attr.aria-expanded]="openMenu === 'services'">
-            Services
+            Features
             <i class="bi bi-chevron-down"></i>
           </button>
           <div class="site-mega-panel" *ngIf="openMenu === 'services'">
             <div class="site-mega-inner">
               <div class="site-mega-head">
                 <div>
-                  <h3>Services we offer today</h3>
-                  <p>Explore care available now at Veneranda Hospital.</p>
+                  <h3>Business modules</h3>
+                  <p>Core features available in Veneranda Business Master.</p>
                 </div>
-                <a routerLink="/landingpage" fragment="services" (click)="closeMenus()">
+                <a routerLink="/landingpage" fragment="features" (click)="closeMenus()">
                   View all
                   <i class="bi bi-arrow-right"></i>
                 </a>
@@ -63,7 +66,7 @@
             class="site-nav-trigger"
             (click)="toggleMenu('upcoming', $event)"
             [attr.aria-expanded]="openMenu === 'upcoming'">
-            Coming Soon
+            Roadmap
             <i class="bi bi-chevron-down"></i>
           </button>
           <div class="site-mega-panel" *ngIf="openMenu === 'upcoming'">
@@ -71,7 +74,7 @@
               <div class="site-mega-head">
                 <div>
                   <h3>Coming soon</h3>
-                  <p>Projects and services we are growing next.</p>
+                  <p>Modules planned next for growing businesses.</p>
                 </div>
                 <a routerLink="/landingpage" fragment="upcoming" (click)="closeMenus()">
                   View all
@@ -98,18 +101,20 @@
           </div>
         </li>
 
-        <li><a routerLink="/landingpage" fragment="stories" (click)="closeMenus()">Success Stories</a></li>
-        <li><a routerLink="/contact" (click)="closeMenus()">Contacts</a></li>
+        <li><a routerLink="/landingpage" fragment="outcomes" (click)="closeMenus()">Why switch</a></li>
+        <li><a routerLink="/contact" (click)="closeMenus()">Contact</a></li>
       </ul>
 
-      <a class="site-donate-btn" routerLink="/landingpage" fragment="support" (click)="closeMenus()">
-        <i class="bi bi-heart-fill"></i>
-        Donate
-      </a>
-      <button class="site-appointment-btn" type="button" (click)="navigateToOverview()">
-        <i class="bi bi-calendar-event"></i>
-        Login
-      </button>
+      <div class="site-nav-actions">
+        <button class="site-appointment-btn" type="button" (click)="navigateToOverview()">
+          <i class="bi bi-box-arrow-in-right"></i>
+          Sign in
+        </button>
+        <button class="site-register-btn" type="button" (click)="navigateToRegister()">
+          <i class="bi bi-building-add"></i>
+          Register a business
+        </button>
+      </div>
     </div>
   </nav>
 </header>

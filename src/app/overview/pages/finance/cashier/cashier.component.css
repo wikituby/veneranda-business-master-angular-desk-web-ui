@@ -587,13 +587,13 @@
   border-color: #60a5fa;
 }
 
-.visit-patient {
+.visit-client {
   font-weight: 600;
   color: #0f172a;
   margin-bottom: 4px;
 }
 
-.dark .visit-patient { color: #f1f5f9; }
+.dark .visit-client { color: #f1f5f9; }
 
 .visit-meta {
   font-size: 13px;

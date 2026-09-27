@@ -1238,6 +1238,18 @@ textarea.form-control {
   grid-column: 1 / -1;
 }
 
+.product-images-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stock-item-form-hint {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #6c757d;
+}
+
 .stock-item-form-field-group-wrapper {
   display: flex;
   gap: 20px;

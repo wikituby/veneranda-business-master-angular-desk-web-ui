@@ -6,7 +6,7 @@
         <i class="bi bi-prescription2"></i>
         Prescriptions Management
       </h1>
-      <p class="page-subtitle">Create, manage, and track patient prescriptions</p>
+      <p class="page-subtitle">Create, manage, and track client prescriptions</p>
     </div>
     <div class="header-right">
       <button class="btn-primary" (click)="createNewPrescription()">
@@ -64,7 +64,7 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="bi bi-search"></i>
-      <input type="text" placeholder="Search by patient name, prescription ID, or medication..." [(ngModel)]="searchQuery">
+      <input type="text" placeholder="Search by client name, prescription ID, or medication..." [(ngModel)]="searchQuery">
     </div>
     <div class="filter-group">
       <select class="filter-select" [(ngModel)]="statusFilter">
@@ -100,7 +100,7 @@
         <thead>
           <tr>
             <th>Prescription ID</th>
-            <th>Patient</th>
+            <th>Client</th>
             <th>Doctor</th>
             <th>Medications</th>
             <th>Date</th>
@@ -114,11 +114,11 @@
               <div class="prescription-id-cell">RX-{{prescription.id}}</div>
             </td>
             <td>
-              <div class="patient-cell">
-                <div class="patient-avatar-small">{{prescription.patient.initials}}</div>
+              <div class="client-cell">
+                <div class="client-avatar-small">{{prescription.client.initials}}</div>
                 <div>
-                  <div class="patient-name-cell">{{prescription.patient.name}}</div>
-                  <div class="patient-meta-cell">File: {{prescription.patient.fileNo}}</div>
+                  <div class="client-name-cell">{{prescription.client.name}}</div>
+                  <div class="client-meta-cell">File: {{prescription.client.fileNo}}</div>
                 </div>
               </div>
             </td>

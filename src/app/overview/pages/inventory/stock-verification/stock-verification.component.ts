@@ -108,7 +108,7 @@ export class StockVerificationComponent implements OnInit {
   }
 
   get unitLabelPlural(): string {
-    return this.useStockBatch ? 'batches' : 'items';
+    return this.useStockBatch ? 'batches' : 'products';
   }
 
   get filteredRows(): any[] {

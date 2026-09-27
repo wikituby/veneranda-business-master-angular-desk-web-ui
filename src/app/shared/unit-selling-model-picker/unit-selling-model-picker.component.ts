@@ -42,18 +42,30 @@ export class UnitSellingModelPickerComponent implements OnChanges, OnInit, OnDes
   @Input() compact = false;
   /**
    * When set, prefer a model whose name contains this text
-   * (e.g. "compassion" for Compassion-group patients).
+   * (e.g. "compassion" for Compassion-group clients).
    */
   @Input() preferredNameKeyword: string | null = null;
-  /** Match patient-visit toolbar action buttons (e.g. Service Request). */
+  /** Match client-visit toolbar action buttons (e.g. Service Request). */
   @Input() toolbarButton = false;
   /** Allow local draft models before a service record exists. */
   @Input() allowDraft = false;
+  /**
+   * Show a switch in front of the label:
+   * ON  = fixed / predictable price via unit sell model dropdown
+   * OFF = open price at point of sale (plain number field, no dropdown)
+   */
+  @Input() showPriceModeSwitch = false;
+  /** When true, use unit sell model; when false, free selling price. */
+  @Input() useUnitSellingModel = true;
+  /** Plain selling price when useUnitSellingModel is false. */
+  @Input() freeSellingPrice: number | null = null;
 
   @Output() selectedModelIdChange = new EventEmitter<number | null>();
   @Output() selectedModelChange = new EventEmitter<UnitSellingModel | null>();
   @Output() unitSellingPriceChange = new EventEmitter<number>();
   @Output() modelsChanged = new EventEmitter<void>();
+  @Output() useUnitSellingModelChange = new EventEmitter<boolean>();
+  @Output() freeSellingPriceChange = new EventEmitter<number | null>();
 
   models: UnitSellingModel[] = [];
   filteredModels: UnitSellingModel[] = [];
@@ -218,6 +230,9 @@ export class UnitSellingModelPickerComponent implements OnChanges, OnInit, OnDes
   toggleDropdown(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+    if (this.showPriceModeSwitch && !this.useUnitSellingModel) {
+      return;
+    }
     if (this.disabled || !this.isPickerEnabled) {
       return;
     }
@@ -234,6 +249,49 @@ export class UnitSellingModelPickerComponent implements OnChanges, OnInit, OnDes
       this.loadModels();
     }
     this.scheduleDropdownAttach();
+  }
+
+  /** Toggle fixed unit-sell-model pricing vs open price at sale. */
+  togglePriceMode(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.disabled) {
+      return;
+    }
+    this.setUseUnitSellingModel(!this.useUnitSellingModel);
+  }
+
+  setUseUnitSellingModel(enabled: boolean): void {
+    if (this.useUnitSellingModel === enabled) {
+      return;
+    }
+    this.useUnitSellingModel = enabled;
+    this.useUnitSellingModelChange.emit(enabled);
+    if (!enabled) {
+      this.closeDropdown();
+      // Seed free price from the currently selected model when possible.
+      const model = this.models.find((m) => m.id === this.selectedModelId);
+      const fromModel = model != null ? Number(model.unitSellingPrice) || 0 : 0;
+      const seed =
+        this.freeSellingPrice != null && Number(this.freeSellingPrice) > 0
+          ? Number(this.freeSellingPrice)
+          : fromModel;
+      this.freeSellingPrice = seed > 0 ? seed : null;
+      this.freeSellingPriceChange.emit(this.freeSellingPrice);
+      this.selectedModelId = null;
+      this.selectedModelIdChange.emit(null);
+      this.selectedModelChange.emit(null);
+      this.unitSellingPriceChange.emit(Number(this.freeSellingPrice) || 0);
+    } else if (this.isPickerEnabled) {
+      this.loadModels(true);
+    }
+  }
+
+  onFreePriceChange(value: number | string | null): void {
+    const n = value == null || value === '' ? null : Number(value);
+    this.freeSellingPrice = n != null && Number.isFinite(n) ? n : null;
+    this.freeSellingPriceChange.emit(this.freeSellingPrice);
+    this.unitSellingPriceChange.emit(Number(this.freeSellingPrice) || 0);
   }
 
   closeDropdown(): void {
@@ -650,13 +708,19 @@ export class UnitSellingModelPickerComponent implements OnChanges, OnInit, OnDes
   }
 
   private loadModels(keepSelection = false): void {
+    if (this.showPriceModeSwitch && !this.useUnitSellingModel) {
+      // Open-price mode: do not force model selection or wipe the free price.
+      return;
+    }
     if (!this.isPickerEnabled) {
       this.models = [];
       this.filteredModels = [];
       this.selectedModelId = null;
       this.selectedModelIdChange.emit(null);
       this.selectedModelChange.emit(null);
-      this.unitSellingPriceChange.emit(0);
+      if (!(this.showPriceModeSwitch && !this.useUnitSellingModel)) {
+        this.unitSellingPriceChange.emit(0);
+      }
       return;
     }
 

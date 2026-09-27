@@ -15,11 +15,11 @@ import { catchError, map } from 'rxjs/operators';
 import {
   CbcResultField,
   CBC_RESULT_FIELDS,
-  getCbcFieldsForPatient,
+  getCbcFieldsForClient,
 } from './cbc-reference-ranges.util';
 
 export type { CbcResultField } from './cbc-reference-ranges.util';
-export { CBC_RESULT_FIELDS, getCbcFieldsForPatient } from './cbc-reference-ranges.util';
+export { CBC_RESULT_FIELDS, getCbcFieldsForClient } from './cbc-reference-ranges.util';
 
 /** Minimal API surface used by fetchProcedureReportForPdf$ */
 export interface LabResultsDocxApi {
@@ -44,14 +44,14 @@ export interface LabProcedureReportRow {
 }
 
 export interface BuildAllLabResultsDocxOptions {
-  patientName: string;
+  clientName: string;
   visitId: string | number;
   visitDate?: string | Date | null;
   /** Procedure items with reports already fetched */
   labProcedureRows: LabProcedureReportRow[];
-  patientAge?: string | number | null;
-  patientDateOfBirth?: string | Date | null;
-  patientGender?: string | null;
+  clientAge?: string | number | null;
+  clientDateOfBirth?: string | Date | null;
+  clientGender?: string | null;
 }
 
 /** Word `w:sz` half-points; default body ~11pt (22). Lab export uses slightly smaller type. */
@@ -334,13 +334,13 @@ export function buildCbcInterpretationForView(resultValue: any, refRange: string
 /** CBC interpretation row for export built from an API report object. */
 export function buildCbcInterpretationMapFromReport(
   report: any,
-  patientAge?: unknown,
-  patientDateOfBirth?: unknown,
-  patientGender?: unknown
+  clientAge?: unknown,
+  clientDateOfBirth?: unknown,
+  clientGender?: unknown
 ): Record<string, string> {
   const out: Record<string, string> = {};
   const rep = report && typeof report === 'object' ? report : {};
-  const fields = getCbcFieldsForPatient(patientAge, patientDateOfBirth, patientGender);
+  const fields = getCbcFieldsForClient(clientAge, clientDateOfBirth, clientGender);
   for (const field of fields) {
     const raw =
       rep[field.key] ??
@@ -363,17 +363,17 @@ export function buildCbcInterpretationMapFromReport(
 export function getCbcTransposeDataForLabExport(
   report: any,
   procedureLabel: string,
-  patientAge?: unknown,
-  patientDateOfBirth?: unknown,
-  patientGender?: unknown
+  clientAge?: unknown,
+  clientDateOfBirth?: unknown,
+  clientGender?: unknown
 ): { title: string; paramHeaders: string[]; rowLabels: string[]; matrix: string[][] } {
   const rep = report && typeof report === 'object' ? report : {};
-  const fields = getCbcFieldsForPatient(patientAge, patientDateOfBirth, patientGender);
+  const fields = getCbcFieldsForClient(clientAge, clientDateOfBirth, clientGender);
   const interp = buildCbcInterpretationMapFromReport(
     rep,
-    patientAge,
-    patientDateOfBirth,
-    patientGender
+    clientAge,
+    clientDateOfBirth,
+    clientGender
   );
   const headers = fields.map((f) => f.label);
   const dash = '–';
@@ -632,16 +632,16 @@ export async function buildAndDownloadAllLabResultsDocx(
   options: BuildAllLabResultsDocxOptions
 ): Promise<void> {
   const {
-    patientName,
+    clientName,
     visitId,
     visitDate,
     labProcedureRows,
-    patientAge,
-    patientDateOfBirth,
-    patientGender,
+    clientAge,
+    clientDateOfBirth,
+    clientGender,
   } = options;
   const children: unknown[] = [];
-  const nm = (patientName || '').toString().trim();
+  const nm = (clientName || '').toString().trim();
   children.push(
     new Paragraph({
       children: [
@@ -668,9 +668,9 @@ export async function buildAndDownloadAllLabResultsDocx(
       const d = getCbcTransposeDataForLabExport(
         rep,
         procName,
-        patientAge,
-        patientDateOfBirth,
-        patientGender
+        clientAge,
+        clientDateOfBirth,
+        clientGender
       );
       pushDocxTransposedLabTable(children, d.title, d.paramHeaders, d.rowLabels, d.matrix);
       if (titleLine) {

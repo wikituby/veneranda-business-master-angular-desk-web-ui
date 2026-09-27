@@ -4,10 +4,10 @@
     <div class="service-detail-hero-inner">
       <button type="button" class="back-link" (click)="goBack()">
         <i class="bi bi-arrow-left"></i>
-        Back to services
+        Back to features
       </button>
       <span class="service-badge" [class.is-upcoming]="s.category === 'upcoming'">
-        {{ s.category === 'upcoming' ? 'Coming soon' : 'Available today' }}
+        {{ s.category === 'upcoming' ? 'Coming soon' : 'Available now' }}
       </span>
       <h1>{{ s.title }}</h1>
       <p class="service-lead">{{ s.description }}</p>
@@ -16,26 +16,26 @@
 
   <div class="service-detail-body">
     <div class="service-detail-main">
-      <h2>About this service</h2>
+      <h2>About this module</h2>
       <p *ngFor="let paragraph of s.details">{{ paragraph }}</p>
 
-      <h2>What to expect</h2>
+      <h2>What you get</h2>
       <ul class="highlight-list">
         <li *ngFor="let item of s.highlights">{{ item }}</li>
       </ul>
 
       <div class="contact-cta">
-        <h3>Need this service?</h3>
-        <p>Call us to book an appointment or ask about availability.</p>
+        <h3>Want this in your business?</h3>
+        <p>Sign in to the console, or contact the team for setup and support.</p>
         <div class="cta-actions">
-          <a class="cta-btn" href="tel:+256784411848">+256 784 411 848</a>
-          <a class="cta-btn cta-btn--ghost" href="mailto:venerandahospital@gmail.com">Email us</a>
+          <a class="cta-btn" routerLink="/login">Sign in</a>
+          <a class="cta-btn cta-btn--ghost" href="mailto:venerandabusinessmaster@gmail.com">Email us</a>
         </div>
       </div>
     </div>
 
     <aside class="service-detail-aside" *ngIf="related.length">
-      <h3>Related services</h3>
+      <h3>Related modules</h3>
       <a
         class="related-card"
         *ngFor="let item of related"

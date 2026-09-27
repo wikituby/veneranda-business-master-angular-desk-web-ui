@@ -1,551 +1,566 @@
-<div class="otc-dispensary-page custom-scrollbar" [class.dark]="isDarkMode">
+<div class="otc-dispensary-page custom-scrollbar" [class.dark]="isDarkMode" [class.otc-dispensary-page--pos]="activeMainTab === 'counter'">
   <div class="otc-workspace-card">
-  <div class="otc-tabs-header">
-    <nav class="otc-segment-tabs" role="tablist" aria-label="Pharmacy sections">
-      <button
-        type="button"
-        class="otc-segment-tab"
-        [class.active]="activeMainTab === 'counter'"
-        id="otc-counter-sale-tab"
-        role="tab"
-        (click)="setMainTab('counter')"
-        [attr.aria-selected]="activeMainTab === 'counter'">
-        <i class="bi bi-shop"></i>
-        <span>Counter Sale</span>
-      </button>
-      <button
-        type="button"
-        class="otc-segment-tab"
-        [class.active]="activeMainTab === 'sold'"
-        id="otc-items-sold-tab"
-        role="tab"
-        (click)="setMainTab('sold')"
-        [attr.aria-selected]="activeMainTab === 'sold'">
-        <i class="bi bi-receipt"></i>
-        <span>Items Sold</span>
-      </button>
-      <button
-        type="button"
-        class="otc-segment-tab"
-        [class.active]="activeMainTab === 'prescriptions'"
-        id="otc-doctor-prescriptions-tab"
-        role="tab"
-        (click)="setMainTab('prescriptions')"
-        [attr.aria-selected]="activeMainTab === 'prescriptions'">
-        <i class="bi bi-file-medical"></i>
-        <span>Prescriptions</span>
-      </button>
-    </nav>
-    <div class="otc-tabs-header-actions" *ngIf="activeMainTab === 'counter'">
-      <div class="otc-prescribing-switch-wrap" role="group" aria-label="Prescription fields">
-        <div class="form-check form-switch mb-0 otc-prescribing-switch">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            role="switch"
-            id="otcPrescriptionFieldsSwitch"
-            aria-label="Prescription fields"
-            title="Prescription fields"
-            [checked]="otcIncludePrescribing"
-            (change)="onOtcPrescriptionFieldsToggle($any($event.target).checked)" />
-        </div>
-      </div>
-      <button type="button" class="otc-btn otc-btn-ghost-danger" (click)="clearCart()" [disabled]="!otcOnlyCart.length || processing">
-        <i class="bi bi-trash"></i> Clear sale list
-      </button>
-    </div>
-  </div>
-
   <div class="tab-content otc-tab-content">
-    <div
-      class="tab-pane fade otc-counter-sale-layout"
+        <div
+      class="tab-pane fade otc-counter-sale-layout otc-pos-layout"
       [class.show]="activeMainTab === 'counter'"
       [class.active]="activeMainTab === 'counter'"
+      [class.otc-pos-layout--cart-hidden]="!posCartPanelVisible"
       id="otc-counter-sale-pane"
       role="tabpanel"
       aria-labelledby="otc-counter-sale-tab"
       tabindex="0">
-  <div class="otc-sale-form-card">
-    <form #otcTreatmentForm="ngForm" (ngSubmit)="addToSaleList(otcTreatmentForm.value)">
-      <div class="otc-stock-metrics">
-        <div class="otc-metric-chip">
-          <span class="otc-metric-label">In stock (all stores)</span>
-          <span class="otc-metric-value">{{ availableQuantity }} {{ unitOfMeasure }}</span>
-        </div>
-        <div class="otc-metric-chip" *ngIf="canViewPharmacyCostColumns()">
-          <span class="otc-metric-label">Unit buy</span>
-          <span class="otc-metric-value">{{ unitBuy }}</span>
-        </div>
-        <div class="otc-metric-chip otc-metric-chip--accent">
-          <span class="otc-metric-label">Unit sell</span>
-          <span class="otc-metric-value">{{ returnUnitCost() }}</span>
-        </div>
-        <div class="otc-metric-chip otc-metric-chip--sell">
-          <span class="otc-metric-label">Line total</span>
-          <span class="otc-metric-value">{{ lineTotalAmount }}</span>
-        </div>
-        <div class="otc-unit-sell-model-field">
-          <app-unit-selling-model-picker
-            [stockItemId]="pharmacyUseStockBatch ? currentItemId : null"
-            [shopItemId]="!pharmacyUseStockBatch ? currentItemId : null"
-            [unitCostPrice]="unitBuy"
-            [(selectedModelId)]="selectedUnitSellingModelId"
-            (unitSellingPriceChange)="onOtcUnitSellingModelPriceChange($event)"
-            [compact]="true"
-            [disabled]="!currentItemId"
-            label="Unit selling model">
-          </app-unit-selling-model-picker>
-        </div>
-      </div>
 
-      <div class="form-row otc-item-select-row" [class.otc-item-select-row--simple]="!otcIncludePrescribing">
-        <div class="form-group otc-item-field mb-0">
-          <div class="dropdown otc-item-dropdown" [class.show]="otcDrugDropdownOpen">
-            <button
-              class="btn btn-block btn-sm dropdown-toggle otc-item-dropdown-toggle"
-              type="button"
-              (click)="toggleOtcDrugDropdown($event)"
-              [attr.aria-expanded]="otcDrugDropdownOpen"
-              [attr.title]="currentItemFullLabel || currentItem || 'Choose Treatment'"
-              style="border: 1px solid rgb(204, 204, 204);">
-              <span class="otc-item-dropdown-label">{{ currentItem || 'Choose Treatment' }}</span>
-            </button>
-            <ul
-              class="dropdown-menu custom-scrollbar pl-2 pr-2"
-              [class.show]="otcDrugDropdownOpen"
-              style="max-height: 400px; overflow-y: auto; width: 100%;">
-              <li class="mt-2 justify-content-left align-items-left">
-                <input
-                  #searchInput
-                  type="text"
-                  class="form-control dropdown-search ml-0"
-                  placeholder="Search items…"
-                  [(ngModel)]="searchText"
-                  name="searchText"
-                  (ngModelChange)="onOtcDrugSearchChange()"
-                  style="height: 30px; font-size: 14px; width: 100%;" />
-              </li>
-              <li *ngIf="isLoadingDrugList" class="text-muted text-center p-2">
-                {{ pharmacyUseStockBatch ? 'Loading stock batches…' : 'Loading items…' }}
-              </li>
+      <section class="otc-pos-catalog" aria-label="Product catalog">
+        <header class="otc-pos-catalog-header">
+          <div class="otc-pos-search-row">
+            <div class="otc-pos-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                type="search"
+                [(ngModel)]="searchText"
+                name="posCatalogSearch"
+                (ngModelChange)="onPosCatalogSearchChange()"
+                placeholder="Search product and services we offer"
+                autocomplete="off" />
+            </div>
 
-              <ng-container *ngIf="pharmacyUseStockBatch">
-              <ng-container *ngIf="!isLoadingDrugList && groupedStockItems.length; else noPharmacyStock">
-                <li
-                  class="otc-stock-item-card"
-                  [class.otc-stock-item-card--oos]="group.completelyOutOfStock"
-                  *ngFor="let group of groupedStockItems; trackBy: trackGroupedStockItem">
-                  <div class="otc-stock-item-group-header">
-                    <span class="otc-stock-item-group-title">{{ group.stockItemName | uppercase }}</span>
-                    <span *ngIf="group.completelyOutOfStock" class="otc-stock-batch-badge otc-stock-out-badge">
-                      Out of stock
-                    </span>
-                  </div>
-                  <p *ngIf="group.completelyOutOfStock" class="otc-stock-item-oos-note mb-0">
-                    No stock in any store or batch.
-                  </p>
-                  <div class="otc-stock-item-card-batches" *ngIf="group.batchLines.length">
-                    <div *ngFor="let line of group.batchLines" class="otc-stock-batch-line">
-                      <div class="otc-stock-batch-line-row">
-                        <span class="otc-stock-batch-line-label">
-                          <span
-                            *ngIf="line.expiryLabel"
-                            class="otc-stock-batch-expiry"
-                            [ngClass]="batchExpiryToneClass(line.expiryTone)">
-                            EX {{ line.expiryLabel }}
-                          </span>
-                          <span>{{ line.batchLabel }}</span>
-                        </span>
-                        <div
-                          class="otc-stock-batch-line-pricing"
-                          *ngIf="line.unitCost > 0 || line.sellingModels?.length">
-                          <span
-                            class="otc-stock-batch-price otc-stock-batch-price--cost"
-                            *ngIf="line.unitCost > 0 && canViewPharmacyCostColumns()">
-                            Cost {{ formatBatchMoney(line.unitCost) }}
-                          </span>
-                          <span
-                            class="otc-stock-batch-price otc-stock-batch-price--sell"
-                            *ngFor="let model of line.sellingModels">
-                            {{ model.name }} {{ formatBatchMoney(model.unitSellingPrice) }}
-                          </span>
-                        </div>
-                        <div class="otc-stock-batch-line-stores">
-                          <button
-                            type="button"
-                            *ngFor="let dist of line.storeDistribution"
-                            class="otc-stock-store-pick"
-                            [class.otc-stock-store-pick--selected]="batchLineHasStock(line) && currentStockBatchId === dist.item?._stockBatchId"
-                            [class.otc-stock-store-pick--empty]="!distHasSelectableStock(dist)"
-                            [disabled]="!batchLineHasStock(line) || !dist.item"
-                            (click)="selectOtcBatch(dist.item, $event)">
-                            <span class="otc-stock-store-pick-label">{{ dist.storeLabel }}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              </ng-container>
-              <ng-template #noPharmacyStock>
-                <li *ngIf="!isLoadingDrugList" class="text-muted text-center p-2">
-                  No pharmacy stock batches found{{ pharmacyStoreName ? ' for ' + pharmacyStoreName : '' }}.
-                </li>
-              </ng-template>
-              </ng-container>
-
-              <ng-container *ngIf="!pharmacyUseStockBatch">
-                <ng-container *ngIf="!isLoadingDrugList && filteredOtcItemList().length; else noPharmacyItems">
-                  <div class="dropdown-items pb-2" *ngFor="let item of filteredOtcItemList()">
-                    <li>
+            <div class="otc-pos-category-dd" [class.open]="posCategoryDropdownOpen">
+              <button
+                type="button"
+                class="otc-pos-category-trigger"
+                (click)="togglePosCategoryDropdown($event)"
+                [attr.aria-expanded]="posCategoryDropdownOpen"
+                aria-haspopup="listbox">
+                <span>{{ posSelectedCategory }} <span class="otc-pos-category-hint">(select category)</span></span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+              </button>
+              <div class="otc-pos-category-menu" *ngIf="posCategoryDropdownOpen" role="listbox" (click)="$event.stopPropagation()">
+                <div class="otc-pos-category-kind-tabs" role="tablist" aria-label="Catalog type">
+                  <button
+                    type="button"
+                    class="otc-pos-category-kind-tab"
+                    role="tab"
+                    [class.active]="posCatalogKind === 'products'"
+                    [attr.aria-selected]="posCatalogKind === 'products'"
+                    (click)="setPosCatalogKind('products', $event)">
+                    Products
+                  </button>
+                  <button
+                    type="button"
+                    class="otc-pos-category-kind-tab"
+                    role="tab"
+                    [class.active]="posCatalogKind === 'services'"
+                    [attr.aria-selected]="posCatalogKind === 'services'"
+                    (click)="setPosCatalogKind('services', $event)">
+                    Services
+                  </button>
+                </div>
+                <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosCategory()">
+                  <i class="bi bi-plus-lg"></i> Add New
+                </button>
+                <div class="otc-pos-category-add-form" *ngIf="posAddingCategory">
+                  <input
+                    type="text"
+                    [(ngModel)]="posNewCategoryName"
+                    name="posNewCategoryName"
+                    placeholder="Category name..."
+                    (keydown.enter)="confirmAddPosCategory()"
+                    autocomplete="off" />
+                  <button type="button" class="otc-pos-category-save-btn" (click)="confirmAddPosCategory()">Save</button>
+                </div>
+                <div class="otc-pos-category-search">
+                  <input
+                    type="search"
+                    class="otc-pos-category-search-input"
+                    [(ngModel)]="posCategorySearch"
+                    name="posCategorySearch"
+                    placeholder="Search categories..."
+                    autocomplete="off" />
+                </div>
+                <div class="otc-pos-category-options custom-scrollbar">
+                  <div
+                    class="otc-pos-category-option-row"
+                    *ngFor="let cat of filteredPosCategories()"
+                    [class.is-active]="posSelectedCategory === cat"
+                    [class.is-editing]="posEditingCategory === cat">
+                    <ng-container *ngIf="posEditingCategory !== cat; else posCategoryEditTpl">
                       <button
                         type="button"
-                        class="dropdown-item mt-2 otc-pharmacy-item-option"
-                        [attr.title]="otcItemOptionLabel(item)"
-                        (click)="selectOtcItem(item, $event)">
-                        <span class="otc-pharmacy-item-option__name">{{ otcItemOptionLabel(item) | uppercase }}</span>
-                        <span class="otc-pharmacy-item-option__stock">Stock: {{ otcItemOptionStock(item) }}</span>
+                        class="otc-pos-category-option"
+                        [class.active]="posSelectedCategory === cat"
+                        (click)="selectPosCategory(cat)"
+                        role="option"
+                        [attr.aria-selected]="posSelectedCategory === cat">
+                        {{ cat }}
                       </button>
-                    </li>
+                      <span class="otc-pos-category-option-actions" *ngIf="cat !== 'All'">
+                        <button
+                          type="button"
+                          class="otc-pos-category-option-action"
+                          title="Edit category"
+                          (click)="startEditPosCategory(cat, $event)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="otc-pos-category-option-action otc-pos-category-option-action--danger"
+                          title="Delete category"
+                          (click)="deletePosCategory(cat, $event)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </span>
+                    </ng-container>
+                    <ng-template #posCategoryEditTpl>
+                      <input
+                        type="text"
+                        class="otc-pos-category-edit-input"
+                        [(ngModel)]="posEditingCategoryName"
+                        name="posEditingCategoryName"
+                        (keydown.enter)="confirmEditPosCategory($event)"
+                        (keydown.escape)="cancelEditPosCategory($event)"
+                        autocomplete="off" />
+                      <span class="otc-pos-category-option-actions">
+                        <button
+                          type="button"
+                          class="otc-pos-category-option-action"
+                          title="Save"
+                          (click)="confirmEditPosCategory($event)">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="otc-pos-category-option-action"
+                          title="Cancel"
+                          (click)="cancelEditPosCategory($event)">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      </span>
+                    </ng-template>
                   </div>
-                </ng-container>
-                <ng-template #noPharmacyItems>
-                  <li *ngIf="!isLoadingDrugList" class="text-muted text-center p-2">No items found.</li>
-                </ng-template>
-              </ng-container>
-            </ul>
+                  <p class="otc-pos-category-empty" *ngIf="!filteredPosCategories().length">No categories found.</p>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="otc-pos-filter-btn" title="Products orders" (click)="setMainTab('sold')">
+              <i class="bi bi-receipt"></i>
+            </button>
+            <button type="button" class="otc-pos-filter-btn otc-pos-filter-btn--add" [attr.title]="posCatalogKind === 'services' ? 'Add new service' : 'Add new product'" (click)="openPosAddProductModal()">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+            <button
+              type="button"
+              class="otc-pos-filter-btn"
+              [class.otc-pos-filter-btn--active]="posCartPanelVisible"
+              [attr.title]="posCartPanelVisible ? 'Hide cart & payment' : 'Show cart & payment'"
+              [attr.aria-pressed]="posCartPanelVisible"
+              (click)="togglePosCartPanel()">
+              <i class="bi" [ngClass]="posCartPanelVisible ? 'bi-layout-sidebar-inset-reverse' : 'bi-layout-sidebar-inset'"></i>
+            </button>
+            <button type="button" class="otc-pos-filter-btn" title="Refresh products" (click)="loadPharmacyStock()" [disabled]="isLoadingDrugList">
+              <i class="bi bi-arrow-clockwise" *ngIf="!isLoadingDrugList"></i>
+              <span class="spinner-small" *ngIf="isLoadingDrugList"></span>
+            </button>
+          </div>
+        </header>
+
+        <div class="otc-pos-product-grid custom-scrollbar" *ngIf="!isLoadingDrugList; else posCatalogLoading">
+          <article
+            class="otc-pos-product-card"
+            *ngFor="let product of posCatalogProducts()"
+            [class.otc-pos-product-card--oos]="!isPosCatalogService(product) && product.outOfStock"
+            (click)="openPosProductDetail(product, $event)"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="openPosProductDetail(product, $event)">
+            <div
+              class="otc-pos-product-media"
+              title="View product details">
+              <img
+                *ngIf="product.imageUrl"
+                [src]="product.imageUrl"
+                [alt]="product.name"
+                (error)="onPosProductCardImageError(product, $event)" />
+              <div class="otc-pos-product-placeholder" *ngIf="!product.imageUrl">{{ posProductInitials(product.name) }}</div>
+              <span class="otc-pos-oos-badge" *ngIf="!isPosCatalogService(product) && product.outOfStock">Stock out</span>
+              <span class="otc-pos-low-stk-badge" *ngIf="!isPosCatalogService(product) && !product.outOfStock && product.lowStock">Low STK</span>
+              <button
+                type="button"
+                class="otc-pos-add-fab"
+                [class.otc-pos-add-fab--in-cart]="isPosProductInCart(product)"
+                (click)="onPosCartIconClick(product, $event)"
+                [attr.title]="
+                  isPosProductInCart(product)
+                    ? 'Already in cart'
+                    : product.outOfStock
+                      ? 'Out of stock — add anyway (checked at delivery)'
+                      : 'Add to cart'
+                "
+                [attr.aria-label]="
+                  isPosProductInCart(product)
+                    ? 'Already in cart'
+                    : product.outOfStock
+                      ? 'Out of stock — add anyway'
+                      : 'Add to cart'
+                ">
+                <i class="bi" [ngClass]="isPosProductInCart(product) ? 'bi-cart-check' : 'bi-cart-plus'"></i>
+              </button>
+            </div>
+            <div class="otc-pos-product-body">
+              <h3 class="otc-pos-product-name" [attr.title]="product.name">{{ product.name }}</h3>
+              <p
+                class="otc-pos-product-desc"
+                *ngIf="product.description"
+                [attr.title]="product.description">{{ product.description }}</p>
+              <p class="otc-pos-product-stock"
+                [class.otc-pos-product-stock--oos]="!isPosCatalogService(product) && product.outOfStock"
+                [class.otc-pos-product-stock--low]="!isPosCatalogService(product) && !product.outOfStock && product.lowStock">
+                {{
+                  isPosCatalogService(product)
+                    ? 'Service'
+                    : product.outOfStock
+                      ? 'Stock out'
+                      : (product.stockQty + ' in stock')
+                }}
+              </p>
+              <div class="otc-pos-product-price-row">
+                <span class="otc-pos-product-price">{{ formatPosMoney(product.price) }}</span>
+                <span class="otc-pos-product-unit">{{ product.unitLabel }}</span>
+                <button
+                  type="button"
+                  class="otc-pos-product-edit-btn"
+                  *ngIf="!isPosCatalogService(product)"
+                  (click)="openPosReceiveStockModal(product, $event)"
+                  title="Receive stock">
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-product-edit-btn"
+                  (click)="openPosProductEditModal(product, $event)"
+                  [attr.title]="isPosCatalogService(product) ? 'Edit service' : 'Edit product'">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <div class="otc-pos-empty-catalog" *ngIf="!posCatalogProducts().length">
+            <i class="bi bi-basket"></i>
+            <p>
+              {{
+                posCatalogKind === 'services'
+                  ? 'No services found. Try another search or category.'
+                  : 'No products found. Try another search or category.'
+              }}
+            </p>
           </div>
         </div>
+        <ng-template #posCatalogLoading>
+          <div class="otc-pos-empty-catalog">
+            <div class="simple-loader d-inline-block" style="height: 36px; width: 36px;"></div>
+            <p>Loading products...</p>
+          </div>
+        </ng-template>
+      </section>
 
-        <div class="form-group otc-standard-dose-field mb-0" *ngIf="otcIncludePrescribing">
-          <app-standard-dosage-picker
-            [stockItemId]="pharmacyUseStockBatch ? currentItemId : null"
-            [shopItemId]="!pharmacyUseStockBatch ? currentItemId : null"
-            [drugLabel]="currentItem || currentStockItemName"
-            [lastUnitValue]="lastUnitValue"
-            [unitOfMeasure]="unitOfMeasure"
-            [patientAgeYears]="otcStandardDosagePatientAge()"
-            [patientWeightKg]="otcStandardDosagePatientWeight()"
-            [currentDoseValue]="currentTreatmentRequested.amountPerFrequencyValue"
-            [defaultRoute]="currentTreatmentRequested.route"
-            [defaultDoseUnit]="currentTreatmentRequested.amountPerFrequencyUnit"
-            [disabled]="!currentItemId"
-            (optionApplied)="applyStandardDosageOption($event)">
-          </app-standard-dosage-picker>
-        </div>
-
-        <div class="form-group otc-add-field">
-          <button
-            class="otc-btn otc-btn-primary"
-            type="submit"
-            [disabled]="processing"
-            aria-label="Add to sale">
-            <i class="bi bi-plus-lg"></i> Add to sale
+      <aside #otcCartScroll class="otc-pos-order" aria-label="Current order" *ngIf="posCartPanelVisible">
+        <header class="otc-pos-order-header">
+          <div class="otc-pos-order-header-title">
+            <h3>Current Order</h3>
+            <button
+              type="button"
+              class="otc-pos-client-order"
+              *ngIf="hasPosSaleClient"
+              (click)="openPosOrderPickerForCurrentClient($event)"
+              [disabled]="processing || posOrderPickerCreating || isEditingSoldDocument"
+              [title]="isEditingSoldDocument ? 'This order stays the same while editing' : 'Create a new order'">
+              <i class="bi bi-journal-check" *ngIf="!posSaleOrderAttaching && !posOrderPickerCreating"></i>
+              <span class="otc-pos-client-order-spinner" *ngIf="posSaleOrderAttaching || posOrderPickerCreating"></span>
+              {{ posAttachedOrderLabel() }}
+              <i class="bi bi-chevron-down otc-pos-client-order-caret" *ngIf="!isEditingSoldDocument"></i>
+            </button>
+          </div>
+          <button type="button" class="otc-pos-order-clear" (click)="clearCart()" [disabled]="!otcOnlyCart.length || processing" title="Clear order">
+            <i class="bi bi-trash"></i>
           </button>
+        </header>
+        <div class="otc-pos-edit-doc-banner" *ngIf="isEditingSoldDocument && lockedDocumentType as editDoc">
+          <i class="bi bi-pencil-square"></i>
+          Editing {{ commercialDocTitleLabel(editDoc) }} — update keeps this type
         </div>
-        <div class="form-group otc-clear-field">
-          <button
-            type="button"
-            class="otc-btn otc-btn-secondary"
-            (click)="clearTreatmentForm()"
-            aria-label="Clear field">
-            Clear
-          </button>
-        </div>
-      </div>
 
-      <div class="form-row otc-prescribing-row" [class.otc-prescribing-row--simple]="!otcIncludePrescribing">
-        <ng-container *ngIf="otcIncludePrescribing">
-          <div class="form-group col-md-1">
-            <label class="form-label">Dosage</label>
+        <div class="otc-pos-client-attach" [class.otc-pos-client-attach--missing]="!hasPosSaleClient">
+          <div class="otc-pos-client-attach-row" *ngIf="hasPosSaleClient; else posClientPickerEmpty">
+            <div class="otc-pos-client-chip">
+              <i class="bi bi-person-check"></i>
+              <span class="otc-pos-client-chip-name">{{ posSaleClientName }}</span>
+            </div>
+            <button type="button" class="otc-pos-client-change" (click)="openPosClientPicker(); $event.stopPropagation()" [disabled]="processing || posSaleOrderAttaching || posOrderPickerCreating">
+              Change
+            </button>
+            <button type="button" class="otc-pos-client-clear" (click)="clearPosSaleClient(); $event.stopPropagation()" [disabled]="processing || posSaleOrderAttaching || posOrderPickerCreating" title="Remove client">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <ng-template #posClientPickerEmpty>
+            <button type="button" class="otc-pos-client-attach-btn" (click)="openPosClientPicker(); $event.stopPropagation()" [disabled]="processing">
+              <i class="bi bi-person-plus"></i>
+              Attach client (required)
+            </button>
+          </ng-template>
+
+          <div class="otc-pos-client-picker" *ngIf="posClientPickerOpen" (click)="$event.stopPropagation()">
+            <button type="button" class="otc-pos-client-add-btn" (click)="openPosAddClientModal(); $event.stopPropagation()" [disabled]="processing">
+              <i class="bi bi-plus-lg"></i> Add new client
+            </button>
             <input
-              type="number"
-              [(ngModel)]="currentTreatmentRequested.amountPerFrequencyValue"
-              name="amountPerFrequencyValue"
+              type="search"
               class="form-control form-control-sm"
-              (input)="calculateNoOfUnits(); calculateTotalQty()" />
+              [(ngModel)]="posClientSearch"
+              name="posClientSearch"
+              (ngModelChange)="onPosClientSearchChange()"
+              (click)="$event.stopPropagation()"
+              placeholder="Search client name or ID..."
+              autocomplete="off"
+              [disabled]="processing" />
+            <div class="otc-pos-client-picker-list custom-scrollbar">
+              <p class="otc-pos-client-picker-hint" *ngIf="posClientLoading">Loading clients...</p>
+              <p class="otc-pos-client-picker-hint" *ngIf="!posClientLoading && !posClientOptions.length">No clients found.</p>
+              <button
+                type="button"
+                class="otc-pos-client-option"
+                *ngFor="let client of posClientOptions"
+                (click)="selectPosSaleClient(client); $event.stopPropagation()">
+                <span>{{ client.name }}</span>
+                <small>#{{ client.id }}</small>
+              </button>
+            </div>
+            <button type="button" class="otc-pos-client-picker-close" (click)="closePosClientPicker(); $event.stopPropagation()">Close</button>
           </div>
-          <div class="form-group col-md-1">
-            <label class="form-label">DosageUnit</label>
-            <select
-              [(ngModel)]="currentTreatmentRequested.amountPerFrequencyUnit"
-              name="amountPerFrequencyUnit"
-              class="form-control form-control-sm">
-              <option value="">Select unit</option>
-              <option *ngIf="customPrefilledDosageUnit" [value]="customPrefilledDosageUnit">
-                {{ customPrefilledDosageUnit }}
-              </option>
-              <option *ngFor="let unit of dosageUnitOptions" [value]="unit">{{ unit }}</option>
-            </select>
-          </div>
-          <div class="form-group col-md-1">
-            <label class="form-label">Frequency</label>
-            <input
-              type="number"
-              [(ngModel)]="currentTreatmentRequested.frequencyValue"
-              name="frequencyValue"
-              class="form-control form-control-sm"
-              (input)="calculateTotalQty()" />
-          </div>
-          <div class="form-group col-md-1">
-            <label class="form-label">Freq. Unit</label>
-            <select
-              [(ngModel)]="currentTreatmentRequested.frequencyUnit"
-              name="frequencyUnit"
-              class="form-control form-control-sm"
-              (change)="calculateDurationUnit(); calculateTotalQty()">
-              <option [ngValue]="null"></option>
-              <option [ngValue]="1">Day</option>
-              <option [ngValue]="7">Week</option>
-              <option [ngValue]="30">Month</option>
-            </select>
-          </div>
-          <div class="form-group col-md-1">
-            <label class="form-label">Duration</label>
-            <input
-              type="number"
-              [(ngModel)]="currentTreatmentRequested.durationValue"
-              name="durationValue"
-              class="form-control form-control-sm"
-              (input)="calculateTotalQty()" />
-          </div>
-          <div class="form-group col-md-1">
-            <label class="form-label">Dura. Unit</label>
-            <select
-              [(ngModel)]="currentTreatmentRequested.durationUnit"
-              name="durationUnit"
-              class="form-control form-control-sm">
-              <option [ngValue]="null"></option>
-              <option [ngValue]="1">Day(s)</option>
-              <option [ngValue]="7">Week(s)</option>
-              <option [ngValue]="30">Month(s)</option>
-            </select>
-          </div>
-        </ng-container>
-        <div class="form-group col-md-1">
-          <label class="form-label">Total Qty</label>
-          <input
-            type="number"
-            [(ngModel)]="currentTreatmentRequested.quantity"
-            name="quantity"
-            class="form-control form-control-sm"
-            required
-            (input)="calculateTotalFromQuantity()" />
         </div>
-        <div class="form-group col-md-1" *ngIf="otcIncludePrescribing">
-          <label class="form-label">Total Units</label>
-          <input
-            type="number"
-            [(ngModel)]="currentTreatmentRequested.totalUnits"
-            name="totalUnits"
-            class="form-control form-control-sm"
-            required
-            (input)="calculateTotalQty()" />
-        </div>
-        <div class="form-group col-md-1">
-          <label class="form-label">Total Sell</label>
-          <input
-            type="number"
-            [(ngModel)]="currentTreatmentRequested.totalAmount"
-            name="totalAmount"
-            class="form-control form-control-sm"
-            (input)="calculateQuantityFromTotalSell()" />
-        </div>
-        <div class="form-group col-md-2">
-          <label class="form-label">Instructions</label>
-          <input
-            type="text"
-            [(ngModel)]="currentTreatmentRequested.instructions"
-            name="instructions"
-            class="form-control form-control-sm"
-            placeholder="e.g. after meals" />
-        </div>
-        <div class="form-group col-md-1">
-          <label class="form-label">Route</label>
-          <input
-            type="text"
-            [(ngModel)]="currentTreatmentRequested.route"
-            name="route"
-            class="form-control form-control-sm"
-            placeholder="e.g. Oral" />
-        </div>
-      </div>
 
-      <div *ngIf="processing" class="text-center py-2">
-        <div class="simple-loader d-inline-block" style="height: 30px; width: 30px;"></div>
-      </div>
+        <div class="otc-pos-order-card">
+          <div class="otc-pos-order-list custom-scrollbar" *ngIf="otcOnlyCart.length; else posEmptyOrder">
+            <div
+              class="otc-pos-order-line"
+              *ngFor="let item of otcOnlyCart; let last = last"
+              [class.otc-pos-order-line--muted]="!item.given"
+              [class.otc-pos-order-line--divider]="!last">
+              <div class="otc-pos-order-thumb">
+                <img
+                  *ngIf="cartLineImageUrl(item) as thumb"
+                  [src]="thumb"
+                  [alt]="cartItemDisplayName(item)"
+                  class="otc-pos-order-thumb-img" />
+                <span *ngIf="!cartLineImageUrl(item)">{{ posProductInitials(cartItemDisplayName(item)) }}</span>
+              </div>
+              <div class="otc-pos-order-meta">
+                <div class="otc-pos-order-name">{{ toTitleCase(cartItemDisplayName(item)) }}</div>
+                <div class="otc-pos-order-line-price">
+                  <button
+                    type="button"
+                    class="otc-pos-line-icon otc-pos-line-sell-model-btn"
+                    [class.otc-pos-line-icon--active]="item.useUnitSellingModel !== false && item.unitSellingModelId != null"
+                    (click)="openPosCartSellModelModal(item, $event)"
+                    [disabled]="processing || item.lineSource !== 'OTC'"
+                    [title]="item.useUnitSellingModel === false ? 'Open selling price' : 'Selling price / unit sell model'"
+                    [attr.aria-label]="item.useUnitSellingModel === false ? 'Open selling price' : 'Selling price / unit sell model'">
+                    <i class="bi" [ngClass]="item.useUnitSellingModel === false ? 'bi-currency-exchange' : 'bi-boxes'"></i>
+                  </button>
+                  <span>{{ formatPosMoney(cartLineAmount(item)) }}</span>
+                  <span class="otc-pos-line-discount" *ngIf="cartLineDiscountAmount(item) > 0">
+                    Disc: {{ formatPosMoney(cartLineDiscountAmount(item)) }}
+                  </span>
+                </div>
+              </div>
+              <div class="otc-pos-order-actions">
+                <div class="otc-pos-qty">
+                  <button type="button" class="otc-pos-qty-btn" (click)="adjustCartLineQty(item, -1); $event.stopPropagation()" [disabled]="processing" aria-label="Decrease quantity">-</button>
+                  <span class="otc-pos-qty-value">{{ item.quantity }}</span>
+                  <button type="button" class="otc-pos-qty-btn" (click)="adjustCartLineQty(item, 1); $event.stopPropagation()" [disabled]="processing" aria-label="Increase quantity">+</button>
+                </div>
+                <button
+                  type="button"
+                  class="otc-pos-line-icon"
+                  [class.otc-pos-line-icon--active]="cartLineDiscountAmount(item) > 0"
+                  (click)="openLineDiscountModal(item, $event)"
+                  [disabled]="processing"
+                  title="Product discount">
+                  <i class="bi bi-percent"></i>
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-line-icon otc-pos-line-icon--danger"
+                  (click)="requestRemoveCartLine(item, $event)"
+                  [disabled]="processing"
+                  title="Remove from cart">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #posEmptyOrder>
+            <div class="otc-pos-order-empty">
+              <i class="bi bi-bag"></i>
+              <p>No items yet. Tap the cart icon on a product to add it.</p>
+            </div>
+          </ng-template>
+        </div>
 
-      <div *ngIf="showStatusBanner" class="otc-status-banner" [style.background-color]="responseColor">
-        <p>{{ responseMessage }}</p>
-      </div>
-    </form>
-  </div>
+        <div class="otc-pos-order-summary">
+          <table class="otc-pos-totals-table">
+            <thead>
+              <tr>
+                <th>Subtotal</th>
+                <th>
+                  <button
+                    type="button"
+                    class="otc-pos-totals-th-btn"
+                    (click)="openOverallDiscountModal()"
+                    title="Set overall discount"
+                    aria-label="Set overall discount">
+                    <i class="bi bi-tag" aria-hidden="true"></i>
+                    Discount
+                  </button>
+                </th>
+                <th>
+                  <button
+                    type="button"
+                    class="otc-pos-totals-th-btn"
+                    (click)="openPosTaxModal()"
+                    title="Set tax"
+                    aria-label="Set tax">
+                    <i class="bi bi-percent" aria-hidden="true"></i>
+                    Tax
+                  </button>
+                </th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ formatPosMoney(cartGrossSubtotal) }}</td>
+                <td>{{ formatPosZeroPlaceholder(cartOverallDiscount) }}</td>
+                <td>{{ formatPosZeroPlaceholder(cartTax) }}</td>
+                <td>{{ formatPosMoney(cartPayableTotal) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-  <div
-    class="otc-cart-scroll custom-scrollbar"
-    [class.otc-cart-scroll--prescribing]="otcIncludePrescribing"
-    [class.otc-cart-scroll--simple]="!otcIncludePrescribing"
-    #otcCartScroll>
-  <ng-container *ngIf="otcOnlyCart.length; else noSaleLines">
-    <div class="otc-cart-table-wrap">
-      <table
-        class="table table-bordered mb-0 otc-cart-table otc-modern-table"
-        [class.w-100]="!otcIncludePrescribing"
-        [class.otc-cart-table--prescribing]="otcIncludePrescribing"
-        [class.otc-cart-table--simple]="!otcIncludePrescribing">
-        <colgroup *ngIf="otcIncludePrescribing">
-          <col class="otc-cart-col otc-cart-col-sn" />
-          <col class="otc-cart-col otc-cart-col-given" />
-          <col class="otc-cart-col otc-cart-col-treatment" />
-          <col class="otc-cart-col otc-cart-col-dosage" />
-          <col class="otc-cart-col otc-cart-col-frequency" />
-          <col class="otc-cart-col otc-cart-col-duration" />
-          <col class="otc-cart-col otc-cart-col-qty" />
-          <col class="otc-cart-col otc-cart-col-cost" *ngIf="canViewPharmacyCostColumns()" />
-          <col class="otc-cart-col otc-cart-col-sell" />
-          <col class="otc-cart-col otc-cart-col-tt-cost" *ngIf="canViewPharmacyCostColumns()" />
-          <col class="otc-cart-col otc-cart-col-tt-sell" />
-          <col class="otc-cart-col otc-cart-col-action" />
-        </colgroup>
-        <colgroup *ngIf="!otcIncludePrescribing">
-          <col class="otc-cart-col otc-cart-col-sn" />
-          <col class="otc-cart-col otc-cart-col-given" />
-          <col class="otc-cart-col otc-cart-col-treatment" />
-          <col class="otc-cart-col otc-cart-col-qty" />
-          <col class="otc-cart-col otc-cart-col-cost" *ngIf="canViewPharmacyCostColumns()" />
-          <col class="otc-cart-col otc-cart-col-sell" />
-          <col class="otc-cart-col otc-cart-col-tt-cost" *ngIf="canViewPharmacyCostColumns()" />
-          <col class="otc-cart-col otc-cart-col-tt-sell" />
-          <col class="otc-cart-col otc-cart-col-action" />
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="no-sort">SN</th>
-            <th class="text-center no-sort otc-cart-given-head">Given</th>
-            <th class="no-sort">Treatment</th>
-            <th class="no-sort" *ngIf="otcIncludePrescribing">Dosage</th>
-            <th class="no-sort" *ngIf="otcIncludePrescribing">Frequency</th>
-            <th class="no-sort" *ngIf="otcIncludePrescribing">Duration</th>
-            <th class="no-sort">Qty</th>
-            <th class="no-sort" *ngIf="canViewPharmacyCostColumns()">Cost</th>
-            <th class="no-sort">Sell</th>
-            <th class="no-sort" *ngIf="canViewPharmacyCostColumns()">TT Cost</th>
-            <th class="no-sort">TT Sell</th>
-            <th class="no-sort">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of otcOnlyCart; let i = index" [class.otc-cart-row-not-given]="!item.given">
-            <td class="itemdata">{{ i + 1 }}</td>
-            <td class="itemdata text-center otc-cart-given-cell">
-              <label class="otc-given-radio-wrap" [attr.title]="item.given ? 'Given — included in total' : 'Not given — excluded from total'">
+        <div class="otc-pos-payment-card" *ngIf="posShowPaymentStep">
+          <div class="otc-pos-pay-top-row">
+            <button
+              type="button"
+              class="otc-pos-back-link"
+              (click)="backFromPaymentStep()"
+              [disabled]="processing">
+              <i class="bi bi-arrow-left"></i> Back to order
+            </button>
+            <div
+              class="otc-pos-doc-radios"
+              role="radiogroup"
+              aria-label="Document type">
+              <label
+                class="otc-pos-doc-radio"
+                *ngFor="let opt of checkoutDocTypeRadios"
+                [class.active]="selectedCheckoutDocType === opt.type"
+                [class.disabled]="isEditingSoldDocument || processing">
                 <input
-                  class="otc-given-radio"
-                  type="checkbox"
-                  [id]="'cart-given-' + item.cartLineKey"
-                  [checked]="item.given"
-                  (change)="onCartGivenChange(item, $any($event.target).checked)" />
+                  type="radio"
+                  name="posCheckoutDocType"
+                  [value]="opt.type"
+                  [ngModel]="selectedCheckoutDocType"
+                  (ngModelChange)="onCheckoutDocTypeChange($event)"
+                  [disabled]="isEditingSoldDocument || processing" />
+                <span>{{ opt.title }}</span>
               </label>
-            </td>
-            <td class="itemdata otc-cart-treatment-cell">
-              {{ cartItemDisplayName(item) | uppercase }}
-            </td>
-            <td *ngIf="otcIncludePrescribing" class="itemdata">
-              {{ formatDosageDisplay(item.amountPerFrequencyValue, item.amountPerFrequencyUnit) }}
-            </td>
-            <td *ngIf="otcIncludePrescribing" class="itemdata">
-              {{ formatFrequencyDisplayForTable(item.totalUnits, item.frequencyValue, item.frequencyUnit) }}
-            </td>
-            <td *ngIf="otcIncludePrescribing" class="itemdata">
-              {{ formatCartDurationDisplay(item) }}
-            </td>
-            <td class="itemdata">{{ item.quantity }}</td>
-            <td class="itemdata" *ngIf="canViewPharmacyCostColumns()">{{ item.unitBuy }}</td>
-            <td class="itemdata">{{ item.unitSellingPrice }}</td>
-            <td class="itemdata" *ngIf="canViewPharmacyCostColumns()">
-              {{ (item.quantity || 0) * (item.unitBuy || 0) }}
-            </td>
-            <td class="itemdata" [class.text-muted]="!item.given">
-              {{ item.given ? item.totalAmount : '—' }}
-            </td>
-            <td class="itemdata otc-cart-action-cell">
-              <div class="btn-group me-1" *ngIf="item.lineSource === 'OTC'">
-                <button
-                  type="button"
-                  (click)="editLine(item)"
-                  class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center"
-                  style="height: 19px; width: 20px; padding: 0;">
-                  <i class="bi bi-pencil-square" style="font-size: 13px;"></i>
-                </button>
+            </div>
+          </div>
+          <p class="otc-pos-edit-pay-hint" *ngIf="isEditingSoldDocument && posPaymentFieldsEnabled">
+            Keep amount received as already paid. Extra products go to amount due.
+          </p>
+          <p class="otc-pos-edit-pay-hint" *ngIf="!isEditingSoldDocument">
+            Quotation: leave amount received empty for quotation only. Enter amount received to also create proforma, sales invoice, and receipt and record the payment.
+          </p>
+          <div class="otc-pos-pay-row">
+            <fieldset class="otc-pos-pay-fields otc-pos-pay-inline" [disabled]="!posPaymentFieldsEnabled || processing">
+              <div class="otc-pos-pay-field">
+                <label>Payment method</label>
+                <select class="form-control form-control-sm" [(ngModel)]="paymentMethod" name="posPaymentMethod">
+                  <option value="Cash At Hand">Cash At Hand</option>
+                  <option value="Card">Card</option>
+                  <option value="Mobile Money">Mobile Money</option>
+                </select>
               </div>
-              <div class="btn-group">
-                <button
-                  type="button"
-                  (click)="removeLine(item)"
-                  class="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center"
-                  style="height: 19px; width: 20px; padding: 0;">
-                  <i class="bi bi-x-square" style="font-size: 13px;"></i>
-                </button>
+            </fieldset>
+            <div class="otc-pos-pay-field">
+              <label>Notes</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="saleNotes" name="posSaleNotes" [disabled]="processing" />
+            </div>
+          </div>
+          <fieldset class="otc-pos-pay-fields" [disabled]="!posPaymentFieldsEnabled || processing">
+            <div class="otc-pos-pay-row">
+              <div class="otc-pos-pay-field">
+                <label>Amount received</label>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  [(ngModel)]="amountReceived"
+                  name="posAmountReceived"
+                  [placeholder]="formatPosMoney(cartPayableTotal)" />
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </ng-container>
+              <div class="otc-pos-pay-field" *ngIf="posPaymentFieldsEnabled && cartAmountDue > 0; else posChangeField">
+                <label>Amount due</label>
+                <div class="otc-pos-amount-due">{{ formatPosMoney(cartAmountDue) }}</div>
+              </div>
+              <ng-template #posChangeField>
+                <div class="otc-pos-pay-field">
+                  <label>Change</label>
+                  <div class="otc-pos-change">{{ formatPosMoney(posPaymentFieldsEnabled ? changeDue : 0) }}</div>
+                </div>
+              </ng-template>
+            </div>
+          </fieldset>
+        </div>
 
-  <ng-template #noSaleLines>
-    <p class="text-muted text-center py-3 otc-cart-empty" style="font-size: 14px;">No items on this sale yet. Select a drug above and click <strong>Add to sale</strong>.</p>
-  </ng-template>
-  </div>
-
-  <div class="otc-payment-footer">
-    <div class="form-row align-items-end">
-      <div class="form-group col-md-2">
-        <label class="form-label" style="font-size: 14px;">Total due (Given only)</label>
-        <div class="form-control form-control-sm bg-white user-select-all">{{ formatPaymentTotal(cartSubtotal) }}</div>
-      </div>
-      <div class="form-group col-md-2">
-        <label class="form-label" style="font-size: 14px;">Payment method</label>
-        <select class="form-control form-control-sm" [(ngModel)]="paymentMethod" name="paymentMethod" [disabled]="processing">
-          <option value="Cash At Hand">Cash At Hand</option>
-          <option value="Card">Card</option>
-          <option value="Mobile Money">Mobile Money</option>
-        </select>
-      </div>
-      <div class="form-group col-md-2">
-        <label class="form-label" style="font-size: 14px;">Amount received</label>
-        <input
-          type="number"
-          class="form-control form-control-sm"
-          [(ngModel)]="amountReceived"
-          name="amountReceived"
-          [placeholder]="formatPaymentTotal(cartSubtotal)"
-          [disabled]="processing" />
-      </div>
-      <div class="form-group col-md-2">
-        <label class="form-label" style="font-size: 14px;">Change</label>
-        <div class="form-control form-control-sm bg-white">{{ formatMoney(changeDue) }}</div>
-      </div>
-      <div class="form-group col-md-2">
-        <label class="form-label" style="font-size: 14px;">Notes</label>
-        <input type="text" class="form-control form-control-sm" [(ngModel)]="saleNotes" name="saleNotes" [disabled]="processing" />
-      </div>
-      <div class="form-group col-md-2 otc-complete-field">
-        <label class="form-label" style="font-size: 14px;">&nbsp;</label>
         <button
           type="button"
-          class="otc-btn otc-btn-success otc-complete-btn w-100"
-          (click)="completeSale()"
-          [disabled]="processing || !hasBillableCartLines">
-          <i class="bi bi-check2-circle" *ngIf="!processing"></i>
-          {{ processing ? 'Processing…' : 'Complete sale' }}
+          class="otc-pos-checkout-btn"
+          *ngIf="!posShowPaymentStep"
+          (click)="continueToPayment()"
+          [disabled]="processing || !hasBillableCartLines || (!isEditingSoldDocument && !hasPosSaleReady)">
+          {{ isEditingSoldDocument ? 'Continue to update' : 'Continue to Payment' }}
         </button>
+        <button
+          type="button"
+          class="otc-pos-checkout-btn"
+          *ngIf="posShowPaymentStep"
+          (click)="completeSale()"
+          [disabled]="processing || !hasBillableCartLines || (!isEditingSoldDocument && !hasPosSaleReady)">
+          {{ checkoutActionLabel }}
+        </button>
+        <button
+          type="button"
+          class="otc-pos-checkout-cancel-edit"
+          *ngIf="isEditingSoldDocument"
+          (click)="clearCart()"
+          [disabled]="processing">
+          Cancel edit
+        </button>
+      </aside>
+
+        <div
+        *ngIf="showStatusBanner"
+        class="otc-pos-toast"
+        [class.otc-pos-toast--error]="responseColor === 'rgb(238, 16, 16)'"
+        role="status"
+        aria-live="polite">
+        <p>{{ responseMessage }}</p>
       </div>
     </div>
-  </div>
-    </div>
-
     <div
       class="tab-pane fade otc-sold-tab-layout"
       [class.show]="activeMainTab === 'sold'"
@@ -557,14 +572,20 @@
   <section class="otc-sales-history">
     <div class="otc-toolbar otc-sales-history-toolbar">
       <div class="otc-toolbar-filters">
-        <div class="otc-filter-field otc-filter-field--inline">
-          <label class="otc-filter-label" for="otcFilterDateFrom">From</label>
-          <input type="date" id="otcFilterDateFrom" class="form-control form-control-sm otc-filter-input otc-filter-date" [(ngModel)]="filterDateFrom" name="filterDateFrom" />
-        </div>
-        <div class="otc-filter-field otc-filter-field--inline">
-          <label class="otc-filter-label" for="otcFilterDateTo">To</label>
-          <input type="date" id="otcFilterDateTo" class="form-control form-control-sm otc-filter-input otc-filter-date" [(ngModel)]="filterDateTo" name="filterDateTo" />
-        </div>
+        <button type="button" class="otc-btn otc-btn-secondary otc-btn-sm" (click)="setMainTab('counter')">
+          <i class="bi bi-arrow-left"></i> Back to POS
+        </button>
+        <h3 class="otc-sold-back-title">Products orders</h3>
+        <button
+          type="button"
+          class="otc-btn otc-btn-secondary otc-btn-sm"
+          (click)="openSalesDateFilterModal()"
+          [disabled]="loadingSalesHistory"
+          [attr.title]="salesDateFilterSummary()"
+          aria-label="Filter by date range">
+          <i class="bi bi-calendar3" aria-hidden="true"></i>
+          {{ salesDateFilterSummary() }}
+        </button>
         <div class="otc-filter-field otc-filter-field--search otc-history-drug-search">
           <div class="otc-search-input-wrap">
             <input
@@ -572,14 +593,11 @@
               class="form-control form-control-sm otc-filter-input otc-search-input"
               [(ngModel)]="salesHistoryDrugSearch"
               name="salesHistoryDrugSearch"
-              placeholder="Search order no., drug, patient, staff…"
+              placeholder="Search for orders, client names and served by"
               [disabled]="loadingSalesHistory" />
             <i class="bi bi-search otc-search-input-icon" aria-hidden="true"></i>
           </div>
         </div>
-        <button type="button" class="otc-btn otc-btn-primary otc-btn-sm" (click)="applySalesDateFilter()" [disabled]="loadingSalesHistory">
-          Apply
-        </button>
         <div class="otc-filter-field otc-filter-field--inline">
           <label class="otc-filter-label" for="otcFilterStaff">Served by</label>
           <select
@@ -593,16 +611,15 @@
           </select>
         </div>
         <div class="otc-filter-field otc-filter-field--inline">
-          <label class="otc-filter-label" for="otcFilterSource">Src</label>
+          <label class="otc-filter-label" for="otcFilterSource">Type</label>
           <select
             id="otcFilterSource"
             class="form-control form-control-sm otc-filter-input otc-filter-src-select"
             [(ngModel)]="salesHistorySourceFilter"
             name="salesHistorySourceFilter"
             [disabled]="loadingSalesHistory">
-            <option value="">All</option>
-            <option value="OTC">OTC</option>
-            <option value="RX">Rx</option>
+            <option value="">All orders</option>
+            <option value="OTC">Orders</option>
           </select>
         </div>
         <button type="button" class="otc-btn otc-btn-secondary otc-btn-sm" (click)="clearSalesFilters()" [disabled]="loadingSalesHistory">
@@ -615,68 +632,156 @@
     </div>
 
     <p class="text-danger small mb-2" *ngIf="salesHistoryError">{{ salesHistoryError }}</p>
-    <p class="text-muted text-center py-3" *ngIf="loadingSalesHistory" style="font-size: 14px;">Loading sales history…</p>
+    <p class="text-muted text-center py-3" *ngIf="loadingSalesHistory" style="font-size: 14px;">Loading sales history?</p>
 
     <ng-container *ngIf="!loadingSalesHistory && !salesHistoryError">
       <div class="otc-sales-history-content">
-      <div class="otc-sales-history-table-wrap custom-scrollbar" *ngIf="filteredSoldOrders().length; else noSoldHistory">
-        <table class="table table-bordered mb-0 otc-orders-table otc-modern-table w-100">
-          <colgroup>
-            <col class="otc-orders-col otc-orders-col-sn" />
-            <col class="otc-orders-col otc-orders-col-order" />
-            <col class="otc-orders-col otc-orders-col-date" />
-            <col class="otc-orders-col otc-orders-col-src" />
-            <col class="otc-orders-col otc-orders-col-staff" />
-            <col class="otc-orders-col otc-orders-col-summary" />
-            <col class="otc-orders-col otc-orders-col-items" />
-            <col class="otc-orders-col otc-orders-col-cost" *ngIf="canViewPharmacyCostColumns()" />
-            <col class="otc-orders-col otc-orders-col-sell" *ngIf="canViewSoldTableCostSell()" />
-            <col class="otc-orders-col otc-orders-col-details" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th class="no-sort">SN</th>
-              <th class="no-sort">Order no.</th>
-              <th class="no-sort">Date</th>
-              <th class="no-sort">Src</th>
-              <th class="no-sort">Served by</th>
-              <th class="no-sort">Summary</th>
-              <th class="no-sort">Items</th>
-              <th class="no-sort" *ngIf="canViewPharmacyCostColumns()">Total cost</th>
-              <th class="no-sort" *ngIf="canViewSoldTableCostSell()">Total sell</th>
-              <th class="text-center no-sort">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let order of filteredSoldOrders(); let i = index">
-              <td class="itemdata">{{ i + 1 }}</td>
-              <td class="itemdata otc-orders-order-no">{{ order.orderNo }}</td>
-              <td class="itemdata otc-date-cell">
-                {{ order.visitDate }}<ng-container *ngIf="order.visitTime"> · {{ order.visitTime }}</ng-container>
-              </td>
-              <td class="itemdata">
-                <span class="sale-source-badge" [ngClass]="orderSourceBadgeClass(order)">{{ orderSourceLabel(order) }}</span>
-              </td>
-              <td class="itemdata otc-orders-staff-cell">{{ soldOrderStaffLabel(order) }}</td>
-              <td class="itemdata otc-orders-summary-cell">
-                <span class="otc-orders-summary-text">{{ soldOrderSummaryText(order) }}</span>
-              </td>
-              <td class="itemdata">{{ order.lineCount }}</td>
-              <td class="itemdata" *ngIf="canViewPharmacyCostColumns()">{{ formatSoldMoney(order.totalCost) }}</td>
-              <td class="itemdata" *ngIf="canViewSoldTableCostSell()">{{ formatSoldMoney(order.totalSell) }}</td>
-              <td class="itemdata text-center">
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm otc-order-details-btn p-0"
-                  title="View order items"
-                  aria-label="View order items"
-                  (click)="openSoldOrderDetails(order)">
-                  <i class="bi bi-list-ul"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="otc-sales-history-table-shell" *ngIf="filteredSoldOrders().length; else noSoldHistory">
+        <div class="otc-sales-history-table-head">
+          <table class="table table-bordered mb-0 otc-orders-table otc-modern-table w-100">
+            <colgroup>
+              <col class="otc-orders-col otc-orders-col-sn" />
+              <col class="otc-orders-col otc-orders-col-order" />
+              <col class="otc-orders-col otc-orders-col-date" />
+              <col class="otc-orders-col otc-orders-col-client" />
+              <col class="otc-orders-col otc-orders-col-status" />
+              <col class="otc-orders-col otc-orders-col-staff" />
+              <col class="otc-orders-col otc-orders-col-summary" />
+              <col class="otc-orders-col otc-orders-col-cost" *ngIf="canViewPharmacyCostColumns()" />
+              <col class="otc-orders-col otc-orders-col-sell" *ngIf="canViewSoldTableCostSell()" />
+              <col class="otc-orders-col otc-orders-col-paid" />
+              <col class="otc-orders-col otc-orders-col-balance" />
+              <col class="otc-orders-col otc-orders-col-details" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="no-sort">SN</th>
+                <th class="no-sort">Order no.</th>
+                <th class="no-sort">Date</th>
+                <th class="no-sort">Client</th>
+                <th class="no-sort">Progress</th>
+                <th class="no-sort">Served by</th>
+                <th class="no-sort">Summary</th>
+                <th class="no-sort" *ngIf="canViewPharmacyCostColumns()">Total cost</th>
+                <th class="no-sort" *ngIf="canViewSoldTableCostSell()">Total sell</th>
+                <th class="no-sort otc-orders-paid-th">
+                  Paid
+                  <button
+                    type="button"
+                    class="otc-orders-paid-th-btn"
+                    title="Receive payment on an order with debt"
+                    aria-label="Receive payment on order with debt"
+                    (click)="openFirstSoldOrderWithDebtPayment($event)">
+                    <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                  </button>
+                </th>
+                <th class="no-sort">Debt</th>
+                <th class="text-center no-sort">Active</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="otc-sales-history-table-wrap custom-scrollbar">
+          <table class="table table-bordered mb-0 otc-orders-table otc-modern-table otc-orders-table--body w-100">
+            <colgroup>
+              <col class="otc-orders-col otc-orders-col-sn" />
+              <col class="otc-orders-col otc-orders-col-order" />
+              <col class="otc-orders-col otc-orders-col-date" />
+              <col class="otc-orders-col otc-orders-col-client" />
+              <col class="otc-orders-col otc-orders-col-status" />
+              <col class="otc-orders-col otc-orders-col-staff" />
+              <col class="otc-orders-col otc-orders-col-summary" />
+              <col class="otc-orders-col otc-orders-col-cost" *ngIf="canViewPharmacyCostColumns()" />
+              <col class="otc-orders-col otc-orders-col-sell" *ngIf="canViewSoldTableCostSell()" />
+              <col class="otc-orders-col otc-orders-col-paid" />
+              <col class="otc-orders-col otc-orders-col-balance" />
+              <col class="otc-orders-col otc-orders-col-details" />
+            </colgroup>
+            <tbody>
+              <tr
+                *ngFor="let order of filteredSoldOrders(); let i = index"
+                [class.otc-orders-row--inactive]="!isSoldOrderActive(order)">
+                <td class="itemdata">{{ filteredSoldOrders().length - i }}</td>
+                <td class="itemdata otc-orders-order-no">{{ order.orderNo }}</td>
+                <td class="itemdata otc-date-cell">
+                  {{ order.visitDate }}<ng-container *ngIf="order.visitTime"> · {{ order.visitTime }}</ng-container>
+                </td>
+                <td class="itemdata otc-orders-client-cell">{{ soldOrderClientName(order) || '—' }}</td>
+                <td class="itemdata otc-orders-status-cell" *ngIf="soldOrderDocumentStage(order) as docStatus">
+                  <div
+                    class="otc-doc-pipeline"
+                    [class.otc-doc-pipeline--paid]="docStatus.state === 'paid'"
+                    [attr.title]="docStatus.stage + (docStatus.state === 'processing' ? ' · in progress' : ' · complete')"
+                    [attr.aria-label]="'Progress: ' + soldOrderDocumentStageLabel(order)">
+                    <ng-container *ngFor="let step of soldDocPipelineSteps; let si = index; let last = last">
+                      <button
+                        type="button"
+                        class="otc-doc-pipeline-step"
+                        [class.otc-doc-pipeline-step--done]="soldOrderPipelineStepState(order, si) === 'done'"
+                        [class.otc-doc-pipeline-step--current]="soldOrderPipelineStepState(order, si) === 'current'"
+                        [class.otc-doc-pipeline-step--todo]="soldOrderPipelineStepState(order, si) === 'todo'"
+                        [attr.title]="step.label + (soldOrderPipelineStepState(order, si) === 'todo' ? ' — click to create from previous docs' : ' — open')"
+                        [attr.aria-label]="step.label + (soldOrderPipelineStepState(order, si) === 'todo' ? ' (create)' : '')"
+                        (click)="openSoldDocPipelineStep(order, si, $event)">
+                        {{ step.short }}
+                      </button>
+                      <span class="otc-doc-pipeline-sep" *ngIf="!last" aria-hidden="true">›</span>
+                    </ng-container>
+                  </div>
+                </td>
+                <td class="itemdata otc-orders-staff-cell">{{ soldOrderStaffLabel(order) }}</td>
+                <td class="itemdata otc-orders-summary-cell">
+                  <span class="otc-orders-summary-text">{{ soldOrderSummaryText(order) }}</span>
+                </td>
+                <td class="itemdata" *ngIf="canViewPharmacyCostColumns()">{{ formatSoldMoney(order.totalCost) }}</td>
+                <td class="itemdata" *ngIf="canViewSoldTableCostSell()">{{ formatSoldMoney(soldOrderDue(order)) }}</td>
+                <td class="itemdata otc-orders-paid-cell">
+                  <div class="otc-orders-paid-inner">
+                    <span>{{ formatSoldMoney(soldOrderPaid(order)) }}</span>
+                    <button
+                      type="button"
+                      class="otc-orders-pay-btn"
+                      [class.otc-orders-pay-btn--due]="soldOrderBalance(order) > 0"
+                      [class.otc-orders-pay-btn--paid]="soldOrderBalance(order) <= 0"
+                      [disabled]="!(order.visitId != null && order.visitId > 0) || !isSoldOrderActive(order)"
+                      [attr.title]="soldOrderBalance(order) > 0 ? 'Receive payment / view payments' : 'View payments &amp; print receipts'"
+                      [attr.aria-label]="soldOrderBalance(order) > 0 ? 'Receive payment on this order' : 'View payments and print receipts for this order'"
+                      (click)="openSoldOrderPaymentModal(order, $event)">
+                      <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td
+                  class="itemdata otc-orders-balance-cell"
+                  [class.otc-orders-balance-due]="soldOrderBalance(order) > 0">
+                  {{ formatSoldMoney(soldOrderBalance(order)) }}
+                </td>
+                <td class="itemdata text-center">
+                  <button
+                    type="button"
+                    class="btn btn-link btn-sm otc-order-active-btn p-0"
+                    [class.otc-order-active-btn--off]="!isSoldOrderActive(order)"
+                    [disabled]="soldOrderActiveTogglingKey === order.orderKey"
+                    [attr.title]="isSoldOrderActive(order) ? 'Turn off order' : 'Turn on order'"
+                    [attr.aria-label]="isSoldOrderActive(order) ? 'Turn off order' : 'Turn on order'"
+                    (click)="requestToggleSoldOrderActive(order, $event)">
+                    <span
+                      *ngIf="soldOrderActiveTogglingKey === order.orderKey"
+                      class="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"></span>
+                    <i
+                      *ngIf="soldOrderActiveTogglingKey !== order.orderKey"
+                      class="bi"
+                      [class.bi-slash-circle]="isSoldOrderActive(order)"
+                      [class.bi-check-circle]="!isSoldOrderActive(order)"
+                      aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <footer class="otc-sales-history-footer" aria-label="Sales summary totals" *ngIf="canViewSoldSummaryFooter()">
@@ -699,11 +804,11 @@
             <span class="otc-sales-summary-value otc-sales-summary-value--sell">{{ formatSoldMoney(historyTotalSell) }}</span>
           </div>
           <div class="otc-sales-summary-item">
-            <span class="otc-sales-summary-label">Total amount received</span>
+            <span class="otc-sales-summary-label">Total paid</span>
             <span class="otc-sales-summary-value">{{ formatSoldMoney(historyTotalReceived) }}</span>
           </div>
           <div class="otc-sales-summary-item">
-            <span class="otc-sales-summary-label">Balance</span>
+            <span class="otc-sales-summary-label">Debt</span>
             <span
               class="otc-sales-summary-value"
               [class.otc-sales-summary-value--negative]="historyTotalBalance > 0">
@@ -741,235 +846,6 @@
   </section>
     </div>
 
-    <div
-      class="tab-pane fade otc-rx-modern-tab"
-      [class.show]="activeMainTab === 'prescriptions'"
-      [class.active]="activeMainTab === 'prescriptions'"
-      id="otc-doctor-prescriptions-pane"
-      role="tabpanel"
-      aria-labelledby="otc-doctor-prescriptions-tab"
-      tabindex="0">
-      <div class="rx-studio">
-        <p class="rx-studio-alert rx-studio-alert--error" *ngIf="doctorPrescriptionsError">{{ doctorPrescriptionsError }}</p>
-        <div
-          *ngIf="showStatusBanner && activeMainTab === 'prescriptions'"
-          class="rx-studio-alert"
-          [ngStyle]="{ 'background-color': responseColor, color: '#fff' }">
-          {{ responseMessage }}
-        </div>
-
-        <div class="rx-studio-loading" *ngIf="loadingDoctorPrescriptions">
-          <div class="rx-studio-spinner" aria-hidden="true"></div>
-          <span>Loading prescriptions…</span>
-        </div>
-
-        <div class="rx-studio-layout" *ngIf="!loadingDoctorPrescriptions && !doctorPrescriptionsError">
-          <aside class="rx-studio-queue" aria-label="Prescription visits">
-            <ng-container *ngIf="groupedPrescriptionVisits().length; else noDoctorRxQueue">
-              <div
-                class="rx-visit-card"
-                *ngFor="let group of groupedPrescriptionVisits()"
-                [class.rx-visit-card--active]="selectedPrescriptionVisitId === group.visitId"
-                [class.rx-visit-card--done]="isPrescriptionVisitSaleDone(group.visitId)"
-                (click)="selectPrescriptionVisitCard(group)">
-                <div class="rx-visit-card-top">
-                  <span class="rx-visit-avatar" aria-hidden="true">{{ (group.patientName || 'P').charAt(0) }}</span>
-                  <div class="rx-visit-meta">
-                    <div class="rx-visit-name-row">
-                      <span class="rx-visit-name">{{ group.patientName }}</span>
-                      <button
-                        type="button"
-                        class="rx-visit-queue-btn"
-                        title="Queue patient"
-                        (click)="openRxQueueModal(group, $event)">
-                        <i class="bi bi-list-ol" aria-hidden="true"></i>
-                        Queue
-                      </button>
-                    </div>
-                    <span class="rx-visit-visit">Visit {{ group.visitNumber || group.visitId }}</span>
-                  </div>
-                  <span class="rx-visit-badge" [ngClass]="prescriptionVisitOrderStatusClass(group)">
-                    {{ prescriptionVisitOrderStatusLabel(group) }}
-                  </span>
-                </div>
-                <div class="rx-visit-card-bottom">
-                  <span class="rx-visit-date">
-                    <i class="bi bi-calendar3"></i>
-                    {{ group.visitDate }}<ng-container *ngIf="group.visitTime"> · {{ group.visitTime }}</ng-container>
-                  </span>
-                  <span class="rx-visit-lines">{{ group.rows.length }} line{{ group.rows.length === 1 ? '' : 's' }}</span>
-                </div>
-              </div>
-            </ng-container>
-            <ng-template #noDoctorRxQueue>
-              <div class="rx-studio-empty">
-                <i class="bi bi-inbox"></i>
-                <p>No pending prescriptions.</p>
-              </div>
-            </ng-template>
-          </aside>
-
-          <main class="rx-studio-detail" id="otc-rx-drugs-section" aria-label="Prescription details">
-            <ng-container *ngIf="selectedPrescriptionGroup() as sel; else rxNoSelection">
-              <section class="rx-detail-section">
-                <div class="rx-detail-section-head">
-                  <div class="rx-detail-section-head-line">
-                    <h4>Items to dispense</h4>
-                    <span class="rx-detail-inline-meta">
-                      <span class="rx-detail-inline-name">{{ sel.patientName }}</span>
-                      <span class="rx-detail-dot">·</span>
-                      <span>Visit {{ sel.visitNumber || sel.visitId }}</span>
-                      <span class="rx-detail-dot">·</span>
-                      <span>{{ sel.visitDate }}<ng-container *ngIf="sel.visitTime"> · {{ sel.visitTime }}</ng-container></span>
-                      <span
-                        class="rx-visit-badge rx-visit-badge--inline"
-                        [ngClass]="prescriptionVisitOrderStatusClass(sel)">
-                        {{ isPrescriptionVisitSaleDone(sel.visitId) ? 'Sale completed' : prescriptionVisitOrderStatusLabel(sel) }}
-                      </span>
-                    </span>
-                  </div>
-                  <span class="rx-detail-count">{{ selectedPrescriptionDetailRows.length }} items</span>
-                </div>
-                <div class="rx-table-wrap" *ngIf="selectedPrescriptionDetailRows.length; else noSelectedRxLines">
-                  <table class="rx-table otc-cart-table otc-cart-table--prescribing">
-                    <thead>
-                      <tr>
-                        <th class="text-center otc-rx-dsp-head" title="Dispensed (set when you complete a dispense)">
-                          DSP
-                        </th>
-                        <th>Item</th>
-                        <th>Dosage</th>
-                        <th>Frequency</th>
-                        <th>Duration</th>
-                        <th>Qty</th>
-                        <th *ngIf="canViewPharmacyCostColumns()">Cost</th>
-                        <th>Sell</th>
-                        <th *ngIf="canViewPharmacyCostColumns()">TT Cost</th>
-                        <th>TT Sell</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let row of selectedPrescriptionDetailRows" [class.otc-cart-row-not-given]="row.dispensed !== true">
-                        <td class="text-center otc-cart-given-cell">
-                          <app-pd-dsp-adm
-                            [item]="row"
-                            [inputIdPrefix]="'otc-rx'"
-                            mode="dispensed-only"
-                            [disabled]="true"
-                            [dispensedReadonly]="true">
-                          </app-pd-dsp-adm>
-                        </td>
-                        <td class="otc-cart-treatment-cell">
-                          {{ row.itemName | uppercase }}
-                          <span class="otc-rx-sundry-tag" *ngIf="isSundryPrescriptionRow(row)">Sundry</span>
-                        </td>
-                        <td>{{ prescriptionRowDosage(row) }}</td>
-                        <td>{{ prescriptionRowFrequency(row) }}</td>
-                        <td>{{ prescriptionRowDuration(row) }}</td>
-                        <td class="otc-rx-qty-cell">
-                          <input
-                            type="number"
-                            class="form-control form-control-sm otc-rx-qty-input"
-                            [ngModel]="row.quantity"
-                            (ngModelChange)="onPrescriptionQuantityChange(row, $event)"
-                            [ngModelOptions]="{ standalone: true }"
-                            min="0"
-                            step="1"
-                            inputmode="numeric"
-                            [disabled]="processing || isPrescriptionVisitSaleDone(sel.visitId) || isSundryPrescriptionRow(row)"
-                            [attr.aria-label]="'Quantity for ' + row.itemName" />
-                          <span class="otc-rx-qty-hint text-muted" *ngIf="isSundryPrescriptionRow(row)">
-                            Stock deducted when recorded
-                          </span>
-                          <span class="otc-rx-qty-hint text-muted" *ngIf="!isSundryPrescriptionRow(row) && !prescriptionQtyExceedsStock(row)">
-                            Stock: {{ prescriptionItemTotalStock(row) }}
-                          </span>
-                          <span class="otc-rx-qty-hint text-danger" *ngIf="!isSundryPrescriptionRow(row) && prescriptionQtyExceedsStock(row)">
-                            Exceeds stock · {{ prescriptionItemTotalStock(row) }}
-                          </span>
-                        </td>
-                        <td *ngIf="canViewPharmacyCostColumns()">{{ row.unitBuy }}</td>
-                        <td>{{ row.unitSellingPrice }}</td>
-                        <td *ngIf="canViewPharmacyCostColumns()">{{ prescriptionRowTtCost(row) }}</td>
-                        <td [class.text-muted]="!row.given">{{ row.given ? prescriptionRowTtSell(row) : '—' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <ng-template #noSelectedRxLines>
-                  <div class="rx-studio-empty rx-studio-empty--compact">
-                    <p>No prescription or sundry lines for this visit.</p>
-                  </div>
-                </ng-template>
-              </section>
-
-              <footer class="rx-checkout" *ngIf="!isPrescriptionVisitSaleDone(sel.visitId)">
-                <div class="rx-checkout-grid">
-                  <label class="rx-checkout-field">
-                    <span>Total due</span>
-                    <strong>{{ formatPaymentTotal(prescriptionSubtotal) }}</strong>
-                  </label>
-                  <label class="rx-checkout-field">
-                    <span>Payment method</span>
-                    <select
-                      class="rx-checkout-input"
-                      [(ngModel)]="rxPaymentMethod"
-                      name="rxPaymentMethod"
-                      [ngModelOptions]="{ standalone: true }"
-                      [disabled]="processing">
-                      <option value="Cash At Hand">Cash At Hand</option>
-                      <option value="Card">Card</option>
-                      <option value="Mobile Money">Mobile Money</option>
-                    </select>
-                  </label>
-                  <label class="rx-checkout-field">
-                    <span>Amount received</span>
-                    <input
-                      type="number"
-                      class="rx-checkout-input"
-                      [(ngModel)]="rxAmountReceived"
-                      name="rxAmountReceived"
-                      [ngModelOptions]="{ standalone: true }"
-                      [placeholder]="formatPaymentTotal(prescriptionSubtotal)"
-                      [disabled]="processing" />
-                  </label>
-                  <label class="rx-checkout-field">
-                    <span>Change</span>
-                    <strong>{{ formatMoney(prescriptionChangeDue) }}</strong>
-                  </label>
-                  <div class="rx-checkout-actions">
-                    <button
-                      type="button"
-                      class="rx-studio-btn rx-studio-btn--success rx-checkout-submit"
-                      (click)="completePrescriptionSale(true)"
-                      [disabled]="processing || !canCompletePrescriptionSale">
-                      <i class="bi bi-cash-coin"></i>
-                      {{ processing ? 'Processing…' : 'Dispensed & money received' }}
-                    </button>
-                    <button
-                      type="button"
-                      class="rx-studio-btn rx-studio-btn--secondary rx-checkout-submit"
-                      (click)="completePrescriptionSale(false)"
-                      [disabled]="processing || !canCompletePrescriptionSale">
-                      <i class="bi bi-capsule"></i>
-                      {{ processing ? 'Processing…' : 'Dispensed, no money received' }}
-                    </button>
-                  </div>
-                </div>
-              </footer>
-            </ng-container>
-
-            <ng-template #rxNoSelection>
-              <div class="rx-studio-empty rx-studio-empty--detail">
-                <i class="bi bi-capsule"></i>
-                <h3>Select a prescription visit</h3>
-                <p>Choose a patient from the list on the left to view drugs and complete the sale.</p>
-              </div>
-            </ng-template>
-          </main>
-        </div>
-      </div>
-    </div>
   </div>
   </div>
 </div>
@@ -981,11 +857,11 @@
       <button type="button" class="btn btn-light btn-sm" (click)="closeRxQueueModal()">Close</button>
     </div>
 
-    <div class="otc-queue-patient-summary">
-      <div><strong>Surname:</strong> <span class="otc-queue-patient-value">{{ rxQueuePatientSurname() }}</span></div>
-      <div><strong>Visit:</strong> <span class="otc-queue-patient-value">{{ target.visitNumber || target.visitId }}</span></div>
-      <div><strong>Other Names:</strong> <span class="otc-queue-patient-value">{{ rxQueuePatientOtherNames() }}</span></div>
-      <div><strong>Patient:</strong> <span class="otc-queue-patient-value">{{ target.patientName }}</span></div>
+    <div class="otc-queue-client-summary">
+      <div><strong>Surname:</strong> <span class="otc-queue-client-value">{{ rxQueueClientSurname() }}</span></div>
+      <div><strong>Visit:</strong> <span class="otc-queue-client-value">{{ target.visitNumber || target.visitId }}</span></div>
+      <div><strong>Other Names:</strong> <span class="otc-queue-client-value">{{ rxQueueClientOtherNames() }}</span></div>
+      <div><strong>Client:</strong> <span class="otc-queue-client-value">{{ target.clientName }}</span></div>
     </div>
 
     <hr />
@@ -996,7 +872,7 @@
       <label>From
         <select name="otcRxQueueFromModuleId" [(ngModel)]="rxQueueForm.fromModuleId">
           <option [ngValue]="null">Select module</option>
-          <option *ngFor="let m of hospitalModules" [ngValue]="m.id">{{ m.name }}</option>
+          <option *ngFor="let m of businessModules" [ngValue]="m.id">{{ m.name }}</option>
         </select>
       </label>
 
@@ -1009,15 +885,15 @@
 
       <label *ngIf="!isQueueDischargeDestination(rxQueueForm.toModuleId)">Clinic
         <select [(ngModel)]="rxQueueForm.clinicId">
-          <option [ngValue]="null">—</option>
+          <option [ngValue]="null">?</option>
           <option *ngFor="let c of rxQueueClinics" [ngValue]="c.id">{{ c.name }}</option>
         </select>
       </label>
 
       <label>Visit Default Scheme
-        <select [(ngModel)]="rxQueueForm.patientGroupId" (ngModelChange)="onRxQueueSchemeChange()">
-          <option [ngValue]="null">—</option>
-          <option *ngFor="let g of rxQueuePatientGroups" [ngValue]="g.id">{{ g.groupName }}</option>
+        <select [(ngModel)]="rxQueueForm.clientGroupId" (ngModelChange)="onRxQueueSchemeChange()">
+          <option [ngValue]="null">?</option>
+          <option *ngFor="let g of rxQueueClientGroups" [ngValue]="g.id">{{ g.groupName }}</option>
         </select>
       </label>
 
@@ -1044,10 +920,1187 @@
         {{
           rxQueueSaving
             ? (isQueueDischargeDestination(rxQueueForm.toModuleId) ? 'Discharging...' : 'Queuing...')
-            : (isQueueDischargeDestination(rxQueueForm.toModuleId) ? 'Discharge patient' : 'Queue patient')
+            : (isQueueDischargeDestination(rxQueueForm.toModuleId) ? 'Discharge client' : 'Queue client')
         }}
       </button>
     </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosOrderPickerModal"
+  (click)="closePosOrderPickerModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-order-picker-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosOrderPickerTitle">
+    <header class="otc-pos-discount-head">
+      <div>
+        <h3 id="otcPosOrderPickerTitle">New order</h3>
+        <p class="otc-pos-order-picker-sub" *ngIf="posSaleClientName">
+          A new order is created for <strong>{{ posSaleClientName }}</strong>. Each document gets its own order.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="otc-pos-discount-close"
+        (click)="closePosOrderPickerModal()"
+        aria-label="Close"
+        [disabled]="posOrderPickerCreating">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <div class="otc-pos-order-create-row">
+      <label class="otc-pos-order-datetime">
+        <span>Order date</span>
+        <input
+          type="date"
+          name="posOrderPickerNewDate"
+          [(ngModel)]="posOrderPickerNewDate"
+          [disabled]="posOrderPickerCreating"
+          required />
+      </label>
+      <label class="otc-pos-order-datetime">
+        <span>Order time</span>
+        <input
+          type="time"
+          name="posOrderPickerNewTime"
+          [(ngModel)]="posOrderPickerNewTime"
+          [disabled]="posOrderPickerCreating"
+          required />
+      </label>
+      <button
+        type="button"
+        class="otc-pos-checkout-btn otc-pos-order-create-btn"
+        (click)="createPosOrderFromPicker()"
+        [disabled]="posOrderPickerCreating || !posOrderPickerNewDate || !posOrderPickerNewTime">
+        <i class="bi bi-plus-lg"></i>
+        {{ posOrderPickerCreating ? 'Creating…' : 'Create new order' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showLineDiscountModal && discountTargetLine as dLine"
+  (click)="closeLineDiscountModal()">
+  <div class="otc-pos-discount-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="otcPosDiscountTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosDiscountTitle">Product discount</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closeLineDiscountModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-discount-product">{{ toTitleCase(cartItemDisplayName(dLine)) }}</p>
+    <div class="otc-pos-discount-bill">
+      <div class="otc-pos-discount-bill-row">
+        <span>Line gross</span>
+        <strong>{{ formatPosMoney(cartLineGrossAmount(dLine)) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-row">
+        <span>This discount</span>
+        <strong>?{{ formatPosMoney(discountDraftPreviewAmount) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-row">
+        <span>Line after discount</span>
+        <strong>{{ formatPosMoney(cartLineGrossAmount(dLine) - discountDraftPreviewAmount) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-total">
+        <span>Bill total</span>
+        <strong>{{ formatPosMoney(discountDraftPreviewBillTotal) }}</strong>
+      </div>
+    </div>
+    <div class="otc-pos-discount-modes">
+      <button
+        type="button"
+        class="otc-pos-discount-mode"
+        [class.active]="discountDraftMode === 'amount'"
+        (click)="discountDraftMode = 'amount'">
+        Fixed amount
+      </button>
+      <button
+        type="button"
+        class="otc-pos-discount-mode"
+        [class.active]="discountDraftMode === 'percent'"
+        (click)="discountDraftMode = 'percent'">
+        Percent %
+      </button>
+    </div>
+    <label class="otc-pos-discount-field">
+      {{ discountDraftMode === 'percent' ? 'Discount %' : 'Discount amount' }}
+      <input
+        type="number"
+        min="0"
+        [attr.max]="discountDraftMode === 'percent' ? 100 : null"
+        step="1"
+        [(ngModel)]="discountDraftValue"
+        name="posLineDiscountValue"
+        placeholder="0" />
+    </label>
+    <div class="otc-pos-discount-actions">
+      <button
+        type="button"
+        class="otc-btn otc-btn-secondary"
+        *ngIf="cartLineDiscountAmount(dLine) > 0"
+        (click)="removeLineDiscountFromModal()">
+        Remove discount
+      </button>
+      <button type="button" class="otc-btn otc-btn-secondary" (click)="closeLineDiscountModal()">Cancel</button>
+      <button type="button" class="otc-pos-checkout-btn otc-pos-discount-apply" (click)="applyLineDiscountFromModal()">
+        Apply discount
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Overall cart discount modal -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showOverallDiscountModal"
+  (click)="closeOverallDiscountModal()">
+  <div
+    class="otc-pos-discount-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosOverallDiscountTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosOverallDiscountTitle">Overall discount</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closeOverallDiscountModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-discount-product">Applies to the whole order (not individual products).</p>
+    <div class="otc-pos-discount-bill">
+      <div class="otc-pos-discount-bill-row">
+        <span>Cart subtotal</span>
+        <strong>{{ formatPosMoney(cartSubtotal) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-row">
+        <span>Overall discount</span>
+        <strong>{{ formatPosZeroPlaceholder(overallDiscountDraftAmount) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-total">
+        <span>Bill total</span>
+        <strong>{{ formatPosMoney(overallDiscountDraftBillTotal) }}</strong>
+      </div>
+    </div>
+    <label class="otc-pos-discount-field">
+      Discount amount
+      <input
+        type="number"
+        min="0"
+        step="0.0001"
+        [(ngModel)]="overallDiscountDraftValue"
+        name="posOverallDiscountValue"
+        placeholder="0.0000" />
+    </label>
+    <div class="otc-pos-discount-actions">
+      <button
+        type="button"
+        class="otc-btn otc-btn-secondary"
+        *ngIf="cartOverallDiscount > 0"
+        (click)="clearOverallDiscountFromModal()">
+        Clear
+      </button>
+      <button type="button" class="otc-btn otc-btn-secondary" (click)="closeOverallDiscountModal()">Cancel</button>
+      <button type="button" class="otc-pos-checkout-btn otc-pos-discount-apply" (click)="applyOverallDiscountFromModal()">
+        Apply
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tax settings modal -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosTaxModal"
+  (click)="closePosTaxModal()">
+  <div
+    class="otc-pos-discount-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosTaxTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosTaxTitle">Tax</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosTaxModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-discount-product">Choose the tax type and percentage for this order.</p>
+    <div class="otc-pos-discount-modes">
+      <button
+        type="button"
+        class="otc-pos-discount-mode"
+        [class.active]="taxDraftType === 'VAT'"
+        (click)="taxDraftType = 'VAT'">
+        VAT
+      </button>
+      <button
+        type="button"
+        class="otc-pos-discount-mode"
+        [class.active]="taxDraftType === 'Sales Tax'"
+        (click)="taxDraftType = 'Sales Tax'">
+        Sales Tax
+      </button>
+      <button
+        type="button"
+        class="otc-pos-discount-mode"
+        [class.active]="taxDraftType === 'None'"
+        (click)="taxDraftType = 'None'">
+        None
+      </button>
+    </div>
+    <label class="otc-pos-discount-field">
+      Tax percentage
+      <input
+        type="number"
+        min="0"
+        max="100"
+        step="0.01"
+        [(ngModel)]="taxDraftRatePercent"
+        name="posTaxRatePercent"
+        [disabled]="taxDraftType === 'None'"
+        placeholder="18" />
+    </label>
+    <div class="otc-pos-discount-bill">
+      <div class="otc-pos-discount-bill-row">
+        <span>Taxable amount</span>
+        <strong>{{ formatPosMoney(cartTaxableBase) }}</strong>
+      </div>
+      <div class="otc-pos-discount-bill-row">
+        <span>Tax preview</span>
+        <strong>{{ formatPosZeroPlaceholder(taxDraftPreviewAmount) }}</strong>
+      </div>
+    </div>
+    <div class="otc-pos-discount-actions">
+      <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosTaxModal()">Cancel</button>
+      <button type="button" class="otc-pos-checkout-btn otc-pos-discount-apply" (click)="applyPosTaxFromModal()">
+        Apply tax
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- POS product detail (marketplace-style) -->
+<div
+  class="otc-pos-pdp-overlay"
+  *ngIf="showPosProductDetail && posProductDetail as pdp"
+  (click)="closePosProductDetail()">
+  <div
+    class="otc-pos-pdp"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosProductDetailTitle">
+    <header class="otc-pos-pdp-top">
+      <nav class="otc-pos-pdp-breadcrumb" aria-label="Breadcrumb">
+        <button type="button" class="otc-pos-pdp-crumb-link" (click)="closePosProductDetail()">Products</button>
+        <span class="otc-pos-pdp-crumb-sep">›</span>
+        <span *ngIf="pdp.category">{{ pdp.category }}</span>
+        <span class="otc-pos-pdp-crumb-sep" *ngIf="pdp.category">›</span>
+        <span class="otc-pos-pdp-crumb-current">{{ pdp.name }}</span>
+      </nav>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosProductDetail()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <div class="otc-pos-pdp-loading" *ngIf="posProductDetailLoading">Loading product…</div>
+
+    <div class="otc-pos-pdp-main">
+      <!-- Gallery -->
+      <section class="otc-pos-pdp-gallery" aria-label="Product images">
+        <aside class="otc-pos-pdp-thumbs" *ngIf="posProductDetailImages.length > 1">
+          <button
+            type="button"
+            class="otc-pos-pdp-thumb"
+            *ngFor="let img of posProductDetailImages; let i = index"
+            [class.active]="i === posProductDetailImageIndex"
+            (click)="selectPosProductDetailImage(i)">
+            <img [src]="img" [alt]="pdp.name + ' image ' + (i + 1)" />
+          </button>
+        </aside>
+        <div class="otc-pos-pdp-stage">
+          <img
+            *ngIf="posProductDetailActiveImage as mainImg"
+            [src]="mainImg"
+            [alt]="pdp.name"
+            class="otc-pos-pdp-main-img" />
+          <div class="otc-pos-pdp-stage-placeholder" *ngIf="!posProductDetailActiveImage">
+            {{ posProductInitials(pdp.name) }}
+          </div>
+          <button
+            type="button"
+            class="otc-pos-pdp-nav otc-pos-pdp-nav--prev"
+            *ngIf="posProductDetailImages.length > 1"
+            (click)="posProductDetailImagePrev()"
+            aria-label="Previous image">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <button
+            type="button"
+            class="otc-pos-pdp-nav otc-pos-pdp-nav--next"
+            *ngIf="posProductDetailImages.length > 1"
+            (click)="posProductDetailImageNext()"
+            aria-label="Next image">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <span class="otc-pos-oos-badge otc-pos-pdp-oos" *ngIf="pdp.outOfStock">Stock out</span>
+        </div>
+      </section>
+
+      <!-- Product info -->
+      <section class="otc-pos-pdp-info">
+        <h1 id="otcPosProductDetailTitle" class="otc-pos-pdp-title">{{ pdp.name }}</h1>
+        <div class="otc-pos-pdp-meta">
+          <span [class.otc-pos-pdp-stock--ok]="!pdp.outOfStock" [class.otc-pos-pdp-stock--oos]="pdp.outOfStock">
+            {{ pdp.outOfStock ? 'Stock out' : (pdp.stockQty + ' in stock') }}
+          </span>
+          <span *ngIf="pdp.category" class="otc-pos-pdp-meta-dot">·</span>
+          <span *ngIf="pdp.category">{{ pdp.category }}</span>
+        </div>
+        <div class="otc-pos-pdp-price-block">
+          <div class="otc-pos-pdp-price">{{ formatPosMoney(pdp.price) }}</div>
+          <div class="otc-pos-pdp-moq">Sold by unit: {{ pdp.unitLabel || 'pc' }}</div>
+        </div>
+        <p class="otc-pos-pdp-description" *ngIf="pdp.description">{{ pdp.description }}</p>
+        <p class="otc-pos-pdp-description otc-pos-pdp-description--muted" *ngIf="!pdp.description">
+          No product description yet.
+        </p>
+
+        <div class="otc-pos-pdp-option-block" *ngIf="pdp.unitLabel">
+          <div class="otc-pos-pdp-option-label">
+            <span>Unit</span>
+          </div>
+          <div class="otc-pos-pdp-pills">
+            <span class="otc-pos-pdp-pill active">{{ pdp.unitLabel }}</span>
+          </div>
+        </div>
+
+        <div class="otc-pos-pdp-option-block" *ngIf="pdp.category">
+          <div class="otc-pos-pdp-option-label">
+            <span>Category</span>
+          </div>
+          <div class="otc-pos-pdp-pills">
+            <span class="otc-pos-pdp-pill">{{ pdp.category }}</span>
+            <span class="otc-pos-pdp-pill" *ngIf="pdp.barcode">Barcode {{ pdp.barcode }}</span>
+            <span class="otc-pos-pdp-pill" *ngIf="pdp.shelfNumber">Shelf {{ pdp.shelfNumber }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sidebar actions -->
+      <aside class="otc-pos-pdp-aside">
+        <div class="otc-pos-pdp-aside-card">
+          <h3>Order</h3>
+          <p class="otc-pos-pdp-aside-hint">
+            Add this product to the current order. Stock is confirmed when goods are delivered.
+          </p>
+
+          <div class="otc-pos-pdp-qty-row">
+            <span>Quantity</span>
+            <div class="otc-pos-pdp-qty">
+              <button type="button" (click)="adjustPosProductDetailQty(-1)" aria-label="Decrease quantity">−</button>
+              <input
+                type="number"
+                min="1"
+                [(ngModel)]="posProductDetailQty"
+                name="posProductDetailQty"
+                (change)="normalizePosProductDetailQty()" />
+              <button type="button" (click)="adjustPosProductDetailQty(1)" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+
+          <div class="otc-pos-pdp-aside-total">
+            <span>Line total</span>
+            <strong>{{ formatPosMoney(pdp.price * (posProductDetailQty || 1)) }}</strong>
+          </div>
+
+          <button
+            type="button"
+            class="otc-pos-pdp-btn otc-pos-pdp-btn--primary"
+            (click)="addPosProductDetailToCart()"
+            [disabled]="processing">
+            <i class="bi bi-cart-plus"></i>
+            Add to cart
+          </button>
+          <button
+            type="button"
+            class="otc-pos-pdp-btn otc-pos-pdp-btn--secondary"
+            (click)="editFromPosProductDetail()">
+            <i class="bi bi-pencil"></i>
+            Edit product
+          </button>
+          <button
+            type="button"
+            class="otc-pos-pdp-btn otc-pos-pdp-btn--ghost"
+            (click)="manageImagesFromPosProductDetail()">
+            <i class="bi bi-images"></i>
+            Manage images
+          </button>
+        </div>
+
+        <div class="otc-pos-pdp-protect">
+          <h4>Order protection</h4>
+          <ul>
+            <li>Out-of-stock items can be ordered; delivery confirms stock.</li>
+            <li>Payment and delivery are tracked separately on the order.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- POS product edit modal -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosProductEditModal"
+  (click)="closePosProductEditModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-product-edit-modal"
+    [class.dark]="isDarkMode"
+    (click)="onPosProductFormClick($event); $event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosProductEditTitle">
+    <div class="otc-pos-modal-title-bar">
+      <h3 id="otcPosProductEditTitle">
+        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+        {{ isPosServiceSaleCategory(posProductEditDraft) ? 'Edit service' : 'Edit product' }}
+      </h3>
+      <button type="button" class="otc-pos-modal-title-close" (click)="closePosProductEditModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="otc-pos-edit-loading" *ngIf="posProductEditLoading">Loading product...</div>
+    <form *ngIf="!posProductEditLoading && posProductEditDraft" class="otc-pos-edit-form" (ngSubmit)="savePosProductEdit()" (click)="onPosProductFormClick($event)">
+      <div class="otc-pos-edit-grid otc-pos-edit-grid--2">
+        <label class="otc-pos-discount-field">
+          Name
+          <input type="text" [(ngModel)]="posProductEditDraft.stockItemName" name="posEditName" required />
+        </label>
+        <label class="otc-pos-discount-field">
+          Barcode
+          <input type="text" [(ngModel)]="posProductEditDraft.barcode" name="posEditBarcode" />
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posFormCategoryDropdownOpen && posFormCategoryContext === 'edit'">
+          Category
+          <div
+            class="otc-pos-form-category-dd"
+            [class.open]="posFormCategoryDropdownOpen && posFormCategoryContext === 'edit'">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosFormCategoryDropdown($event, 'edit')"
+              [attr.aria-expanded]="posFormCategoryDropdownOpen && posFormCategoryContext === 'edit'"
+              aria-haspopup="listbox">
+              <span [class.is-placeholder]="!posProductEditDraft.businessCategory">
+                {{ posProductEditDraft.businessCategory || 'Select category' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posFormCategoryDropdownOpen && posFormCategoryContext === 'edit'"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posFormCategorySearch"
+                  name="posEditCategorySearch"
+                  placeholder="Search categories..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosFormCategory($event)">
+                <i class="bi bi-plus-lg"></i> Add New
+              </button>
+              <div class="otc-pos-category-add-form" *ngIf="posFormAddingCategory">
+                <input
+                  type="text"
+                  [(ngModel)]="posFormNewCategoryName"
+                  name="posEditNewCategoryName"
+                  placeholder="Category name..."
+                  (keydown.enter)="confirmAddPosFormCategory($event)"
+                  autocomplete="off" />
+                <button type="button" class="otc-pos-category-save-btn" (click)="confirmAddPosFormCategory($event)">Save</button>
+              </div>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-form-category-clear"
+                  *ngIf="posProductEditDraft.businessCategory"
+                  (click)="selectPosFormCategory('', $event)">
+                  Clear selection
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let cat of filteredPosFormCategories(posProductEditDraft.businessCategory)"
+                  [class.active]="posProductEditDraft.businessCategory === cat"
+                  (click)="selectPosFormCategory(cat, $event)"
+                  role="option"
+                  [attr.aria-selected]="posProductEditDraft.businessCategory === cat">
+                  {{ cat }}
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosFormCategories(posProductEditDraft.businessCategory).length">
+                  No categories found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posFormUnitDropdownOpen && posFormUnitContext === 'edit'">
+          Unit
+          <div
+            class="otc-pos-form-category-dd otc-pos-form-unit-dd"
+            [class.open]="posFormUnitDropdownOpen && posFormUnitContext === 'edit'">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosFormUnitDropdown($event, 'edit')"
+              [attr.aria-expanded]="posFormUnitDropdownOpen && posFormUnitContext === 'edit'"
+              aria-haspopup="listbox">
+              <span [class.is-placeholder]="!posProductEditDraft.unit">
+                {{ posProductEditDraft.unit || 'Select unit' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posFormUnitDropdownOpen && posFormUnitContext === 'edit'"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posFormUnitSearch"
+                  name="posEditUnitSearch"
+                  placeholder="Search units..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosFormUnit($event)">
+                <i class="bi bi-plus-lg"></i> Add New
+              </button>
+              <div class="otc-pos-category-add-form" *ngIf="posFormAddingUnit">
+                <input
+                  type="text"
+                  [(ngModel)]="posFormNewUnitName"
+                  name="posEditNewUnitName"
+                  placeholder="Unit name..."
+                  (keydown.enter)="confirmAddPosFormUnit($event)"
+                  autocomplete="off" />
+                <button type="button" class="otc-pos-category-save-btn" (click)="confirmAddPosFormUnit($event)">Save</button>
+              </div>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-form-category-clear"
+                  *ngIf="posProductEditDraft.unit"
+                  (click)="selectPosFormUnit('', $event)">
+                  Clear selection
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let unit of filteredPosFormUnits(posProductEditDraft.unit)"
+                  [class.active]="posProductEditDraft.unit === unit"
+                  (click)="selectPosFormUnit(unit, $event)"
+                  role="option"
+                  [attr.aria-selected]="posProductEditDraft.unit === unit">
+                  {{ unit }}
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosFormUnits(posProductEditDraft.unit).length">
+                  No units found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+        <label class="otc-pos-discount-field">
+          Cost price
+          <input type="number" min="0" step="1" [(ngModel)]="posProductEditDraft.costPrice" name="posEditCost" />
+        </label>
+        <div class="otc-pos-discount-field otc-pos-product-sell-model">
+          <app-unit-selling-model-picker
+            [stockItemId]="pharmacyUseStockBatch ? posProductEditId : null"
+            [shopItemId]="pharmacyUseStockBatch ? null : posProductEditId"
+            [unitCostPrice]="posProductEditDraft.costPrice"
+            [(selectedModelId)]="posProductEditDraft.unitSellingModelId"
+            [showPriceModeSwitch]="true"
+            [(useUnitSellingModel)]="posProductEditDraft.useUnitSellingModel"
+            [(freeSellingPrice)]="posProductEditDraft.sellingPrice"
+            (selectedModelChange)="onPosProductEditSellModelSelected($event)"
+            (unitSellingPriceChange)="onPosProductEditSellModelPriceChange($event)"
+            [disabled]="posProductEditSaving"
+            label="Selling price">
+          </app-unit-selling-model-picker>
+        </div>
+        <label class="otc-pos-discount-field" *ngIf="!isPosServiceSaleCategory(posProductEditDraft)">
+          Reorder level
+          <input type="number" min="0" step="1" [(ngModel)]="posProductEditDraft.reorderLevel" name="posEditReorder" />
+        </label>
+        <label class="otc-pos-discount-field" *ngIf="!isPosServiceSaleCategory(posProductEditDraft)">
+          Reorder to
+          <input type="number" min="0" step="1" [(ngModel)]="posProductEditDraft.restockTo" name="posEditRestockTo" />
+        </label>
+        <label class="otc-pos-discount-field" *ngIf="!isPosServiceSaleCategory(posProductEditDraft)">
+          Shelf
+          <input type="text" [(ngModel)]="posProductEditDraft.shelfNumber" name="posEditShelf" />
+        </label>
+        <label class="otc-pos-discount-field otc-pos-edit-span-2">
+          Description
+          <textarea
+            rows="3"
+            [(ngModel)]="posProductEditDraft.description"
+            name="posEditDescription"
+            placeholder="Short product description"></textarea>
+        </label>
+      </div>
+      <div class="otc-pos-discount-actions">
+        <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosProductEditModal()" [disabled]="posProductEditSaving">Cancel</button>
+        <button type="submit" class="otc-btn otc-btn-primary" [disabled]="posProductEditSaving">
+          {{ posProductEditSaving ? 'Saving...' : 'Save changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- POS product images modal (max 3) -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosProductImagesModal"
+  (click)="closePosProductImagesModal()">
+  <div class="otc-pos-discount-modal otc-pos-product-images-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="otcPosProductImagesTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosProductImagesTitle">Product images</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosProductImagesModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-discount-product">{{ posProductImagesName }}</p>
+    <p class="otc-pos-images-hint">Up to 3 images. Slot 1 is the primary card image — use “Primary” to promote any photo.</p>
+
+    <div class="otc-pos-gallery">
+      <aside class="otc-pos-gallery-thumbs" aria-label="Image thumbnails">
+        <button
+          type="button"
+          class="otc-pos-gallery-thumb"
+          *ngFor="let url of posProductImageDrafts; let i = index"
+          [class.active]="posProductImageActiveIndex === i"
+          [class.otc-pos-gallery-thumb--primary]="i === 0"
+          (click)="selectPosProductImage(i)"
+          [attr.aria-label]="(i === 0 ? 'Primary image ' : 'Show image ') + (i + 1)">
+          <img [src]="posProductImageDisplayUrl(i) || url" [alt]="'Thumbnail ' + (i + 1)" />
+          <span class="otc-pos-gallery-thumb-star" *ngIf="i === 0" title="Primary image">★</span>
+        </button>
+        <label class="otc-pos-gallery-thumb otc-pos-gallery-thumb--add" *ngIf="posProductImageDrafts.length < 3 && !posProductImageUploading">
+          <i class="bi bi-plus-lg"></i>
+          <input type="file" accept="image/*" (change)="onPosProductImageSelected($event)" hidden />
+        </label>
+        <div class="otc-pos-gallery-thumb otc-pos-gallery-thumb--busy" *ngIf="posProductImageUploading" title="Uploading...">
+          <span>{{ posProductImageUploadProgress }}%</span>
+        </div>
+      </aside>
+
+      <div class="otc-pos-gallery-stage" *ngIf="posProductImageZoomUrl && !posProductImageUploading; else posGalleryEmptyOrUpload">
+        <img class="otc-pos-gallery-main-img" [src]="posProductImageZoomUrl" [alt]="posProductImagesName" />
+
+        <button
+          type="button"
+          class="otc-pos-gallery-nav otc-pos-gallery-nav--prev"
+          *ngIf="posProductImageDrafts.length > 1"
+          (click)="posProductImagePrev()"
+          aria-label="Previous image">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button
+          type="button"
+          class="otc-pos-gallery-nav otc-pos-gallery-nav--next"
+          *ngIf="posProductImageDrafts.length > 1"
+          (click)="posProductImageNext()"
+          aria-label="Next image">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <button
+          type="button"
+          class="otc-pos-gallery-expand"
+          (click)="openPosProductImageFullscreen()"
+          title="Expand image"
+          aria-label="Expand image">
+          <i class="bi bi-arrows-fullscreen"></i>
+        </button>
+
+        <button
+          type="button"
+          class="otc-pos-gallery-primary"
+          *ngIf="posProductImageActiveIndex > 0"
+          (click)="setPosProductImageAsPrimary()"
+          title="Set as primary image"
+          aria-label="Set as primary image">
+          <i class="bi bi-star-fill"></i>
+          Primary
+        </button>
+
+        <button
+          type="button"
+          class="otc-pos-gallery-remove"
+          (click)="removePosProductImage(posProductImageActiveIndex)"
+          title="Remove image"
+          aria-label="Remove image">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <ng-template #posGalleryEmptyOrUpload>
+        <div class="otc-pos-gallery-stage otc-pos-gallery-stage--empty" *ngIf="!posProductImageUploading">
+          <label class="otc-pos-gallery-empty-add">
+            <i class="bi bi-image"></i>
+            <span>Add product image</span>
+            <input type="file" accept="image/*" (change)="onPosProductImageSelected($event)" hidden />
+          </label>
+        </div>
+        <div class="otc-pos-gallery-stage otc-pos-gallery-stage--uploading" *ngIf="posProductImageUploading">
+          <div class="otc-pos-upload-progress" role="progressbar" [attr.aria-valuenow]="posProductImageUploadProgress" aria-valuemin="0" aria-valuemax="100">
+            <div class="otc-pos-upload-progress-label">Uploading image? {{ posProductImageUploadProgress }}%</div>
+            <div class="otc-pos-upload-progress-track">
+              <div class="otc-pos-upload-progress-bar" [style.width.%]="posProductImageUploadProgress"></div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="otc-pos-discount-actions otc-pos-images-actions">
+      <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosProductImagesModal()" [disabled]="posProductImageSaving">Cancel</button>
+      <button
+        type="button"
+        class="otc-pos-checkout-btn otc-pos-discount-apply otc-pos-images-save"
+        (click)="savePosProductImages()"
+        [disabled]="posProductImageSaving || posProductImageUploading">
+        {{ posProductImageSaving ? 'Saving...' : 'Save images' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen image expand (slide between images) -->
+<div
+  class="otc-pos-gallery-fullscreen"
+  *ngIf="showPosProductImageFullscreen && posProductImageZoomUrl"
+  (click)="closePosProductImageFullscreen()"
+  (keydown.arrowleft)="posProductImagePrev(); $event.preventDefault()"
+  (keydown.arrowright)="posProductImageNext(); $event.preventDefault()"
+  tabindex="0">
+  <img [src]="posProductImageZoomUrl" [alt]="posProductImagesName" (click)="$event.stopPropagation()" />
+  <button
+    type="button"
+    class="otc-pos-gallery-nav otc-pos-gallery-nav--prev otc-pos-gallery-nav--fullscreen"
+    *ngIf="posProductImageDrafts.length > 1"
+    (click)="posProductImagePrev(); $event.stopPropagation()"
+    aria-label="Previous image">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <button
+    type="button"
+    class="otc-pos-gallery-nav otc-pos-gallery-nav--next otc-pos-gallery-nav--fullscreen"
+    *ngIf="posProductImageDrafts.length > 1"
+    (click)="posProductImageNext(); $event.stopPropagation()"
+    aria-label="Next image">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+  <div class="otc-pos-gallery-fullscreen-counter" *ngIf="posProductImageDrafts.length > 1" (click)="$event.stopPropagation()">
+    {{ posProductImageActiveIndex + 1 }} / {{ posProductImageDrafts.length }}
+  </div>
+  <button type="button" class="otc-pos-gallery-fullscreen-close" (click)="closePosProductImageFullscreen()" aria-label="Close">
+    <i class="bi bi-x-lg"></i>
+  </button>
+</div>
+
+<!-- POS add new product modal -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosAddProductModal"
+  (click)="closePosAddProductModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-product-edit-modal"
+    [class.dark]="isDarkMode"
+    (click)="onPosProductFormClick($event); $event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosAddProductTitle">
+    <div class="otc-pos-modal-title-bar">
+      <div class="otc-pos-modal-title-tabs" role="tablist" aria-label="Add item type">
+        <button
+          type="button"
+          id="otcPosAddProductTitle"
+          class="otc-pos-modal-title-tab"
+          role="tab"
+          [class.active]="posAddModalKind === 'product'"
+          [attr.aria-selected]="posAddModalKind === 'product'"
+          (click)="setPosAddModalKind('product')">
+          <i class="bi bi-box-seam" aria-hidden="true"></i>
+          Add new product
+        </button>
+        <button
+          type="button"
+          class="otc-pos-modal-title-tab"
+          role="tab"
+          [class.active]="posAddModalKind === 'service'"
+          [attr.aria-selected]="posAddModalKind === 'service'"
+          (click)="setPosAddModalKind('service')">
+          <i class="bi bi-briefcase" aria-hidden="true"></i>
+          Add new service
+        </button>
+      </div>
+      <button type="button" class="otc-pos-modal-title-close" (click)="closePosAddProductModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <form *ngIf="posAddProductDraft" class="otc-pos-edit-form" (ngSubmit)="savePosAddProduct()" (click)="onPosProductFormClick($event)">
+      <div class="otc-pos-edit-grid otc-pos-edit-grid--2">
+        <label class="otc-pos-discount-field">
+          Name
+          <input type="text" [(ngModel)]="posAddProductDraft.stockItemName" name="posAddName" required />
+        </label>
+        <label class="otc-pos-discount-field" *ngIf="posAddModalKind === 'product'">
+          SKU
+          <input
+            type="text"
+            [(ngModel)]="posAddProductDraft.sku"
+            name="posAddSku"
+            readonly
+            title="Generated automatically" />
+        </label>
+        <label class="otc-pos-discount-field">
+          Barcode
+          <input type="text" [(ngModel)]="posAddProductDraft.barcode" name="posAddBarcode" />
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posFormCategoryDropdownOpen && posFormCategoryContext === 'add'">
+          Category
+          <div
+            class="otc-pos-form-category-dd"
+            [class.open]="posFormCategoryDropdownOpen && posFormCategoryContext === 'add'">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosFormCategoryDropdown($event, 'add')"
+              [attr.aria-expanded]="posFormCategoryDropdownOpen && posFormCategoryContext === 'add'"
+              aria-haspopup="listbox">
+              <span [class.is-placeholder]="!posAddProductDraft.businessCategory">
+                {{ posAddProductDraft.businessCategory || 'Select category' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posFormCategoryDropdownOpen && posFormCategoryContext === 'add'"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posFormCategorySearch"
+                  name="posAddCategorySearch"
+                  placeholder="Search categories..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosFormCategory($event)">
+                <i class="bi bi-plus-lg"></i> Add New
+              </button>
+              <div class="otc-pos-category-add-form" *ngIf="posFormAddingCategory">
+                <input
+                  type="text"
+                  [(ngModel)]="posFormNewCategoryName"
+                  name="posAddNewCategoryName"
+                  placeholder="Category name..."
+                  (keydown.enter)="confirmAddPosFormCategory($event)"
+                  autocomplete="off" />
+                <button type="button" class="otc-pos-category-save-btn" (click)="confirmAddPosFormCategory($event)">Save</button>
+              </div>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-form-category-clear"
+                  *ngIf="posAddProductDraft.businessCategory"
+                  (click)="selectPosFormCategory('', $event)">
+                  Clear selection
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let cat of filteredPosFormCategories(posAddProductDraft.businessCategory)"
+                  [class.active]="posAddProductDraft.businessCategory === cat"
+                  (click)="selectPosFormCategory(cat, $event)"
+                  role="option"
+                  [attr.aria-selected]="posAddProductDraft.businessCategory === cat">
+                  {{ cat }}
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosFormCategories(posAddProductDraft.businessCategory).length">
+                  No categories found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posFormUnitDropdownOpen && posFormUnitContext === 'add'">
+          Unit
+          <div
+            class="otc-pos-form-category-dd otc-pos-form-unit-dd"
+            [class.open]="posFormUnitDropdownOpen && posFormUnitContext === 'add'">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosFormUnitDropdown($event, 'add')"
+              [attr.aria-expanded]="posFormUnitDropdownOpen && posFormUnitContext === 'add'"
+              aria-haspopup="listbox">
+              <span [class.is-placeholder]="!posAddProductDraft.unit">
+                {{ posAddProductDraft.unit || 'Select unit' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posFormUnitDropdownOpen && posFormUnitContext === 'add'"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posFormUnitSearch"
+                  name="posAddUnitSearch"
+                  placeholder="Search units..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosFormUnit($event)">
+                <i class="bi bi-plus-lg"></i> Add New
+              </button>
+              <div class="otc-pos-category-add-form" *ngIf="posFormAddingUnit">
+                <input
+                  type="text"
+                  [(ngModel)]="posFormNewUnitName"
+                  name="posAddNewUnitName"
+                  placeholder="Unit name..."
+                  (keydown.enter)="confirmAddPosFormUnit($event)"
+                  autocomplete="off" />
+                <button type="button" class="otc-pos-category-save-btn" (click)="confirmAddPosFormUnit($event)">Save</button>
+              </div>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-form-category-clear"
+                  *ngIf="posAddProductDraft.unit"
+                  (click)="selectPosFormUnit('', $event)">
+                  Clear selection
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let unit of filteredPosFormUnits(posAddProductDraft.unit)"
+                  [class.active]="posAddProductDraft.unit === unit"
+                  (click)="selectPosFormUnit(unit, $event)"
+                  role="option"
+                  [attr.aria-selected]="posAddProductDraft.unit === unit">
+                  {{ unit }}
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosFormUnits(posAddProductDraft.unit).length">
+                  No units found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+        <label class="otc-pos-discount-field">
+          Cost price
+          <input type="number" min="0" step="1" [(ngModel)]="posAddProductDraft.costPrice" name="posAddCost" />
+        </label>
+        <div class="otc-pos-discount-field otc-pos-product-sell-model">
+          <app-unit-selling-model-picker
+            [stockItemId]="null"
+            [shopItemId]="null"
+            [allowDraft]="true"
+            [unitCostPrice]="posAddProductDraft.costPrice"
+            [(selectedModelId)]="posAddProductDraft.unitSellingModelId"
+            [showPriceModeSwitch]="true"
+            [(useUnitSellingModel)]="posAddProductDraft.useUnitSellingModel"
+            [(freeSellingPrice)]="posAddProductDraft.sellingPrice"
+            (selectedModelChange)="onPosAddProductSellModelSelected($event)"
+            (unitSellingPriceChange)="onPosAddProductSellModelPriceChange($event)"
+            [disabled]="posAddProductSaving"
+            label="Selling price">
+          </app-unit-selling-model-picker>
+        </div>
+        <label class="otc-pos-discount-field" *ngIf="posAddModalKind === 'product'">
+          Reorder level
+          <input type="number" min="0" step="1" [(ngModel)]="posAddProductDraft.reorderLevel" name="posAddReorder" />
+        </label>
+        <label class="otc-pos-discount-field" *ngIf="posAddModalKind === 'product'">
+          Reorder to
+          <input type="number" min="0" step="1" [(ngModel)]="posAddProductDraft.restockTo" name="posAddRestockTo" />
+        </label>
+        <label class="otc-pos-discount-field" *ngIf="posAddModalKind === 'product'">
+          Shelf
+          <input type="text" [(ngModel)]="posAddProductDraft.shelfNumber" name="posAddShelf" />
+        </label>
+        <label class="otc-pos-discount-field otc-pos-edit-span-2">
+          Description
+          <textarea
+            rows="3"
+            [(ngModel)]="posAddProductDraft.description"
+            name="posAddDescription"
+            [placeholder]="posAddModalKind === 'service' ? 'Short service description' : 'Short product description'"></textarea>
+        </label>
+      </div>
+      <div class="otc-pos-discount-actions">
+        <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosAddProductModal()" [disabled]="posAddProductSaving">Cancel</button>
+        <button type="submit" class="otc-btn otc-btn-primary" [disabled]="posAddProductSaving">
+          {{
+            posAddProductSaving
+              ? (posAddModalKind === 'service' ? 'Adding...' : 'Adding...')
+              : (posAddModalKind === 'service' ? 'Add service' : 'Add product')
+          }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- POS add new client modal -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosAddClientModal"
+  (click)="closePosAddClientModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-product-edit-modal otc-pos-add-client-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosAddClientTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosAddClientTitle">
+        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+        Add new client
+      </h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosAddClientModal()" aria-label="Close" [disabled]="posAddClientSaving">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <form class="otc-pos-edit-form" (ngSubmit)="savePosAddClient()">
+      <div class="otc-pos-edit-grid otc-pos-edit-grid--2">
+        <label class="otc-pos-discount-field">
+          <span class="otc-pos-field-label"><span class="otc-pos-required">*</span> First Name</span>
+          <input type="text" [(ngModel)]="posAddClientDraft.clientFirstName" name="posAddClientFirstName" placeholder="Enter first name" required [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span class="otc-pos-field-label"><span class="otc-pos-required">*</span> Second Name</span>
+          <input type="text" [(ngModel)]="posAddClientDraft.clientSecondName" name="posAddClientSecondName" placeholder="Enter second name" required [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span class="otc-pos-field-label"><span class="otc-pos-required">*</span> Contact/Phone</span>
+          <input
+            type="tel"
+            [(ngModel)]="posAddClientDraft.clientContact"
+            name="posAddClientContact"
+            placeholder="Starts with 256"
+            maxlength="12"
+            pattern="256[0-9]{9}"
+            inputmode="numeric"
+            required
+            [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span class="otc-pos-field-label"><span class="otc-pos-required">*</span> Gender</span>
+          <select [(ngModel)]="posAddClientDraft.clientGender" name="posAddClientGender" required [disabled]="posAddClientSaving">
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label class="otc-pos-discount-field">
+          Occupation
+          <input type="text" [(ngModel)]="posAddClientDraft.occupation" name="posAddClientOccupation" placeholder="Enter occupation" [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          Address
+          <input type="text" [(ngModel)]="posAddClientDraft.clientAddress" name="posAddClientAddress" placeholder="Enter client address" [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field otc-pos-edit-span-2">
+          Client Group
+          <select
+            [(ngModel)]="posAddClientDraft.clientGroupId"
+            name="posAddClientGroupId"
+            (ngModelChange)="onPosAddClientGroupChange($event)"
+            [disabled]="posAddClientSaving || posAddClientGroupsLoading">
+            <option [ngValue]="null">Select client group</option>
+            <option *ngFor="let group of posAddClientGroups" [ngValue]="group.id">
+              {{ group.groupName || group.name }}
+            </option>
+          </select>
+        </label>
+
+        <div class="otc-pos-edit-span-2 otc-pos-add-client-section">
+          <h4>Next of Kin Information</h4>
+        </div>
+
+        <label class="otc-pos-discount-field">
+          Next of Kin Name
+          <input type="text" [(ngModel)]="posAddClientDraft.nextOfKinName" name="posAddClientNokName" placeholder="Enter next of kin name" [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          Next of Kin Contact
+          <input
+            type="tel"
+            [(ngModel)]="posAddClientDraft.nextOfKinContact"
+            name="posAddClientNokContact"
+            placeholder="Starts with 256"
+            maxlength="12"
+            pattern="256[0-9]{9}"
+            inputmode="numeric"
+            [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field">
+          Relationship
+          <input type="text" [(ngModel)]="posAddClientDraft.relationship" name="posAddClientRelationship" placeholder="e.g., Brother, Sister, Spouse" [disabled]="posAddClientSaving" />
+        </label>
+        <label class="otc-pos-discount-field otc-pos-edit-span-2">
+          Next of Kin Address
+          <textarea
+            rows="2"
+            [(ngModel)]="posAddClientDraft.nextOfKinAddress"
+            name="posAddClientNokAddress"
+            placeholder="Enter next of kin address"
+            [disabled]="posAddClientSaving"></textarea>
+        </label>
+      </div>
+      <div class="otc-pos-discount-actions">
+        <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosAddClientModal()" [disabled]="posAddClientSaving">Cancel</button>
+        <button type="submit" class="otc-pos-checkout-btn otc-pos-discount-apply" [disabled]="posAddClientSaving">
+          {{ posAddClientSaving ? 'Saving...' : 'Add client' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1061,65 +2114,292 @@
   [attr.aria-hidden]="!showReceiptModal">
   <div class="modal-dialog modal-dialog-centered otc-receipt-dialog" role="document">
     <div class="modal-content otc-receipt-modal-content" *ngIf="receipt as r">
-      <div class="modal-header">
+      <div class="modal-header otc-doc-modal-header">
         <h5 class="modal-title" id="otcReceiptModalLabel">
-          {{ r.patientName ? 'Pharmacy visit receipt' : 'OTC sale receipt' }} — {{ r.saleNo }}
+          {{ receiptDocumentTitle(r) }} &mdash; {{ r.saleNo }}
         </h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="closeReceiptModal()"></button>
+        <button type="button" class="otc-modal-close-btn" aria-label="Close" (click)="closeReceiptModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
       <div class="modal-body">
-        <div
-          id="otc-receipt-print"
-          class="otc-receipt-print"
-          [class.otc-receipt-print--simple]="!r.includePrescribing">
-          <div class="otc-receipt-letterhead">
-            <img [src]="facilityLogoUrl" alt="Facility logo" class="otc-receipt-logo" />
-            <h1 class="otc-receipt-facility">{{ r.facilityName }}</h1>
+        <div id="otc-receipt-print" class="otc-commercial-doc" [attr.data-doc-type]="r.docType">
+          <!-- Delivery Note template (qty only — matches print PDF) -->
+          <ng-container *ngIf="r.docType === 'delivery_note'; else otcStandardCommercialDoc">
+            <div class="otc-dn">
+              <div class="otc-dn-header">
+                <div class="otc-dn-brand">
+                  <div class="otc-dn-company">{{ r.facilityName }}</div>
+                  <div class="otc-dn-slogan">Quality products · Reliable delivery</div>
+                  <div class="otc-dn-logo-wrap">
+                    <img [src]="facilityLogoUrl" alt="Logo" class="otc-dn-logo" />
+                  </div>
+                </div>
+                <div class="otc-dn-meta-block">
+                  <h1 class="otc-dn-title">Delivery Note</h1>
+                  <table class="otc-dn-meta-table">
+                    <tr>
+                      <td class="otc-dn-meta-label">Order Date</td>
+                      <td class="otc-dn-meta-value">{{ r.saleDateLabel }}</td>
+                    </tr>
+                    <tr>
+                      <td class="otc-dn-meta-label">Order #</td>
+                      <td class="otc-dn-meta-value">{{ r.orderNo || r.saleNo }}</td>
+                    </tr>
+                    <tr>
+                      <td class="otc-dn-meta-label">Delivery Note #</td>
+                      <td class="otc-dn-meta-value">{{ r.saleNo }}</td>
+                    </tr>
+                    <tr>
+                      <td class="otc-dn-meta-label">Customer ID</td>
+                      <td class="otc-dn-meta-value">{{ r.customerId || '—' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="otc-dn-meta-label">Despatch Date</td>
+                      <td class="otc-dn-meta-value">{{ r.saleDateLabel }}</td>
+                    </tr>
+                    <tr>
+                      <td class="otc-dn-meta-label">Shipping Method</td>
+                      <td class="otc-dn-meta-value">Hand delivery</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <div class="otc-dn-addresses">
+                <div class="otc-dn-addr">
+                  <div class="otc-dn-addr-head">Shipping Address</div>
+                  <div class="otc-dn-addr-body">
+                    <div>{{ r.clientName || 'Walk-in customer' }}</div>
+                    <div *ngIf="r.clientAddress">{{ r.clientAddress }}</div>
+                    <div *ngIf="r.clientPhone">{{ r.clientPhone }}</div>
+                    <div *ngIf="!r.clientAddress && !r.clientPhone">—</div>
+                  </div>
+                </div>
+                <div class="otc-dn-addr">
+                  <div class="otc-dn-addr-head">Invoice Address</div>
+                  <div class="otc-dn-addr-body">
+                    <div>{{ r.clientName || 'Walk-in customer' }}</div>
+                    <div *ngIf="r.clientAddress">{{ r.clientAddress }}</div>
+                    <div *ngIf="r.clientPhone">{{ r.clientPhone }}</div>
+                    <div *ngIf="!r.clientAddress && !r.clientPhone">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <table class="otc-dn-table">
+                <thead>
+                  <tr>
+                    <th class="otc-dn-col-item">Item #</th>
+                    <th class="otc-dn-col-desc">Description</th>
+                    <th class="otc-dn-col-qty">Ordered</th>
+                    <th class="otc-dn-col-qty">Shipped</th>
+                    <th class="otc-dn-col-qty">Outstanding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of r.lines; let i = index" [class.zebra]="i % 2 === 1">
+                    <td class="otc-dn-col-item">{{ i + 1 }}</td>
+                    <td class="otc-dn-col-desc">
+                      <span class="otc-receipt-item-name">{{ line.itemName }}</span>
+                      <span class="otc-doc-desc" *ngIf="r.includePrescribing && line.dosage">{{ line.dosage }}</span>
+                    </td>
+                    <td class="otc-dn-col-qty">{{ line.quantity }}</td>
+                    <td class="otc-dn-col-qty">{{ line.quantity }}</td>
+                    <td class="otc-dn-col-qty">—</td>
+                  </tr>
+                  <tr *ngIf="!r.lines?.length">
+                    <td colspan="5" class="otc-receipt-empty">No items</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="otc-dn-pay-indicate" *ngIf="receiptShowsAmountReceived(r)">
+                <span>Amount paid: <strong>{{ formatMoney(r.amountReceived) }}</strong></span>
+                <span>Outstanding: <strong>{{ formatMoney(r.amountDue || 0) }}</strong></span>
+              </div>
+
+              <div class="otc-dn-terms">
+                <p>Notice must be given to us of any goods not received within 10 days taken from the date of despatch stated on this delivery note.</p>
+                <p>Any shortage or damage must be reported within 72 hours of receipt of goods.</p>
+                <p>Complaints can only be accepted if made in writing within 30 days of receipt of goods.</p>
+                <p>No goods may be returned without prior authorisation from company.</p>
+              </div>
+
+              <p class="otc-dn-thanks">Thank you for your business!</p>
+
+              <div class="otc-dn-signs">
+                <div class="otc-dn-sign"><span class="otc-dn-sign-line"></span><span>Signature</span></div>
+                <div class="otc-dn-sign"><span class="otc-dn-sign-line"></span><span>Print Name</span></div>
+                <div class="otc-dn-sign"><span class="otc-dn-sign-line"></span><span>Date</span></div>
+              </div>
+
+              <div class="otc-dn-footer">
+                <p class="otc-dn-enquiry">
+                  Should you have any enquiries concerning this delivery note, please contact
+                  {{ r.receivedBy || 'our team' }} on {{ deliveryNoteEnquiryPhone() }}
+                </p>
+                <p class="otc-dn-facility-addr">{{ facilityAddressForDoc() }}</p>
+                <p class="otc-dn-facility-contact">{{ facilityContactForDoc() }}</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #otcStandardCommercialDoc>
+          <div class="otc-doc-top">
+            <h1 class="otc-doc-title">{{ receiptDocumentTitle(r) }}</h1>
+            <div class="otc-doc-logo-box">
+              <img [src]="facilityLogoUrl" alt="Logo" class="otc-doc-logo" />
+            </div>
           </div>
-          <p class="otc-receipt-meta">{{ r.patientName ? 'Pharmacy Visit Sale' : 'OTC Counter Sale' }}</p>
-          <p class="otc-receipt-meta" *ngIf="r.patientName"><strong>Patient:</strong> {{ r.patientName }}</p>
-          <p class="otc-receipt-meta">
-            <strong>{{ r.saleNo }}</strong><br />
-            {{ r.saleDateLabel }} · {{ r.saleTimeLabel }}
-          </p>
-          <p class="otc-receipt-meta">Served by: {{ r.receivedBy }}</p>
-          <table class="otc-receipt-table">
+
+          <div class="otc-doc-meta-row">
+            <div class="otc-doc-meta-left">
+              <div class="otc-doc-client">{{ (r.clientName || 'Walk-in customer') | uppercase }}</div>
+              <div class="otc-doc-subtle">{{ r.clientName ? 'Client' : 'Counter sale' }}</div>
+              <div class="otc-doc-ref-label">{{ r.docType === 'quotation' || r.docType === 'proforma' ? 'VALID FOR' : (r.docType === 'sales_invoice' ? 'REFERENCE' : 'SERVED BY') }}</div>
+              <div class="otc-doc-subtle">{{ r.docType === 'quotation' || r.docType === 'proforma' ? '14 days' : r.receivedBy }}</div>
+            </div>
+            <div class="otc-doc-meta-right">
+              <div class="otc-doc-client">{{ receiptDocNoLabel(r) }} #{{ r.saleNo }}</div>
+              <div class="otc-doc-subtle">{{ r.saleDateLabel }} &middot; {{ r.saleTimeLabel }}</div>
+            </div>
+          </div>
+
+          <table class="otc-doc-table">
             <thead>
               <tr>
-                <th class="no-sort">Item</th>
-                <th class="no-sort" *ngIf="r.includePrescribing">Dosage</th>
-                <th class="num no-sort">Qty</th>
-                <th class="num no-sort">Amount</th>
+                <th class="col-no">No</th>
+                <th class="col-item">Item Description</th>
+                <th class="col-cost">Cost</th>
+                <th class="col-qty">Qty</th>
+                <th class="col-total">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let line of r.lines" [class.otc-receipt-line-not-given]="line.given === false">
-                <td>
-                  {{ line.itemName }}
+              <tr *ngFor="let line of r.lines; let i = index" [class.zebra]="i % 2 === 1" [class.otc-receipt-line-not-given]="line.given === false">
+                <td class="col-no">{{ i + 1 }}</td>
+                <td class="col-item">
+                  <span class="otc-receipt-item-name">{{ line.itemName }}</span>
+                  <span class="otc-doc-desc" *ngIf="r.includePrescribing && line.dosage">{{ line.dosage }}</span>
+                  <span class="otc-receipt-line-discount" *ngIf="line.discountAmount && line.discountAmount > 0">
+                    Disc: {{ formatPosMoney(line.discountAmount) }}
+                  </span>
                 </td>
-                <td *ngIf="r.includePrescribing">{{ line.dosage || '—' }}</td>
-                <td class="num">{{ line.quantity }}</td>
-                <td class="num">{{ line.given === false ? '—' : formatMoney(line.lineTotal) }}</td>
+                <td class="col-cost">{{ formatPosMoney(line.unitPrice) }}</td>
+                <td class="col-qty">{{ line.quantity }}</td>
+                <td class="col-total">{{ line.given === false ? '-' : formatPosMoney(line.lineTotal) }}</td>
+              </tr>
+              <tr *ngIf="!r.lines?.length">
+                <td colspan="5" class="otc-receipt-empty">No items</td>
               </tr>
             </tbody>
           </table>
-          <div class="otc-receipt-totals">
-            <div><span>Total due</span><strong>{{ formatMoney(r.subtotal) }}</strong></div>
-            <div><span>Payment</span><span>{{ r.paymentMethod }}</span></div>
-            <div><span>Amount received</span><strong>{{ formatMoney(r.amountReceived) }}</strong></div>
-            <div><span>Change</span><strong>{{ formatMoney(r.changeDue) }}</strong></div>
+
+          <div class="otc-doc-bottom">
+            <div class="otc-doc-pay">
+              <div class="otc-doc-ref-label">{{ r.docType === 'quotation' ? 'QUOTATION NOTES' : (r.docType === 'proforma' ? 'PROFORMA NOTES' : 'PAYMENT METHOD') }}</div>
+              <div class="otc-doc-subtle">{{ r.paymentMethod || '-' }}</div>
+            </div>
+            <div class="otc-doc-sums">
+              <div class="otc-doc-sum-row"><span>Subtotal</span><strong>{{ formatMoney(r.subtotal) }}</strong></div>
+              <div class="otc-doc-sum-row">
+                <span>Discount</span><strong>{{ formatMoney(r.discount || 0) }}</strong>
+              </div>
+              <div class="otc-doc-sum-row">
+                <span>{{ receiptTaxLabel(r) }}</span><strong>{{ formatMoney(r.tax) }}</strong>
+              </div>
+              <div class="otc-doc-total-bar">
+                <span>{{ r.docType === 'quotation' ? 'Quoted total' : (r.docType === 'proforma' ? 'Proforma total' : (r.docType === 'efris_receipt' ? 'Gross total' : 'Total')) }}</span>
+                <strong>{{ formatMoney(r.total) }}</strong>
+              </div>
+              <ng-container *ngIf="receiptShowsAmountReceived(r)">
+                <div class="otc-doc-sum-row">
+                  <span>Amount paid</span><strong>{{ formatMoney(r.amountReceived) }}</strong>
+                </div>
+                <div class="otc-doc-sum-row">
+                  <span>Change</span><strong>{{ formatMoney(r.changeDue) }}</strong>
+                </div>
+                <div
+                  class="otc-doc-sum-row"
+                  [class.otc-doc-sum-row--due]="(r.amountDue || 0) > 0">
+                  <span>{{ (r.amountDue || 0) > 0 ? 'Amount due' : 'Outstanding' }}</span>
+                  <strong>{{ formatMoney(r.amountDue || 0) }}</strong>
+                </div>
+              </ng-container>
+            </div>
           </div>
-          <p class="otc-receipt-notes" *ngIf="r.notes">Notes: {{ r.notes }}</p>
-          <p class="otc-receipt-thanks">Thank you</p>
+
+          <div class="otc-doc-closing">
+            <p class="otc-receipt-thanks">{{ receiptThankYouMessage(r) }}</p>
+            <p class="otc-receipt-notes" *ngIf="r.notes">Notes: {{ r.notes }}</p>
+          </div>
+
+          <div class="otc-efris-fiscal" *ngIf="r.docType === 'efris_receipt' && r.efris as efris">
+            <div class="otc-efris-fiscal-head">
+              <strong>EFRIS fiscal details</strong>
+              <span class="otc-efris-template-badge" *ngIf="efris.templateOnly !== false">Template — not yet fiscalised by URA</span>
+            </div>
+            <div class="otc-efris-fiscal-grid">
+              <div class="otc-efris-fiscal-meta">
+                <div><span>Seller TIN</span><strong>{{ efris.sellerTin || 'TIN-PENDING' }}</strong></div>
+                <div><span>Device</span><strong>{{ efris.deviceNo || '-' }}</strong></div>
+                <div><span>FDN</span><strong>{{ efris.fdn || r.saleNo }}</strong></div>
+                <div><span>Verification</span><strong>{{ efris.verificationCode || '-' }}</strong></div>
+                <div><span>Issued</span><strong>{{ efris.issuedAtLabel || (r.saleDateLabel + ' ' + r.saleTimeLabel) }}</strong></div>
+              </div>
+              <div class="otc-efris-qr-box" aria-label="EFRIS QR placeholder">
+                <img
+                  *ngIf="efrisQrImageUrl(efris.qrPayload) as qrUrl"
+                  [src]="qrUrl"
+                  alt="EFRIS QR"
+                  class="otc-efris-qr-img" />
+                <ng-container *ngIf="!efrisQrImageUrl(efris.qrPayload)">
+                  <span>EFRIS</span>
+                  <span>QR</span>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="otc-doc-footer">
+            <div class="otc-doc-ref-label">{{ r.facilityName }}</div>
+            <div class="otc-doc-subtle">{{ r.docType === 'quotation' ? 'QUOTATION TERMS' : (r.docType === 'proforma' ? 'PROFORMA TERMS' : (r.docType === 'sales_invoice' ? 'PAYMENT TERMS' : (r.docType === 'efris_receipt' ? 'EFRIS TERMS' : 'RECEIPT TERMS'))) }}</div>
+            <div class="otc-doc-subtle">
+              {{ r.docType === 'quotation'
+                ? 'Prices are estimates and may change. Quotation does not reserve stock unless confirmed.'
+                : (r.docType === 'proforma'
+                  ? 'This is a proforma invoice and does not confirm stock reservation or payment.'
+                  : (r.docType === 'sales_invoice'
+                    ? 'Payment is due as agreed. Please retain this sales invoice for your records.'
+                    : (r.docType === 'efris_receipt'
+                      ? 'This EFRIS e-receipt shows FDN, verification code, and QR for URA validation. Until live fiscalisation, values may be placeholders.'
+                      : 'Goods sold are non-returnable unless defective. Please retain this receipt for your records.'))) }}
+            </div>
+          </div>
+          </ng-template>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" (click)="closeReceiptModal()">Close</button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="shareOtcReceipt()">
+          <i class="bi bi-share me-1"></i> Share
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-warning"
+          *ngIf="canEditOpenedSoldDocument()"
+          (click)="editSoldDocumentInCart(); $event.stopPropagation()">
+          <i class="bi bi-pencil-square me-1"></i> Edit
+        </button>
         <button type="button" class="btn btn-outline-primary" (click)="downloadReceiptPdf()">
           <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
         </button>
         <button type="button" class="btn btn-primary" (click)="printOtcReceipt()">
-          <i class="bi bi-printer me-1"></i> Print receipt (PDF)
+          <i class="bi bi-printer me-1"></i> Print {{ receiptDocumentTitle(r) }}
         </button>
       </div>
     </div>
@@ -1147,14 +2427,14 @@
       <div class="modal-body">
         <p class="otc-order-details-meta mb-2">
           <span>{{ order.visitDate }}</span>
-          <span *ngIf="order.visitTime"> · {{ order.visitTime }}</span>
+          <span *ngIf="order.visitTime"> ? {{ order.visitTime }}</span>
           <ng-container *ngIf="soldOrderVisitNumber(order) as visitNo">
-            <span> · Visit {{ visitNo }}</span>
-            <span *ngIf="soldOrderPatientName(order) as patientName"> · {{ patientName }}</span>
+            <span> · Order {{ visitNo }}</span>
+            <span *ngIf="soldOrderClientName(order) as clientName"> · {{ clientName }}</span>
           </ng-container>
-          <span *ngIf="!soldOrderVisitNumber(order) && soldOrderPatientName(order) as patientName"> · {{ patientName }}</span>
-          <span class="text-muted"> · {{ order.lineCount }} item(s)</span>
-          <span *ngIf="soldOrderStaffLabel(order) !== '—'"> · Served by {{ soldOrderStaffLabel(order) }}</span>
+          <span *ngIf="!soldOrderVisitNumber(order) && soldOrderClientName(order) as clientName"> ? {{ clientName }}</span>
+          <span class="text-muted"> ? {{ order.lineCount }} item(s)</span>
+          <span *ngIf="soldOrderStaffLabel(order) !== '?'"> ? Served by {{ soldOrderStaffLabel(order) }}</span>
         </p>
         <div class="otc-order-lines-scroll">
           <table class="table table-responsive table-bordered mb-0" style="border-radius: 10px; background-color: #e4ebf8;">
@@ -1242,7 +2522,7 @@
       <strong>{{ deleteSoldLineTargetQty() }}</strong> unit(s) to stock?
     </p>
     <p class="otc-delete-sold-line-note" *ngIf="deleteSoldLineTargetRemovesOrder()">
-      This is the only item in the order. The whole order will be removed from Items sold.
+      This is the only product in the order. The whole order will be removed from Products orders.
     </p>
     <div class="otc-queue-modal-actions">
       <button
@@ -1258,8 +2538,752 @@
         [disabled]="deletingSoldLineId != null"
         (click)="confirmDeleteSoldLine()">
         <span *ngIf="deletingSoldLineId != null" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-        {{ deletingSoldLineId != null ? 'Deleting…' : 'Delete' }}
+        {{ deletingSoldLineId != null ? 'Deleting?' : 'Delete' }}
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm turn off / turn on sold order -->
+<div
+  class="otc-pos-discount-overlay otc-pos-discount-overlay--stacked"
+  *ngIf="showSoldOrderActiveModal && soldOrderActiveTarget as activeOrder"
+  (click)="closeSoldOrderActiveModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcSoldOrderActiveTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcSoldOrderActiveTitle">
+        {{ soldOrderActiveMakeActive ? 'Turn on order' : 'Turn off order' }}
+      </h3>
+      <button
+        type="button"
+        class="otc-pos-discount-close"
+        (click)="closeSoldOrderActiveModal()"
+        aria-label="Close"
+        [disabled]="!!soldOrderActiveTogglingKey">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg" *ngIf="!soldOrderActiveMakeActive">
+      Turn off order <strong>{{ activeOrder.orderNo }}</strong>?
+      Documents will still be viewable, but they cannot be edited.
+    </p>
+    <p class="otc-pos-oos-confirm-msg" *ngIf="soldOrderActiveMakeActive">
+      Turn on order <strong>{{ activeOrder.orderNo }}</strong>?
+      Editing and payments will be allowed again.
+    </p>
+    <div class="otc-pos-oos-confirm-actions">
+      <button
+        type="button"
+        class="btn btn-light btn-sm"
+        (click)="closeSoldOrderActiveModal()"
+        [disabled]="!!soldOrderActiveTogglingKey">
+        Deny
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm"
+        [class.btn-danger]="!soldOrderActiveMakeActive"
+        [class.btn-primary]="soldOrderActiveMakeActive"
+        (click)="confirmToggleSoldOrderActive()"
+        [disabled]="!!soldOrderActiveTogglingKey">
+        {{ soldOrderActiveTogglingKey ? 'Saving…' : 'Accept' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Products orders date range filter -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showSalesDateFilterModal"
+  (click)="closeSalesDateFilterModal()">
+  <div
+    class="otc-pos-discount-modal otc-sales-date-filter-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcSalesDateFilterTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcSalesDateFilterTitle">Filter by date</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closeSalesDateFilterModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <div class="otc-sales-date-filter-fields">
+      <label class="otc-pos-discount-field">
+        <span>From</span>
+        <input
+          type="date"
+          [(ngModel)]="salesDateFilterDraft.from"
+          name="salesDateFilterFrom"
+          [disabled]="loadingSalesHistory" />
+      </label>
+      <label class="otc-pos-discount-field">
+        <span>To</span>
+        <input
+          type="date"
+          [(ngModel)]="salesDateFilterDraft.to"
+          name="salesDateFilterTo"
+          [disabled]="loadingSalesHistory" />
+      </label>
+    </div>
+    <p class="otc-sales-date-filter-hint">Leave blank and apply last 7 days, or pick a custom range.</p>
+    <div class="otc-pos-oos-confirm-actions otc-sales-date-filter-actions">
+      <button type="button" class="btn btn-light btn-sm" (click)="applySalesDatePreset('today')" [disabled]="loadingSalesHistory">
+        Today
+      </button>
+      <button type="button" class="btn btn-light btn-sm" (click)="applySalesDatePreset('lastMonth')" [disabled]="loadingSalesHistory">
+        Last month
+      </button>
+      <button type="button" class="btn btn-light btn-sm" (click)="applySalesDatePreset('last7')" [disabled]="loadingSalesHistory">
+        Last 7 days
+      </button>
+      <button type="button" class="btn btn-light btn-sm" (click)="closeSalesDateFilterModal()" [disabled]="loadingSalesHistory">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="applySalesDateFilterFromModal()" [disabled]="loadingSalesHistory">
+        Apply
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosOosConfirmModal"
+  (click)="cancelPosOosAddToCart()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosOosConfirmTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosOosConfirmTitle">Out of stock</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="cancelPosOosAddToCart()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg">
+      This product is out of stock. Do you still want to add it to the cart?
+    </p>
+    <div class="otc-pos-oos-confirm-actions">
+      <button type="button" class="btn btn-light btn-sm" (click)="cancelPosOosAddToCart()">No</button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="confirmPosOosAddToCart()">Yes</button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosRemoveCartLineModal && posRemoveCartLineTarget as rmLine"
+  (click)="cancelRemoveCartLine()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosRemoveCartLineTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosRemoveCartLineTitle">Remove from cart</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="cancelRemoveCartLine()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg">
+      Remove <strong>{{ toTitleCase(cartItemDisplayName(rmLine)) }}</strong> from the cart?
+    </p>
+    <div class="otc-pos-oos-confirm-actions">
+      <button type="button" class="btn btn-light btn-sm" (click)="cancelRemoveCartLine()">Cancel</button>
+      <button type="button" class="btn btn-danger btn-sm" (click)="confirmRemoveCartLine()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosSimilarProductModal"
+  (click)="cancelPosSimilarProductAdd()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosSimilarProductTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosSimilarProductTitle">
+        Similar {{ posAddModalKind === 'service' ? 'service' : 'product' }} found
+      </h3>
+      <button type="button" class="otc-pos-discount-close" (click)="cancelPosSimilarProductAdd()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg">
+      A product with a similar name already exists. Continue to add this as a new product?
+    </p>
+    <ul class="otc-pos-similar-product-list" *ngIf="posSimilarProductNames.length">
+      <li *ngFor="let n of posSimilarProductNames">{{ n }}</li>
+    </ul>
+    <div class="otc-pos-oos-confirm-actions">
+      <button type="button" class="btn btn-light btn-sm" (click)="cancelPosSimilarProductAdd()">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="confirmPosSimilarProductAdd()" [disabled]="posAddProductSaving">
+        Continue to add
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick receive stock from product card -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosReceiveStockModal && posReceiveStockDraft as recv"
+  (click)="closePosReceiveStockModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-receive-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosReceiveStockTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcPosReceiveStockTitle">Receive stock</h3>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosReceiveStockModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-discount-product">{{ posReceiveStockProductName }}</p>
+    <form class="otc-pos-receive-form" (ngSubmit)="submitPosReceiveStock()">
+      <div class="otc-pos-edit-grid otc-pos-edit-grid--2">
+        <label class="otc-pos-discount-field">
+          <span>Quantity</span>
+          <input
+            type="number"
+            min="0.01"
+            step="any"
+            required
+            [(ngModel)]="recv.quantityReceived"
+            name="posRecvQty"
+            (ngModelChange)="onPosReceiveQtyOrCostChange()" />
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posReceivePoDropdownOpen">
+          <span>Purchase order number</span>
+          <div class="otc-pos-form-category-dd" [class.open]="posReceivePoDropdownOpen">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosReceivePoDropdown($event)"
+              [attr.aria-expanded]="posReceivePoDropdownOpen"
+              aria-haspopup="listbox"
+              [disabled]="posReceiveStockSaving">
+              <span [class.is-placeholder]="!recv.purchaseOrderNo">
+                {{ recv.purchaseOrderNo || 'Select purchase order' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posReceivePoDropdownOpen"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posReceivePoSearch"
+                  name="posRecvPoSearch"
+                  placeholder="Search purchase orders..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="openNewPosReceivePurchaseOrder($event)">
+                <i class="bi bi-plus-lg"></i> New
+              </button>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  (click)="selectPosReceivePurchaseOrder(null, $event)"
+                  role="option">
+                  <span>No purchase order</span>
+                </button>
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let order of filteredPosReceivePurchaseOrders()"
+                  [class.active]="recv.purchaseOrderId === order.id"
+                  (click)="selectPosReceivePurchaseOrder(order, $event)"
+                  role="option"
+                  [attr.aria-selected]="recv.purchaseOrderId === order.id">
+                  <span>{{ order.orderNo }}</span>
+                  <small *ngIf="order.supplierName" class="otc-pos-receive-store-loc">{{ order.supplierName }}</small>
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosReceivePurchaseOrders().length">
+                  No purchase orders found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+        <label class="otc-pos-discount-field">
+          <span>Unit cost</span>
+          <input
+            type="number"
+            min="0"
+            step="any"
+            required
+            [(ngModel)]="recv.unitCostPrice"
+            name="posRecvUnitCost"
+            (ngModelChange)="onPosReceiveQtyOrCostChange()" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span>Total cost</span>
+          <input
+            type="number"
+            min="0"
+            step="any"
+            [(ngModel)]="recv.totalCostPrice"
+            name="posRecvTotalCost"
+            (ngModelChange)="onPosReceiveTotalChange()" />
+        </label>
+        <div class="otc-pos-discount-field otc-pos-edit-span-2 otc-pos-receive-sell-model">
+          <app-unit-selling-model-picker
+            [stockItemId]="pharmacyUseStockBatch ? posReceiveStockItemId : null"
+            [shopItemId]="pharmacyUseStockBatch ? null : posReceiveStockItemId"
+            [unitCostPrice]="recv.unitCostPrice"
+            [(selectedModelId)]="recv.unitSellingModelId"
+            [showPriceModeSwitch]="true"
+            [(useUnitSellingModel)]="recv.useUnitSellingModel"
+            [(freeSellingPrice)]="recv.unitSellingPrice"
+            (selectedModelChange)="onPosReceiveSellModelSelected($event)"
+            (unitSellingPriceChange)="onPosReceiveSellModelPriceChange($event)"
+            [disabled]="posReceiveStockSaving"
+            label="Selling price">
+          </app-unit-selling-model-picker>
+        </div>
+        <label class="otc-pos-discount-field">
+          <span>Receive date</span>
+          <input type="date" [(ngModel)]="recv.receiveDate" name="posRecvDate" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span>Expiry date</span>
+          <input type="date" [(ngModel)]="recv.expiryDate" name="posRecvExpiry" />
+        </label>
+        <label class="otc-pos-discount-field otc-pos-edit-span-2">
+          <span>Brand</span>
+          <input type="text" [(ngModel)]="recv.brand" name="posRecvBrand" />
+        </label>
+        <label class="otc-pos-discount-field">
+          <span>Batch number</span>
+          <input type="text" [(ngModel)]="recv.batchNumber" name="posRecvBatch" />
+        </label>
+        <label
+          class="otc-pos-discount-field otc-pos-form-category-field"
+          [class.is-open]="posReceiveStoreDropdownOpen">
+          <span>Store</span>
+          <div class="otc-pos-form-category-dd" [class.open]="posReceiveStoreDropdownOpen">
+            <button
+              type="button"
+              class="otc-pos-form-category-trigger"
+              (click)="togglePosReceiveStoreDropdown($event)"
+              [attr.aria-expanded]="posReceiveStoreDropdownOpen"
+              aria-haspopup="listbox"
+              [disabled]="posReceiveStockSaving">
+              <span [class.is-placeholder]="!recv.storeName">
+                {{ recv.storeName || 'Select store' }}
+              </span>
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div
+              class="otc-pos-form-category-menu"
+              *ngIf="posReceiveStoreDropdownOpen"
+              role="listbox"
+              (click)="$event.stopPropagation()">
+              <div class="otc-pos-category-search">
+                <input
+                  type="search"
+                  class="otc-pos-category-search-input"
+                  [(ngModel)]="posReceiveStoreSearch"
+                  name="posRecvStoreSearch"
+                  placeholder="Search stores..."
+                  autocomplete="off" />
+              </div>
+              <button type="button" class="otc-pos-category-add-btn" (click)="startAddPosReceiveStore($event)">
+                <i class="bi bi-plus-lg"></i> Add New
+              </button>
+              <div class="otc-pos-category-add-form" *ngIf="posReceiveAddingStore">
+                <input
+                  type="text"
+                  [(ngModel)]="posReceiveNewStoreName"
+                  name="posRecvNewStoreName"
+                  placeholder="Store name..."
+                  (keydown.enter)="confirmAddPosReceiveStore($event)"
+                  autocomplete="off" />
+                <button
+                  type="button"
+                  class="otc-pos-category-save-btn"
+                  (click)="confirmAddPosReceiveStore($event)"
+                  [disabled]="posReceiveStoreSaving">
+                  {{ posReceiveStoreSaving ? 'Saving…' : 'Save' }}
+                </button>
+              </div>
+              <div class="otc-pos-category-options custom-scrollbar">
+                <button
+                  type="button"
+                  class="otc-pos-category-option"
+                  *ngFor="let store of filteredPosReceiveStores()"
+                  [class.active]="recv.storeId === store.id"
+                  (click)="selectPosReceiveStore(store, $event)"
+                  role="option"
+                  [attr.aria-selected]="recv.storeId === store.id">
+                  <span>{{ store.name }}</span>
+                  <small *ngIf="store.location" class="otc-pos-receive-store-loc">{{ store.location }}</small>
+                </button>
+                <p class="otc-pos-category-empty" *ngIf="!filteredPosReceiveStores().length">
+                  No stores found.
+                </p>
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+      <div class="otc-pos-discount-actions">
+        <button type="button" class="otc-btn otc-btn-secondary" (click)="closePosReceiveStockModal()" [disabled]="posReceiveStockSaving">
+          Cancel
+        </button>
+        <button type="submit" class="otc-btn otc-btn-primary" [disabled]="posReceiveStockSaving">
+          {{ posReceiveStockSaving ? 'Saving…' : 'Receive stock' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Receive payment on Products orders order -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showOrderPaymentModal && orderPaymentTarget as payOrder"
+  (click)="closeOrderPaymentModal()">
+  <div
+    class="otc-pos-discount-modal otc-order-payment-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcOrderPaymentTitle">
+    <header class="otc-pos-discount-head">
+      <div>
+        <h3 id="otcOrderPaymentTitle">Receive payment</h3>
+        <p class="otc-order-payment-sub">
+          {{ payOrder.orderNo }}
+          <span *ngIf="soldOrderClientName(payOrder)"> · {{ soldOrderClientName(payOrder) }}</span>
+        </p>
+      </div>
+      <button type="button" class="otc-pos-discount-close" (click)="closeOrderPaymentModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <div class="otc-order-payment-summary">
+      <div>
+        <span>Total:</span>
+        <strong>{{ formatSoldMoney(soldOrderDue(payOrder)) }}</strong>
+      </div>
+      <div>
+        <span>Paid:</span>
+        <strong>{{ formatSoldMoney(soldOrderPaid(payOrder)) }}</strong>
+      </div>
+      <div [class.otc-order-payment-due]="soldOrderBalance(payOrder) > 0">
+        <span>Amount due:</span>
+        <strong>{{ formatSoldMoney(soldOrderBalance(payOrder)) }}</strong>
+      </div>
+    </div>
+
+    <form class="otc-order-payment-form" (ngSubmit)="submitOrderPayment()" *ngIf="soldOrderBalance(payOrder) > 0">
+      <div class="otc-order-payment-top-row">
+        <label class="otc-pos-discount-field otc-order-payment-amount-field">
+          <span>Amount to pay</span>
+          <input
+            type="number"
+            min="0.01"
+            step="any"
+            required
+            class="otc-order-payment-amount-input"
+            [(ngModel)]="orderPaymentForm.amountToPay"
+            name="orderPayAmount"
+            [disabled]="orderPaymentSaving" />
+        </label>
+        <label class="otc-pos-discount-field otc-order-payment-balance-field">
+          <span>Balance after payment</span>
+          <input
+            type="text"
+            class="otc-order-payment-amount-input"
+            [value]="formatSoldMoney(orderPaymentBalanceAfter)"
+            readonly
+            tabindex="-1"
+            aria-readonly="true" />
+        </label>
+        <label class="otc-order-payment-method-field">
+          <span>Payment method</span>
+          <div class="otc-order-payment-method-wrap">
+            <select
+              class="otc-order-payment-method-select"
+              [(ngModel)]="orderPaymentForm.paymentForm"
+              name="orderPayMethod"
+              [disabled]="orderPaymentSaving"
+              aria-label="Payment method">
+              <option value="Cash At Hand">Cash At Hand</option>
+              <option value="Card">Card</option>
+              <option value="Mobile Money">Mobile Money</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+            </select>
+          </div>
+        </label>
+      </div>
+      <div class="otc-order-payment-action-row">
+        <label class="otc-order-payment-notes-field">
+          <span class="otc-order-payment-action-label">Notes</span>
+          <input
+            type="text"
+            class="otc-order-payment-notes-input"
+            [(ngModel)]="orderPaymentForm.notes"
+            name="orderPayNotes"
+            placeholder="Payment notes"
+            [disabled]="orderPaymentSaving" />
+        </label>
+        <div class="otc-order-payment-row-actions">
+          <button
+            type="button"
+            class="otc-btn otc-btn-secondary otc-order-payment-row-btn"
+            (click)="closeOrderPaymentModal()"
+            [disabled]="orderPaymentSaving">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="otc-btn otc-btn-secondary otc-order-payment-row-btn"
+            *ngIf="soldOrderPaid(payOrder) > 0"
+            (click)="openOrderReceiptFromPaymentModal(payOrder)"
+            [disabled]="orderPaymentSaving">
+            View / print receipt
+          </button>
+          <button
+            type="submit"
+            class="otc-btn otc-btn-primary otc-order-payment-row-btn"
+            [disabled]="orderPaymentSaving">
+            {{ orderPaymentSaving ? 'Saving…' : ('Receive ' + formatSoldMoney(orderPaymentForm.amountToPay || 0)) }}
+          </button>
+        </div>
+      </div>
+      <p class="otc-order-payment-error" *ngIf="orderPaymentError">{{ orderPaymentError }}</p>
+    </form>
+    <p class="otc-order-payment-paid-note" *ngIf="soldOrderBalance(payOrder) <= 0">
+      This order is fully paid. Payment history is below — open the receipt to print.
+    </p>
+    <div
+      class="otc-order-payment-receipt-actions"
+      *ngIf="soldOrderBalance(payOrder) <= 0 && soldOrderPaid(payOrder) > 0">
+      <button
+        type="button"
+        class="otc-btn otc-btn-secondary otc-order-payment-row-btn"
+        (click)="openOrderReceiptFromPaymentModal(payOrder)"
+        [disabled]="orderPaymentSaving">
+        View / print receipt
+      </button>
+    </div>
+
+    <section class="otc-order-payment-history" aria-label="Payments received on this order">
+      <h4>Payments received</h4>
+      <p class="otc-order-payment-history-hint" *ngIf="orderPaymentLoading">Loading payments…</p>
+      <div class="otc-order-payment-table-wrap custom-scrollbar" *ngIf="!orderPaymentLoading">
+        <table class="table table-bordered mb-0 otc-modern-table w-100" *ngIf="orderPaymentList.length; else noOrderPayments">
+          <thead>
+            <tr>
+              <th class="no-sort">SN</th>
+              <th class="no-sort otc-order-payment-date-col">Date and time</th>
+              <th class="no-sort">Amount</th>
+              <th class="no-sort">Method</th>
+              <th class="no-sort">Received by</th>
+              <th class="no-sort otc-order-payment-notes-col">Notes</th>
+              <th class="no-sort text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let p of orderPaymentList; let i = index"
+              [class.otc-order-payment-reversed]="isOrderPaymentReversed(p)">
+              <td>{{ i + 1 }}</td>
+              <td class="otc-order-payment-date-col" [title]="formatOrderPaymentDate(p)">{{ formatOrderPaymentDate(p) }}</td>
+              <td>
+                {{ formatOrderPaymentAmount(p) }}
+                <span class="otc-order-payment-status-pill" *ngIf="isOrderPaymentReversed(p)">Reversed</span>
+              </td>
+              <td>{{ p.paymentForm || p.payment_form || '—' }}</td>
+              <td>{{ p.receivedBy || p.received_by || '—' }}</td>
+              <td class="otc-order-payment-notes-col" [title]="p.notes || ''">{{ p.notes || '—' }}</td>
+              <td class="text-center">
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 otc-order-payment-reverse-btn"
+                  title="Reverse payment"
+                  aria-label="Reverse payment"
+                  *ngIf="!isOrderPaymentReversed(p)"
+                  [disabled]="orderPaymentReversing || orderPaymentSaving"
+                  (click)="requestReverseOrderPayment(p)">
+                  Reverse
+                </button>
+                <span *ngIf="isOrderPaymentReversed(p)" class="otc-order-payment-reversed-dash">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noOrderPayments>
+          <p class="otc-order-payment-history-empty">No payments recorded on this order yet.</p>
+        </ng-template>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Confirm create missing pipeline document -->
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showCreatePipelineDocModal && createPipelineDocDraft as createDoc"
+  (click)="closeCreatePipelineDocModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcCreatePipelineDocTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcCreatePipelineDocTitle">Create {{ createDoc.stepLabel }}</h3>
+      <button
+        type="button"
+        class="otc-pos-discount-close"
+        (click)="closeCreatePipelineDocModal()"
+        aria-label="Close"
+        [disabled]="createPipelineDocSaving">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg">
+      <strong>{{ createDoc.stepLabel }}</strong> is not created yet
+      (current stage: {{ createDoc.currentStage }}).
+    </p>
+    <p class="otc-pos-oos-confirm-msg">
+      Create it from the previous documents on this order? Any missing stages before it
+      will be filled with the same products and amounts.
+    </p>
+    <div class="otc-pos-oos-confirm-actions">
+      <button
+        type="button"
+        class="btn btn-light btn-sm"
+        (click)="closeCreatePipelineDocModal()"
+        [disabled]="createPipelineDocSaving">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="confirmCreatePipelineDoc()"
+        [disabled]="createPipelineDocSaving">
+        {{ createPipelineDocSaving ? 'Creating…' : 'Create ' + createDoc.stepLabel }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm reverse order payment -->
+<div
+  class="otc-pos-discount-overlay otc-pos-discount-overlay--stacked"
+  *ngIf="showOrderPaymentReverseModal && orderPaymentPendingReverse as revPay"
+  (click)="closeOrderPaymentReverseModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-oos-confirm-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcOrderPaymentReverseTitle">
+    <header class="otc-pos-discount-head">
+      <h3 id="otcOrderPaymentReverseTitle">Reverse payment</h3>
+      <button
+        type="button"
+        class="otc-pos-discount-close"
+        (click)="closeOrderPaymentReverseModal()"
+        aria-label="Close"
+        [disabled]="orderPaymentReversing">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <p class="otc-pos-oos-confirm-msg">
+      Reverse payment of
+      <strong>{{ formatOrderPaymentAmount(revPay) }}</strong>
+      ({{ revPay.paymentForm || revPay.payment_form || 'payment' }})?
+      The order balance will be updated.
+    </p>
+    <div class="otc-pos-oos-confirm-actions">
+      <button
+        type="button"
+        class="btn btn-light btn-sm"
+        (click)="closeOrderPaymentReverseModal()"
+        [disabled]="orderPaymentReversing">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        (click)="confirmReverseOrderPayment()"
+        [disabled]="orderPaymentReversing">
+        {{ orderPaymentReversing ? 'Reversing…' : 'Reverse' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="otc-pos-discount-overlay"
+  *ngIf="showPosCartSellModelModal && posCartSellModelLine as sellLine"
+  (click)="closePosCartSellModelModal()">
+  <div
+    class="otc-pos-discount-modal otc-pos-cart-sell-model-modal"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="otcPosCartSellModelTitle">
+    <header class="otc-pos-discount-head">
+      <div>
+        <h3 id="otcPosCartSellModelTitle">Selling price</h3>
+        <p class="otc-pos-order-picker-sub">{{ toTitleCase(cartItemDisplayName(sellLine)) }}</p>
+      </div>
+      <button type="button" class="otc-pos-discount-close" (click)="closePosCartSellModelModal()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+    <div class="otc-pos-cart-sell-model-body">
+      <app-unit-selling-model-picker
+        [stockItemId]="posCartSellModelStockItemId(sellLine)"
+        [shopItemId]="posCartSellModelShopItemId(sellLine)"
+        [(selectedModelId)]="sellLine.unitSellingModelId"
+        [showPriceModeSwitch]="true"
+            [(useUnitSellingModel)]="sellLine.useUnitSellingModel"
+        [(freeSellingPrice)]="sellLine.unitSellingPrice"
+        (useUnitSellingModelChange)="onPosCartUseUnitSellingModelChange($event)"
+        (freeSellingPriceChange)="onPosCartSellModelPriceChange($event ?? 0)"
+        (selectedModelChange)="onPosCartSellModelSelected($event)"
+        (unitSellingPriceChange)="onPosCartSellModelPriceChange($event)"
+        [disabled]="processing"
+        label="Selling price">
+      </app-unit-selling-model-picker>
+      <p class="otc-pos-cart-sell-model-hint">
+        Switch on for a fixed unit sell model. Switch off to enter an open price for this sale.
+      </p>
+    </div>
+    <div class="otc-pos-oos-confirm-actions">
+      <button type="button" class="btn btn-primary btn-sm" (click)="closePosCartSellModelModal()">Done</button>
     </div>
   </div>
 </div>

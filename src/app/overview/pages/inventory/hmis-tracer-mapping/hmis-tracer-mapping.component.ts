@@ -186,7 +186,7 @@ export class HmisTracerMappingComponent implements OnInit {
 
           this.messageColor = 'rgb(238, 16, 16)';
 
-          this.message = 'No legacy shop items loaded. Check server connection or add items under Old Inventory → Item Management.';
+          this.message = 'No legacy shop products loaded. Check server connection or add items under Old Inventory → Product Management.';
 
         }
 

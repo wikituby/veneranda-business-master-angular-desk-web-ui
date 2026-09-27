@@ -375,7 +375,7 @@ export class StockBatchComponent implements OnInit {
 
   // Last Unit of Measure dropdown methods
   loadLastUnitOfMeasures() {
-    this.api.getAllStrengthUnitsHospitalItem().subscribe({
+    this.api.getAllStrengthUnitsBusinessItem().subscribe({
       next: (res) => {
         this.lastUnitOfMeasureList = res || [];
         this.filteredLastUnitOfMeasureList = this.lastUnitOfMeasureList;
@@ -675,7 +675,7 @@ export class StockBatchComponent implements OnInit {
   exportToExcel() {
     const dataToExport = this.filteredStockBatchList.map((batch, index) => ({
       'SN': index + 1,
-      'Item': batch.stockItemName || 'N/A',
+      'Product': batch.stockItemName || 'N/A',
       'Store': batch.storeName || 'N/A',
       'Stock': batch.stockAtHand || 'N/A',
       'Buy Price': batch.buyPrice || batch.unitCostPrice || 'N/A',

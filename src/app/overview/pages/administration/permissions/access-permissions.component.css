@@ -809,14 +809,16 @@
 
 .page-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  align-items: stretch;
   gap: 12px;
   padding: 14px;
 }
 
 .page-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  height: 100%;
   gap: 10px;
   margin: 0;
   min-height: 72px;
@@ -854,15 +856,17 @@
 }
 
 .page-card input {
-  margin-top: 4px;
+  margin: 0;
   flex-shrink: 0;
 }
 
 .page-card-body {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
   min-width: 0;
+  flex: 1;
 }
 
 .page-card-name {

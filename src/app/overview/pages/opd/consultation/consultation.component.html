@@ -1,46 +1,46 @@
 <div class="consultation-page" [class.dark]="isDarkMode">
   <div class="row content">
-    <!-- Patient Info Sidebar -->
+    <!-- Client Info Sidebar -->
     <div class="col-sm-2 consultation-sidebar">
       <div class="sidebar-content">
-        <!-- Patient Profile -->
-        <div class="patient-profile-card">
-          <div class="patient-avatar-wrapper">
-            <img class="patient-avatar" 
-                 [src]="selectedPatient?.profilePic || 'assets/images/vector.jpeg'" 
-                 alt="Patient Avatar"
+        <!-- Client Profile -->
+        <div class="client-profile-card">
+          <div class="client-avatar-wrapper">
+            <img class="client-avatar" 
+                 [src]="selectedClient?.profilePic || 'assets/images/vector.jpeg'" 
+                 alt="Client Avatar"
                  onerror="this.src='assets/images/vector.jpeg'">
           </div>
-          <div class="patient-name-section">
-            <h3 class="patient-name">
-              {{ selectedPatient?.name || (selectedPatient?.firstName + ' ' + selectedPatient?.lastName) || 'Select Patient' }}
+          <div class="client-name-section">
+            <h3 class="client-name">
+              {{ selectedClient?.name || (selectedClient?.firstName + ' ' + selectedClient?.lastName) || 'Select Client' }}
             </h3>
-            <div class="patient-file-number">
+            <div class="client-file-number">
               <i class="bi bi-file-earmark-medical"></i>
-              File No: {{ selectedPatient?.fileNo || selectedPatient?.patientFileNo || 'N/A' }}
+              File No: {{ selectedClient?.fileNo || selectedClient?.clientFileNo || 'N/A' }}
             </div>
           </div>
         </div>
 
         <hr class="sidebar-divider">
 
-        <!-- Patient Quick Info -->
-        <div class="patient-quick-info" *ngIf="selectedPatient">
+        <!-- Client Quick Info -->
+        <div class="client-quick-info" *ngIf="selectedClient">
           <div class="info-item">
             <i class="bi bi-calendar3"></i>
-            <span>Age: {{ selectedPatient?.age || 'N/A' }}</span>
+            <span>Age: {{ selectedClient?.age || 'N/A' }}</span>
           </div>
           <div class="info-item">
             <i class="bi bi-gender-ambiguous"></i>
-            <span>Gender: {{ selectedPatient?.gender || 'N/A' }}</span>
+            <span>Gender: {{ selectedClient?.gender || 'N/A' }}</span>
           </div>
           <div class="info-item">
             <i class="bi bi-telephone"></i>
-            <span>{{ selectedPatient?.phone || 'N/A' }}</span>
+            <span>{{ selectedClient?.phone || 'N/A' }}</span>
           </div>
         </div>
 
-        <hr class="sidebar-divider" *ngIf="selectedPatient">
+        <hr class="sidebar-divider" *ngIf="selectedClient">
 
         <!-- Action Buttons -->
         <div class="sidebar-actions">
@@ -48,39 +48,39 @@
             <i class="bi bi-plus-circle"></i>
             New Consultation
           </button>
-          <button class="btn-sidebar-secondary" *ngIf="selectedPatient">
+          <button class="btn-sidebar-secondary" *ngIf="selectedClient">
             <i class="bi bi-clock-history"></i>
-            Visit History
+            Order History
           </button>
         </div>
 
         <hr class="sidebar-divider">
 
-        <!-- Patient Queue (if no patient selected) -->
-        <div class="patient-queue-section" *ngIf="!selectedPatient">
+        <!-- Client Queue (if no client selected) -->
+        <div class="client-queue-section" *ngIf="!selectedClient">
           <h4 class="queue-title">
             <i class="bi bi-list-ul"></i>
-            Patient Queue
+            Client Queue
           </h4>
           <div class="queue-search">
             <i class="bi bi-search"></i>
             <input type="text" 
-                   placeholder="Search patients..." 
+                   placeholder="Search clients..." 
                    [(ngModel)]="searchQuery"
                    class="queue-search-input">
           </div>
           <div class="queue-list">
             <div class="queue-item" 
-                 *ngFor="let patient of filteredPatients" 
-                 [class.active]="patient.active"
-                 (click)="startConsultation(patient)">
-              <div class="queue-item-avatar">{{ patient.initials }}</div>
+                 *ngFor="let client of filteredClients" 
+                 [class.active]="client.active"
+                 (click)="startConsultation(client)">
+              <div class="queue-item-avatar">{{ client.initials }}</div>
               <div class="queue-item-info">
-                <div class="queue-item-name">{{ patient.name }}</div>
+                <div class="queue-item-name">{{ client.name }}</div>
                 <div class="queue-item-meta">
-                  <span>File: {{ patient.fileNo }}</span>
-                  <span class="queue-status" [class]="'status-' + patient.status">
-                    {{ patient.status }}
+                  <span>File: {{ client.fileNo }}</span>
+                  <span class="queue-status" [class]="'status-' + client.status">
+                    {{ client.status }}
                   </span>
                 </div>
               </div>
@@ -94,7 +94,7 @@
     <div class="col-sm-10 consultation-main-content">
       <div class="content-wrapper">
         <!-- Consultation Form -->
-        <div class="consultation-form-container" *ngIf="selectedPatient; else noPatientSelected">
+        <div class="consultation-form-container" *ngIf="selectedClient; else noClientSelected">
           <!-- Form Header -->
           <div class="form-header">
             <h2 class="form-title">
@@ -123,7 +123,7 @@
               </label>
               <textarea class="form-textarea" 
                         rows="3" 
-                        placeholder="Enter patient's chief complaint..."></textarea>
+                        placeholder="Enter client's chief complaint..."></textarea>
             </div>
 
             <!-- History of Present Illness -->
@@ -234,14 +234,14 @@
           </form>
         </div>
 
-        <!-- No Patient Selected State -->
-        <ng-template #noPatientSelected>
+        <!-- No Client Selected State -->
+        <ng-template #noClientSelected>
           <div class="empty-state">
             <div class="empty-state-icon">
               <i class="bi bi-clipboard-pulse"></i>
             </div>
-            <h3>No Patient Selected</h3>
-            <p>Select a patient from the queue to start consultation</p>
+            <h3>No Client Selected</h3>
+            <p>Select a client from the queue to start consultation</p>
             <button class="btn-form-primary" (click)="startNewConsultation()">
               <i class="bi bi-plus-circle"></i>
               Start New Consultation

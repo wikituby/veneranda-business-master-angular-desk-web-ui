@@ -1,0 +1,207 @@
+<div class="queue-management-page" [class.dark]="isDarkMode">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <i class="bi bi-list-ol"></i>
+        Queue Management
+      </h1>
+      <p class="page-subtitle">Client queues and business directory by department</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-primary" (click)="addToQueue()">
+        <i class="bi bi-plus-circle"></i>
+        Queue Client
+      </button>
+      <button class="btn-secondary" (click)="refreshQueues()">
+        <i class="bi bi-arrow-repeat"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button [class.active]="activeTab === 'queues'" (click)="setTab('queues')">Active Queues</button>
+    <button [class.active]="activeTab === 'directory'" (click)="setTab('directory')">
+      Business Directory ({{ directoryTotal }})
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card stat-waiting">
+      <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-content">
+        <div class="stat-value">{{ waitingClients }}</div>
+        <div class="stat-label">Waiting</div>
+      </div>
+    </div>
+    <div class="stat-card stat-serving">
+      <div class="stat-icon"><i class="bi bi-person-check"></i></div>
+      <div class="stat-content">
+        <div class="stat-value">{{ servingNow }}</div>
+        <div class="stat-label">Called / Serving</div>
+      </div>
+    </div>
+    <div class="stat-card stat-average">
+      <div class="stat-icon"><i class="bi bi-clock"></i></div>
+      <div class="stat-content">
+        <div class="stat-value">{{ averageWaitTime }} min</div>
+        <div class="stat-label">Avg Wait</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Queues tab -->
+  <div class="queue-container" *ngIf="activeTab === 'queues'">
+    <div class="queue-section">
+      <div class="queue-header">
+        <h2 class="queue-title"><i class="bi bi-activity"></i> Active Queues</h2>
+        <div class="queue-filters">
+          <select class="filter-select" [(ngModel)]="departmentFilter" (ngModelChange)="refreshQueues()">
+            <option [ngValue]="null">All Departments</option>
+            <option *ngFor="let m of modules" [ngValue]="m.id">{{ m.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <p *ngIf="isLoading" class="loading-text">Loading queues...</p>
+
+      <div class="queues-grid" *ngIf="!isLoading">
+        <div class="queue-card" *ngFor="let queue of filteredQueues">
+          <div class="queue-card-header">
+            <div class="queue-info">
+              <h3 class="queue-name">{{ queue.department }}</h3>
+              <span class="queue-count">{{ queue.clients.length }} clients</span>
+            </div>
+            <button class="btn-sm btn-primary" (click)="callNext(queue)">Call next</button>
+          </div>
+
+          <div class="queue-list">
+            <div class="queue-item"
+                 *ngFor="let client of queue.clients; let i = index"
+                 [class.current]="client.status === 'CALLED' || client.status === 'SERVING'"
+                 [class.emergency]="client.emergency">
+              <div class="queue-number">{{ i + 1 }}. {{ client.queueNumber }}</div>
+              <div class="queue-client-info">
+                <div class="queue-client-name">
+                  {{ client.clientSurname }} {{ client.clientOtherNames }}
+                  <span class="badge-emergency" *ngIf="client.emergency">Emergency</span>
+                </div>
+                <div class="queue-client-meta">
+                  <span>{{ client.clientFileNo }}</span>
+                  <span class="wait-time">Wait: {{ client.waitTime }} min</span>
+                  <span class="status-pill">{{ client.status }}</span>
+                </div>
+              </div>
+              <div class="queue-actions">
+                <button class="btn-icon-sm" (click)="moveUp(client, queue)" title="Move up"><i class="bi bi-arrow-up"></i></button>
+                <button class="btn-icon-sm" (click)="moveDown(client, queue)" title="Move down"><i class="bi bi-arrow-down"></i></button>
+                <button class="btn-icon-sm" (click)="toggleEmergency(client)" title="Toggle emergency"><i class="bi bi-exclamation-triangle"></i></button>
+                <button class="btn-icon-sm" (click)="callClient(client)" title="Call"><i class="bi bi-bell"></i></button>
+                <button class="btn-icon-sm" (click)="serveClient(client)" title="Serving"><i class="bi bi-person-check"></i></button>
+                <button class="btn-icon-sm" (click)="completeClient(client)" title="Complete"><i class="bi bi-check"></i></button>
+                <button class="btn-icon-sm" (click)="removeClient(client)" title="Remove"><i class="bi bi-x"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="filteredQueues.length === 0" class="empty-msg">No clients in queue. Use Queue Client to add one.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Directory tab -->
+  <div class="directory-section" *ngIf="activeTab === 'directory'">
+    <div class="directory-grid">
+      <div class="directory-card" *ngFor="let dept of directoryDepartments">
+        <h3>{{ dept.moduleName }} <span class="count">({{ dept.clientCount }})</span></h3>
+        <ul>
+          <li *ngFor="let p of dept.clients; let i = index">
+            <strong>{{ i + 1 }}.</strong> <strong>{{ p.queueNumber }}</strong>
+            {{ p.clientSurname }} {{ p.clientOtherNames }} — {{ p.clientFileNo }}
+            <span class="status-pill">{{ p.status }}</span>
+          </li>
+        </ul>
+      </div>
+      <p *ngIf="directoryDepartments.length === 0" class="empty-msg">No clients currently tracked in the business directory.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Client picker -->
+<div class="modal-overlay" *ngIf="showClientPicker" (click)="closeModals()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
+    <h3>Select Client</h3>
+    <input type="text" class="search-input" placeholder="Search by name or OP number..." [(ngModel)]="clientSearch">
+    <div class="client-picker-list">
+      <button type="button" class="client-row" *ngFor="let p of filteredClientsForPicker" (click)="selectClientForQueue(p)">
+        <span class="name">{{ p.clientSecondName }} {{ p.clientFirstName }}</span>
+        <span class="file">{{ p.clientFileNo }}</span>
+      </button>
+    </div>
+    <button class="btn-secondary" (click)="closeModals()">Cancel</button>
+  </div>
+</div>
+
+<!-- Queue client modal (matches reference layout) -->
+<div class="modal-overlay" *ngIf="showQueueModal" (click)="closeModals()">
+  <div class="modal-card modal-queue" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">Queue Client</h3>
+
+    <div class="client-banner" *ngIf="selectedClient">
+      <p><strong>Surname:</strong> {{ selectedClient.clientSecondName }}</p>
+      <p><strong>Other Names:</strong> {{ selectedClient.clientFirstName }}</p>
+      <p><strong>O.P NO.:</strong> {{ selectedClient.clientFileNo }}</p>
+      <p><strong>Age:</strong> {{ clientHeaderAge }}</p>
+    </div>
+
+    <hr />
+
+    <p class="alert error" *ngIf="responseError">{{ responseError }}</p>
+
+    <div class="queue-form-grid">
+      <label>From
+        <select name="queueFromModuleId" [(ngModel)]="queueForm.fromModuleId">
+          <option [ngValue]="null">Select module</option>
+          <option *ngFor="let m of modules" [ngValue]="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+      <label>To
+        <select name="queueToModuleId" [(ngModel)]="queueForm.toModuleId" (ngModelChange)="onToModuleChange()">
+          <option [ngValue]="null">Select destination</option>
+          <option *ngFor="let m of queueDestinationModules" [ngValue]="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+      <label *ngIf="!isQueueDischargeDestination(queueForm.toModuleId)">Clinic
+        <select [(ngModel)]="queueForm.clinicId">
+          <option [ngValue]="null">—</option>
+          <option *ngFor="let c of clinics" [ngValue]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+      <label class="full">Note
+        <textarea [(ngModel)]="queueForm.note" rows="3"></textarea>
+      </label>
+      <label>Visit Default Scheme
+        <select [(ngModel)]="queueForm.clientGroupId" (ngModelChange)="onSchemeChange()">
+          <option [ngValue]="null">—</option>
+          <option *ngFor="let g of clientGroups" [ngValue]="g.id">{{ g.groupName }}</option>
+        </select>
+      </label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" [(ngModel)]="queueForm.emergency"> Is Emergency</label>
+        <label><input type="checkbox" [(ngModel)]="queueForm.revisit"> Is Revisit</label>
+        <label *ngIf="!isQueueDischargeDestination(queueForm.toModuleId)"><input type="checkbox" [(ngModel)]="queueForm.printQueueTicket"> Print Queue Ticket</label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn-primary btn-queue-submit" [disabled]="isSaving" (click)="submitQueue()">
+        {{
+          isSaving
+            ? (isQueueDischargeDestination(queueForm.toModuleId) ? 'Discharging...' : 'Queuing...')
+            : (isQueueDischargeDestination(queueForm.toModuleId) ? 'Discharge client' : 'Queue client')
+        }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -4,12 +4,12 @@
     <div class="header-left">
       <h1 class="page-title">
         <i class="bi bi-door-open"></i>
-        Patient Admissions
+        Client Admissions
       </h1>
-      <p class="page-subtitle">Manage patient admissions to inpatient department</p>
+      <p class="page-subtitle">Manage client admissions to inpatient department</p>
     </div>
     <div class="header-right">
-      <button class="btn-primary" (click)="admitPatient()">
+      <button class="btn-primary" (click)="admitClient()">
         <i class="bi bi-plus-circle"></i>
         New Admission
       </button>
@@ -37,7 +37,7 @@
       </div>
       <div class="stat-content">
         <div class="stat-value">{{activeAdmissions}}</div>
-        <div class="stat-label">Active Patients</div>
+        <div class="stat-label">Active Clients</div>
       </div>
     </div>
     <div class="stat-card stat-pending">
@@ -62,9 +62,9 @@
 
   <!-- Quick Actions -->
   <div class="quick-actions">
-    <button class="action-card" (click)="admitPatient()">
+    <button class="action-card" (click)="admitClient()">
       <i class="bi bi-person-plus"></i>
-      <span>Admit Patient</span>
+      <span>Admit Client</span>
     </button>
     <button class="action-card" (click)="viewWards()">
       <i class="bi bi-hospital"></i>
@@ -84,7 +84,7 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="bi bi-search"></i>
-      <input type="text" placeholder="Search by patient name, file number, or admission ID..." [(ngModel)]="searchQuery">
+      <input type="text" placeholder="Search by client name, file number, or admission ID..." [(ngModel)]="searchQuery">
     </div>
     <div class="filter-group">
       <select class="filter-select" [(ngModel)]="wardFilter">
@@ -121,7 +121,7 @@
         <thead>
           <tr>
             <th>Admission ID</th>
-            <th>Patient</th>
+            <th>Client</th>
             <th>Admitting Doctor</th>
             <th>Ward/Bed</th>
             <th>Admission Date</th>
@@ -136,11 +136,11 @@
               <div class="admission-id">ADM-{{admission.id}}</div>
             </td>
             <td>
-              <div class="patient-cell">
-                <div class="patient-avatar-small">{{admission.patient.initials}}</div>
+              <div class="client-cell">
+                <div class="client-avatar-small">{{admission.client.initials}}</div>
                 <div>
-                  <div class="patient-name-cell">{{admission.patient.name}}</div>
-                  <div class="patient-meta-cell">File: {{admission.patient.fileNo}} | Age: {{admission.patient.age}}</div>
+                  <div class="client-name-cell">{{admission.client.name}}</div>
+                  <div class="client-meta-cell">File: {{admission.client.fileNo}} | Age: {{admission.client.age}}</div>
                 </div>
               </div>
             </td>
@@ -177,10 +177,10 @@
                 <button class="btn-icon" (click)="viewDetails(admission)" title="View Details">
                   <i class="bi bi-eye"></i>
                 </button>
-                <button class="btn-icon" *ngIf="admission.status === 'admitted'" (click)="transferPatient(admission)" title="Transfer">
+                <button class="btn-icon" *ngIf="admission.status === 'admitted'" (click)="transferClient(admission)" title="Transfer">
                   <i class="bi bi-arrow-left-right"></i>
                 </button>
-                <button class="btn-icon" *ngIf="admission.status === 'admitted'" (click)="dischargePatient(admission)" title="Discharge">
+                <button class="btn-icon" *ngIf="admission.status === 'admitted'" (click)="dischargeClient(admission)" title="Discharge">
                   <i class="bi bi-door-closed"></i>
                 </button>
               </div>

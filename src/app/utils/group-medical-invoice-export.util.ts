@@ -17,8 +17,8 @@ export interface GroupInvoiceVisitLine {
 
 export interface GroupInvoiceVisitBlock {
   visitDate: string;
-  patientId: string;
-  patientName: string;
+  clientId: string;
+  clientName: string;
   age: string;
   sex: string;
   diagnosis: string;
@@ -194,7 +194,7 @@ export function getVisitDiscount(visit: any): number {
   return Number.isFinite(discount) ? discount : 0;
 }
 
-export function extractPatientIdFromSecondName(secondName: string | null | undefined): string {
+export function extractClientIdFromSecondName(secondName: string | null | undefined): string {
   const raw = cellText(secondName);
   if (!raw) {
     return '';
@@ -203,28 +203,28 @@ export function extractPatientIdFromSecondName(secondName: string | null | undef
   return matches?.length ? matches[matches.length - 1] : '';
 }
 
-export function resolveInvoicePatientId(patient: any, visit?: any): string {
-  const fromSecondName = extractPatientIdFromSecondName(
-    patient?.patientSecondName ?? patient?.secondName ?? patient?.lastName
+export function resolveInvoiceClientId(client: any, visit?: any): string {
+  const fromSecondName = extractClientIdFromSecondName(
+    client?.clientSecondName ?? client?.secondName ?? client?.lastName
   );
   if (fromSecondName) {
     return fromSecondName;
   }
-  const fileNo = cellText(patient?.patientFileNo ?? patient?.fileNo);
+  const fileNo = cellText(client?.clientFileNo ?? client?.fileNo);
   if (fileNo) {
     return fileNo;
   }
-  const visitName = cellText(visit?.patientName);
+  const visitName = cellText(visit?.clientName);
   if (visitName) {
     const parts = visitName.split(/\s+/);
     if (parts.length > 1) {
-      const fromVisitSecond = extractPatientIdFromSecondName(parts[parts.length - 1]);
+      const fromVisitSecond = extractClientIdFromSecondName(parts[parts.length - 1]);
       if (fromVisitSecond) {
         return fromVisitSecond;
       }
     }
   }
-  const id = patient?.id ?? visit?.patientId;
+  const id = client?.id ?? visit?.clientId;
   return id != null ? String(id) : '';
 }
 
@@ -279,10 +279,10 @@ function buildVisitTable(block: GroupInvoiceVisitBlock): Table {
     children: INVOICE_COLUMNS.map((h) => invoiceTableCell(h, true)),
   });
 
-  const patientCols = [
+  const clientCols = [
     formatShortDate(block.visitDate),
-    block.patientId,
-    formatTitleCaseWords(block.patientName),
+    block.clientId,
+    formatTitleCaseWords(block.clientName),
     formatInvoiceAgeDisplay(block.age),
     formatTitleCaseWords(block.sex),
     formatTitleCaseWords(block.diagnosis),
@@ -292,8 +292,8 @@ function buildVisitTable(block: GroupInvoiceVisitBlock): Table {
 
   const lineRows = block.lines.length ? block.lines : [{ label: 'Medical bills', amount: block.visitTotal }];
   lineRows.forEach((line, index) => {
-    const showPatient = index === 0;
-    const cols = showPatient ? patientCols : ['', '', '', '', '', ''];
+    const showClient = index === 0;
+    const cols = showClient ? clientCols : ['', '', '', '', '', ''];
     rows.push(
       new TableRow({
         children: [
@@ -313,12 +313,12 @@ function buildVisitTable(block: GroupInvoiceVisitBlock): Table {
   rows.push(
     new TableRow({
       children: [
-        invoiceTableCell(patientCols[0]),
-        invoiceTableCell(patientCols[1]),
-        invoiceTableCell(patientCols[2]),
-        invoiceTableCell(patientCols[3]),
-        invoiceTableCell(patientCols[4]),
-        invoiceTableCell(patientCols[5]),
+        invoiceTableCell(clientCols[0]),
+        invoiceTableCell(clientCols[1]),
+        invoiceTableCell(clientCols[2]),
+        invoiceTableCell(clientCols[3]),
+        invoiceTableCell(clientCols[4]),
+        invoiceTableCell(clientCols[5]),
         invoiceTableCell('Discount', true),
         invoiceTableCell(block.discount > 0 ? String(Math.round(block.discount)) : ''),
       ],
@@ -328,12 +328,12 @@ function buildVisitTable(block: GroupInvoiceVisitBlock): Table {
   rows.push(
     new TableRow({
       children: [
-        invoiceTableCell(patientCols[0]),
-        invoiceTableCell(patientCols[1]),
-        invoiceTableCell(patientCols[2]),
-        invoiceTableCell(patientCols[3]),
-        invoiceTableCell(patientCols[4]),
-        invoiceTableCell(patientCols[5]),
+        invoiceTableCell(clientCols[0]),
+        invoiceTableCell(clientCols[1]),
+        invoiceTableCell(clientCols[2]),
+        invoiceTableCell(clientCols[3]),
+        invoiceTableCell(clientCols[4]),
+        invoiceTableCell(clientCols[5]),
         invoiceTableCell('Total Amount:', true),
         invoiceTableCell(formatInvoiceAmount(block.visitTotal), true),
       ],

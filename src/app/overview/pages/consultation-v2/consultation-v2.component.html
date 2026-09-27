@@ -6,22 +6,22 @@
   </div>
 
   <div class="cv2-layout">
-    <!-- Patient sidebar -->
+    <!-- Client sidebar -->
     <aside class="cv2-sidebar">
       <div class="cv2-sidebar-body">
-      <div class="cv2-patient-card">
+      <div class="cv2-client-card">
         <div class="cv2-avatar-wrap">
-          <img [src]="patientProfilePic" [alt]="patientFullName" (error)="onProfileImageError($event)" />
+          <img [src]="clientProfilePic" [alt]="clientFullName" (error)="onProfileImageError($event)" />
         </div>
-        <h2 class="cv2-patient-name">{{ patientFullName }}</h2>
+        <h2 class="cv2-client-name">{{ clientFullName }}</h2>
         <button type="button" class="cv2-client-file-btn" disabled>
-          Client File No: {{ patientFileNo || '—' }}
+          Client File No: {{ clientFileNo || '—' }}
         </button>
 
         <div class="cv2-sidebar-actions-top">
           <button type="button" class="cv2-sidebar-btn" (click)="openCreateVisitModal()">
             <i class="bi bi-calendar-plus"></i>
-            <span>Create New Patient Visit</span>
+            <span>Create New Client Order</span>
           </button>
           <button type="button" class="cv2-sidebar-btn" (click)="openChooseVisitModal()">
             <i class="bi bi-list-check"></i>
@@ -31,11 +31,6 @@
       </div>
 
       <div class="cv2-sidebar-section cv2-sidebar-actions-lower">
-        <button type="button" class="cv2-sidebar-btn" (click)="openQueueClientModal()">
-          <i class="bi bi-list-ol"></i>
-          <span>Queue Client to next station</span>
-        </button>
-
         <div class="cv2-visit-badge-row">
           <span
             class="cv2-visit-badge cv2-visit-badge--status"
@@ -45,31 +40,31 @@
             <span class="cv2-visit-badge-label">{{ formatVisitNumberTwoDigits(visit?.visitNumber ?? visit?.id) }} · {{ visitStatusLabel }}</span>
           </span>
           <span class="cv2-visit-badge cv2-visit-badge--status muted" *ngIf="hasNoVisit">
-            <span class="cv2-visit-badge-label">No visit</span>
+            <span class="cv2-visit-badge-label">No order</span>
           </span>
 
           <button
             type="button"
             class="cv2-visit-badge cv2-visit-badge--action danger"
             *ngIf="isOpenVisit"
-            [disabled]="isUpdatingPatientVisit"
+            [disabled]="isUpdatingClientVisit"
             (click)="closeVisit()">
-            <span class="cv2-visit-badge-label">{{ isUpdatingPatientVisit ? 'Updating...' : 'Close Visit' }}</span>
+            <span class="cv2-visit-badge-label">{{ isUpdatingClientVisit ? 'Updating...' : 'Close Order' }}</span>
           </button>
           <button
             type="button"
             class="cv2-visit-badge cv2-visit-badge--action primary"
             *ngIf="isClosedVisit && canOpenClosedVisit"
-            [disabled]="isUpdatingPatientVisit"
+            [disabled]="isUpdatingClientVisit"
             (click)="openVisitAction()">
-            <span class="cv2-visit-badge-label">{{ isUpdatingPatientVisit ? 'Updating...' : 'Open Visit' }}</span>
+            <span class="cv2-visit-badge-label">{{ isUpdatingClientVisit ? 'Updating...' : 'Open Order' }}</span>
           </button>
           <button
             type="button"
             class="cv2-visit-badge cv2-visit-badge--action primary"
             *ngIf="hasNoVisit"
             (click)="openCreateVisitModal()">
-            <span class="cv2-visit-badge-label">New Visit</span>
+            <span class="cv2-visit-badge-label">New Order</span>
           </button>
         </div>
 
@@ -78,53 +73,72 @@
           <span>Total Debt: UGX: {{ totalAmountDue ? formatMoney(totalAmountDue) : '0.000000000' }}</span>
         </button>
 
-        <button type="button" class="cv2-sidebar-btn cv2-sidebar-btn--pay" (click)="openPayAllPatientDebtModal()">
+        <button type="button" class="cv2-sidebar-btn cv2-sidebar-btn--pay" (click)="openPayAllClientDebtModal()">
           <i class="bi bi-wallet2"></i>
-          <span>Pay all patient debt</span>
+          <span>Pay all client debt</span>
         </button>
       </div>
 
       <div class="cv2-sidebar-foot">
-        <p>Use the tabs to document vitals, consultation notes, services, and billing.</p>
+        <p>Track this client order through quotation, invoice, payment, delivery, and returns.</p>
       </div>
       </div>
     </aside>
 
     <!-- Main workspace -->
     <main class="cv2-main">
-      <nav class="cv2-tabs" role="tablist">
+      <nav class="cv2-tabs cv2-progress-tabs" role="tablist" aria-label="Client transaction progress">
         <button
           type="button"
-          class="cv2-tab"
-          *ngFor="let tab of tabs"
-          [class.active]="activeTab === tab.id"
-          (click)="setActiveTab(tab.id)">
-          <i class="bi" [ngClass]="tab.icon"></i>
-          <span>{{ tab.label }}</span>
+          class="cv2-tab cv2-tab--client"
+          [class.active]="activeTab === 'client'"
+          (click)="setActiveTab('client')">
+          <i class="bi bi-person-vcard"></i>
+          <span>Client Data</span>
         </button>
+
+        <div class="cv2-progress-track" role="presentation">
+          <ng-container *ngFor="let tab of progressTabs; let i = index; let last = last">
+            <button
+              type="button"
+              class="cv2-progress-step"
+              [class.done]="isProgressTabDone(i)"
+              [class.current]="isProgressTabCurrent(i)"
+              [class.upcoming]="progressTabState(i) === 'upcoming'"
+              [attr.aria-current]="isProgressTabCurrent(i) ? 'step' : null"
+              (click)="setActiveTab(tab.id)">
+              <span class="cv2-progress-step-marker">
+                <i class="bi bi-check-lg" *ngIf="progressStageDone[tab.id]"></i>
+                <span *ngIf="!progressStageDone[tab.id]">{{ i + 1 }}</span>
+              </span>
+              <span class="cv2-progress-step-label">{{ tab.label }}</span>
+            </button>
+            <span class="cv2-progress-connector" *ngIf="!last" [class.done]="progressStageDone[tab.id]" aria-hidden="true"></span>
+          </ng-container>
+        </div>
       </nav>
 
       <div class="cv2-main-body">
-      <div class="cv2-panel" *ngIf="!visitId && activeTab !== 'patient'">
+      <div class="cv2-panel" *ngIf="!visitId && activeTab !== 'client'">
         <div class="cv2-empty-state">
           <i class="bi bi-calendar2-check"></i>
-          <h3>Select or create a visit</h3>
-          <p>Choose a patient visit from the sidebar to start clinical documentation.</p>
+          <h3>Select or create an order</h3>
+          <p>Choose a client order from the sidebar to start clinical documentation.</p>
         </div>
       </div>
 
-      <!-- Patient Data -->
-      <section class="cv2-panel" *ngIf="activeTab === 'patient'">
+      <!-- Client Data -->
+      <section class="cv2-panel" *ngIf="activeTab === 'client'">
         <div class="cv2-panel-head cv2-panel-head-row">
           <div>
-            <h2><i class="bi bi-person-vcard"></i> Patient Data</h2>
+            <h2><i class="bi bi-person-vcard"></i> Client Data</h2>
             <p>Demographics and next of kin</p>
           </div>
           <button
             type="button"
             class="cv2-btn cv2-btn-primary"
-            (click)="openEditPatientModal()"
-            [disabled]="!patientId">
+            (click)="openEditClientModal()"
+            [disabled]="!clientId">
             <i class="bi bi-pencil-square"></i>
             Edit Details
           </button>
@@ -132,35 +146,35 @@
         <div class="cv2-grid cv2-grid-3">
           <div class="cv2-info-card">
             <span class="cv2-info-label">Full name</span>
-            <strong>{{ patientFullName }}</strong>
+            <strong>{{ clientFullName }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Client File No</span>
-            <strong>{{ patientFileNo || '—' }}</strong>
+            <strong>{{ clientFileNo || '—' }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Gender</span>
-            <strong>{{ patientGender || '—' }}</strong>
+            <strong>{{ clientGender || '—' }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Age</span>
-            <strong>{{ patientAge || '—' }}</strong>
+            <strong>{{ clientAge || '—' }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Date of birth</span>
-            <strong>{{ patientDateOfBirth || '—' }}</strong>
+            <strong>{{ clientDateOfBirth || '—' }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Occupation</span>
-            <strong>{{ patientOccupation || '—' }}</strong>
+            <strong>{{ clientOccupation || '—' }}</strong>
           </div>
           <div class="cv2-info-card cv2-span-2">
             <span class="cv2-info-label">Address</span>
-            <strong>{{ patientAddress || '—' }}</strong>
+            <strong>{{ clientAddress || '—' }}</strong>
           </div>
           <div class="cv2-info-card">
             <span class="cv2-info-label">Contact</span>
-            <strong>{{ patientContact || '—' }}</strong>
+            <strong>{{ clientContact || '—' }}</strong>
           </div>
         </div>
 
@@ -187,6 +201,352 @@
         </div>
       </section>
 
+      <!-- Commercial documents for this order (quotation / proforma / sales invoice) -->
+      <section
+        class="cv2-panel"
+        *ngIf="activeTab === 'quotation' || activeTab === 'proforma' || activeTab === 'sales_invoice'">
+        <div class="cv2-panel-head cv2-panel-head-row">
+          <div>
+            <h2>
+              <i class="bi" [ngClass]="progressStageIcon(activeTab)"></i>
+              {{ progressStageTitle(activeTab) }}
+            </h2>
+            <p *ngIf="activeTab === 'quotation'">Quotations made for this client order / transaction</p>
+            <p *ngIf="activeTab === 'proforma'">Proforma invoices for this client order / transaction</p>
+            <p *ngIf="activeTab === 'sales_invoice'">Sales invoices for this client order / transaction</p>
+          </div>
+          <button
+            type="button"
+            class="cv2-btn cv2-btn-ghost"
+            (click)="refreshOrderDocsForActiveCommercialTab()"
+            [disabled]="isLoadingOrderDocsForActiveCommercialTab() || (!visitId && !clientId)">
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh
+          </button>
+        </div>
+
+        <div class="cv2-inline-loader" *ngIf="isLoadingOrderDocsForActiveCommercialTab()">
+          <span class="cv2-spinner"></span> Loading {{ progressStageTitle(activeTab).toLowerCase() }}s...
+        </div>
+
+        <div class="cv2-table-wrap" *ngIf="!isLoadingOrderDocsForActiveCommercialTab() && orderDocsForActiveCommercialTab().length">
+          <table class="cv2-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Document no.</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Products</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Served by</th>
+                <th class="cv2-col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of orderDocsForActiveCommercialTab(); let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ doc.saleNo || '—' }}</td>
+                <td>{{ formatOrderDocumentDate(doc) }}</td>
+                <td>{{ doc.patientName || clientFullName || '—' }}</td>
+                <td>{{ orderDocumentLineCount(doc) }}</td>
+                <td>UGX {{ formatMoney(doc.totalAmount ?? 0) }}</td>
+                <td>
+                  <span class="otc-doc-status-badge" [ngClass]="orderDocumentTypeBadgeClass(doc)">
+                    {{ orderDocumentTypeLabel(doc) }} · {{ orderDocumentStatusLabel(doc) }}
+                  </span>
+                </td>
+                <td>{{ doc.receivedBy || '—' }}</td>
+                <td class="cv2-col-actions">
+                  <button
+                    type="button"
+                    class="cv2-icon-btn"
+                    title="Actions"
+                    (click)="toggleOrderDocActionMenu(doc, $event)"
+                    [class.is-open]="isOrderDocActionMenuOpen(doc)">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cv2-empty-state compact" *ngIf="!isLoadingOrderDocsForActiveCommercialTab() && !orderDocsForActiveCommercialTab().length">
+          <i class="bi" [ngClass]="progressStageIcon(activeTab)"></i>
+          <h3>No {{ progressStageTitle(activeTab).toLowerCase() }}s yet</h3>
+          <p>Documents created for this client or order will appear here.</p>
+        </div>
+      </section>
+
+      <!-- Delivery / returns -->
+      <section
+        class="cv2-panel"
+        *ngIf="visitId && (activeTab === 'delivered' || activeTab === 'returned')">
+        <div class="cv2-panel-head cv2-panel-head-row">
+          <div>
+            <h2>
+              <i class="bi" [ngClass]="progressStageIcon(activeTab)"></i>
+              {{ progressStageTitle(activeTab) }}
+            </h2>
+            <p *ngIf="activeTab === 'delivered'">
+              Confirm when goods have been handed over. Stock is checked now — out-of-stock backorders will be rejected. This does not mark payment as received.
+            </p>
+            <p *ngIf="activeTab === 'returned'">Record returned products for this order.</p>
+          </div>
+          <button
+            *ngIf="activeTab === 'delivered' && !visit?.goodsDelivered"
+            type="button"
+            class="cv2-btn cv2-btn-primary"
+            (click)="confirmOrderDelivered()"
+            [disabled]="isConfirmingDelivery || !deliveryNoteDraft?.trim()">
+            <i class="bi bi-box-seam"></i>
+            {{ isConfirmingDelivery ? 'Confirming…' : 'Confirm delivery' }}
+          </button>
+          <span
+            *ngIf="activeTab === 'delivered' && visit?.goodsDelivered"
+            class="otc-doc-status-badge otc-doc-status--sales-invoice">
+            Delivered
+          </span>
+        </div>
+        <div class="cv2-delivery-note-block" *ngIf="activeTab === 'delivered' && !visit?.goodsDelivered">
+          <div class="cv2-field">
+            <label for="cv2-delivery-note">Delivery note <span class="cv2-required">*</span></label>
+            <textarea
+              id="cv2-delivery-note"
+              rows="3"
+              [(ngModel)]="deliveryNoteDraft"
+              placeholder="e.g. Handed to client at counter / delivered to site"
+              [disabled]="isConfirmingDelivery"></textarea>
+          </div>
+          <p class="cv2-muted-hint">
+            Required. If any sold item is still out of stock, confirmation will be rejected until stock is available.
+          </p>
+        </div>
+        <div class="cv2-empty-state compact" *ngIf="activeTab === 'delivered' && !visit?.goodsDelivered">
+          <i class="bi bi-box-seam"></i>
+          <h3>Awaiting delivery confirmation</h3>
+          <p>
+            Quotation, proforma, and sales invoice can be marked from delivery.
+            Payment stays unchecked until money is received (or a receipt is issued).
+          </p>
+        </div>
+        <div class="cv2-delivery-confirmed" *ngIf="activeTab === 'delivered' && visit?.goodsDelivered">
+          <div class="cv2-empty-state compact">
+            <i class="bi bi-check2-circle"></i>
+            <h3>Goods delivered</h3>
+            <p>Delivery is confirmed for this order. Payment status is tracked separately on the Payment tab.</p>
+          </div>
+          <div class="cv2-field" *ngIf="visit?.deliveryNote">
+            <label>Delivery note</label>
+            <p class="cv2-delivery-note-text">{{ visit.deliveryNote }}</p>
+          </div>
+        </div>
+        <div class="cv2-empty-state compact" *ngIf="activeTab === 'returned'">
+          <i class="bi bi-arrow-return-left"></i>
+          <h3>Returned</h3>
+          <p>Log any returns against this transaction.</p>
+        </div>
+      </section>
+
+      <!-- Payment (former Invoice & Payment) -->
+      <section class="cv2-panel" *ngIf="activeTab === 'payment' && visitId">
+        <div class="cv2-panel-head cv2-panel-head-row">
+          <div>
+            <h2><i class="bi bi-cash-coin"></i> Payment</h2>
+            <p>Receive payments and manage visit billing</p>
+          </div>
+          <div class="cv2-head-actions">
+            <button type="button" class="cv2-btn cv2-btn-ghost" (click)="openTaxDiscountModal()">
+              <i class="bi bi-percent"></i> Tax & Discount
+            </button>
+            <button type="button" class="cv2-btn cv2-btn-primary" (click)="openPaymentModal()">
+              <i class="bi bi-cash"></i> Receive Payment
+            </button>
+          </div>
+        </div>
+
+        <div class="cv2-inline-loader" *ngIf="isLoadingInvoice"><span class="cv2-spinner"></span> Loading invoice...</div>
+
+        <div class="cv2-billing-grid" *ngIf="!isLoadingInvoice && invoice">
+          <div class="cv2-billing-card">
+            <span>Subtotal</span>
+            <strong>UGX {{ formatMoney(invoice.subTotal ?? invoice.subtotal ?? 0) }}</strong>
+          </div>
+          <div class="cv2-billing-card">
+            <span>Discount</span>
+            <strong>UGX {{ formatMoney(invoice.discount ?? 0) }}</strong>
+          </div>
+          <div class="cv2-billing-card">
+            <span>Tax</span>
+            <strong>UGX {{ formatMoney(invoice.tax ?? 0) }}</strong>
+          </div>
+          <div class="cv2-billing-card">
+            <span>Total amount</span>
+            <strong>UGX {{ formatMoney(invoice.totalAmount ?? invoice.grandTotal ?? 0) }}</strong>
+          </div>
+          <div class="cv2-billing-card">
+            <span>Amount paid</span>
+            <strong>UGX {{ formatMoney(invoice.amountPaid ?? 0) }}</strong>
+          </div>
+          <div class="cv2-billing-card accent">
+            <span>Balance due</span>
+            <strong>UGX {{ formatMoney(invoice.balanceDue ?? 0) }}</strong>
+          </div>
+        </div>
+
+        <div class="cv2-subsection" *ngIf="paymentsList.length || isLoadingPayments">
+          <h3>Payment history</h3>
+          <div class="cv2-inline-loader" *ngIf="isLoadingPayments"><span class="cv2-spinner"></span> Loading payments...</div>
+          <div class="cv2-table-wrap" *ngIf="!isLoadingPayments && paymentsList.length">
+            <table class="cv2-table cv2-payments-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Form</th>
+                  <th>Received by</th>
+                  <th>Notes</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of paymentsList" [class.cv2-payment-reversed]="isPaymentReversed(payment)">
+                  <td>{{ payment.dateOfPayment || payment.paymentDate || payment.createdAt || '—' }}</td>
+                  <td>UGX {{ formatMoney(payment.amountToPay ?? payment.amount ?? 0) }}</td>
+                  <td>{{ payment.paymentForm || '—' }}</td>
+                  <td>{{ payment.receivedBy || '—' }}</td>
+                  <td>
+                    {{ payment.notes || '—' }}
+                    <span class="cv2-payment-status-pill" *ngIf="isPaymentReversed(payment)">Reversed</span>
+                  </td>
+                  <td class="cv2-row-actions text-right">
+                    <div class="cv2-action-menu" [class.open]="isPaymentActionMenuOpen(payment)">
+                      <button
+                        type="button"
+                        class="cv2-kebab-btn"
+                        title="Actions"
+                        (click)="togglePaymentActionMenu(payment, $event)">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cv2-empty-state compact" *ngIf="!isLoadingInvoice && !invoice">
+          <i class="bi bi-cash-coin"></i>
+          <h3>No invoice yet</h3>
+          <p>Payments will appear here once billing is available for this order.</p>
+        </div>
+      </section>
+
+      <!-- Receipt -->
+      <section class="cv2-panel" *ngIf="activeTab === 'receipt' && visitId">
+        <div class="cv2-panel-head cv2-panel-head-row">
+          <div>
+            <h2><i class="bi bi-receipt"></i> Receipt</h2>
+            <p>POS receipts and payment receipts for this client order</p>
+          </div>
+          <button
+            type="button"
+            class="cv2-btn cv2-btn-ghost"
+            (click)="loadOrderReceipts(); loadPayments()"
+            [disabled]="isLoadingOrderReceipts || isLoadingPayments">
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh
+          </button>
+        </div>
+
+        <div class="cv2-inline-loader" *ngIf="isLoadingOrderReceipts">
+          <span class="cv2-spinner"></span> Loading POS receipts...
+        </div>
+        <div class="cv2-table-wrap" *ngIf="!isLoadingOrderReceipts && orderReceipts.length">
+          <table class="cv2-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Receipt no.</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Products</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Served by</th>
+                <th class="cv2-col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of orderReceipts; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ doc.saleNo || '—' }}</td>
+                <td>{{ formatOrderDocumentDate(doc) }}</td>
+                <td>{{ doc.patientName || clientFullName || '—' }}</td>
+                <td>{{ orderDocumentLineCount(doc) }}</td>
+                <td>UGX {{ formatMoney(doc.totalAmount ?? 0) }}</td>
+                <td>
+                  <span class="otc-doc-status-badge otc-doc-status--receipt">
+                    Receipt · {{ orderDocumentStatusLabel(doc) }}
+                  </span>
+                </td>
+                <td>{{ doc.receivedBy || '—' }}</td>
+                <td class="cv2-col-actions">
+                  <button
+                    type="button"
+                    class="cv2-icon-btn"
+                    title="Actions"
+                    (click)="toggleOrderDocActionMenu(doc, $event)"
+                    [class.is-open]="isOrderDocActionMenuOpen(doc)">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cv2-section-divider" *ngIf="orderReceipts.length || paymentsList.length">
+          <h3>Payment receipts</h3>
+        </div>
+        <div class="cv2-inline-loader" *ngIf="isLoadingPayments"><span class="cv2-spinner"></span> Loading payment receipts...</div>
+        <div class="cv2-table-wrap" *ngIf="!isLoadingPayments && paymentsList.length">
+          <table class="cv2-table cv2-payments-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Form</th>
+                <th>Received by</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of paymentsList" [class.cv2-payment-reversed]="isPaymentReversed(payment)">
+                <td>{{ payment.dateOfPayment || payment.paymentDate || payment.createdAt || '—' }}</td>
+                <td>UGX {{ formatMoney(payment.amountToPay ?? payment.amount ?? 0) }}</td>
+                <td>{{ payment.paymentForm || '—' }}</td>
+                <td>{{ payment.receivedBy || '—' }}</td>
+                <td>
+                  {{ payment.notes || '—' }}
+                  <span class="cv2-payment-status-pill" *ngIf="isPaymentReversed(payment)">Reversed</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          class="cv2-empty-state compact"
+          *ngIf="!isLoadingOrderReceipts && !isLoadingPayments && !orderReceipts.length && !paymentsList.length">
+          <i class="bi bi-receipt"></i>
+          <h3>No receipts yet</h3>
+          <p>POS receipts and payment receipts for this order will appear here.</p>
+        </div>
+      </section>
+
       <!-- Vitals -->
       <section class="cv2-panel" *ngIf="activeTab === 'vitals' && visitId">
         <div class="cv2-panel-head cv2-panel-head-row">
@@ -196,7 +556,7 @@
           </div>
           <button type="button" class="cv2-btn cv2-btn-primary" (click)="openVitalsModal()">
             <i class="bi bi-plus-lg"></i>
-            Take Patient Vitals
+            Take Client Vitals
           </button>
         </div>
 
@@ -267,7 +627,7 @@
         <div class="cv2-empty-state compact" *ngIf="!isLoadingVitals && !vitalsList.length">
           <i class="bi bi-heart-pulse"></i>
           <h3>No vitals recorded</h3>
-          <p>Use “Take Patient Vitals” to add the first measurement.</p>
+          <p>Use “Take Client Vitals” to add the first measurement.</p>
         </div>
       </section>
 
@@ -832,8 +1192,8 @@
         </div>
       </section>
 
-      <!-- Billing -->
-      <section class="cv2-panel" *ngIf="activeTab === 'billing' && visitId">
+      <!-- Billing (legacy — superseded by Payment progress step) -->
+      <section class="cv2-panel" *ngIf="false && activeTab === 'billing' && visitId">
         <div class="cv2-panel-head cv2-panel-head-row">
           <div>
             <h2><i class="bi bi-receipt"></i> Invoice & Payment</h2>
@@ -961,7 +1321,7 @@
       <section class="cv2-billing-summary-section" aria-label="Visit billing summary">
         <div class="cv2-billing-summary-empty" *ngIf="!visitId">
           <i class="bi bi-receipt"></i>
-          <span>No visit selected</span>
+          <span>No order selected</span>
         </div>
 
         <div class="cv2-billing-summary-loading" *ngIf="visitId && isLoadingBillingSummary">
@@ -973,20 +1333,16 @@
           <table class="cv2-billing-summary-table">
             <thead>
               <tr>
-                <th *ngIf="canViewCostColumns()">Treatment</th>
-                <th *ngIf="canViewCostColumns()">Procedure</th>
                 <th *ngIf="canViewCostColumns()">TT Cost</th>
                 <th>SubTotal</th>
                 <th>Discount | Tax</th>
                 <th>Total Sell</th>
                 <th>Amount Paid</th>
-                <th>Balance</th>
+                <th>Debt</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td *ngIf="canViewCostColumns()">{{ formatBillingCell(summaryTreatmentCost) }}</td>
-                <td *ngIf="canViewCostColumns()">{{ formatBillingCell(summaryProcedureCost) }}</td>
                 <td *ngIf="canViewCostColumns()">{{ formatBillingCell(summaryTtCost) }}</td>
                 <td>{{ formatBillingCell(summarySubtotal) }}</td>
                 <td>{{ formatBillingCell(summaryDiscount) }} | {{ formatBillingCell(summaryTax) }}</td>
@@ -1006,7 +1362,7 @@
     <div class="cv2-modal cv2-modal--wide" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-calendar-plus"></i> Create New Patient Visit</h3>
+          <h3><i class="bi bi-calendar-plus"></i> Create New Client Order</h3>
           <p>Register a new visit with demographics and next of kin details.</p>
         </div>
         <button type="button" class="cv2-modal-close" (click)="closeCreateVisitModal()" aria-label="Close">
@@ -1017,46 +1373,31 @@
         <div class="cv2-modal-scroll">
         <div class="cv2-modal-grid">
           <div class="cv2-field">
-            <label>Visit No</label>
+            <label>Order Number</label>
             <input type="text" value="Auto-assigned" disabled />
           </div>
           <div class="cv2-field">
-            <label>Visit Date</label>
-            <input type="date" name="visitDate" [(ngModel)]="createVisitFormData.visitDate" required [readonly]="!mdUser" />
+            <label>Order Date</label>
+            <input type="date" name="visitDate" [(ngModel)]="createVisitFormData.visitDate" required />
           </div>
           <div class="cv2-field">
-            <label>Visit Time</label>
-            <input type="time" name="visitTime" [(ngModel)]="createVisitFormData.visitTime" [readonly]="!mdUser" />
+            <label>Order Time</label>
+            <input type="time" name="visitTime" [(ngModel)]="createVisitFormData.visitTime" required />
           </div>
           <div class="cv2-field">
-            <label>Visit Type</label>
-            <select name="visitType" [(ngModel)]="createVisitFormData.visitType" required>
-              <option value="" disabled>Select visit type</option>
-              <option *ngFor="let type of visitTypeOptions" [value]="type">{{ type }}</option>
-            </select>
-          </div>
-          <div class="cv2-field">
-            <label>Status</label>
+            <label>Order Status</label>
             <select name="visitStatus" [(ngModel)]="createVisitFormData.visitStatus" disabled>
               <option value="open">Open</option>
               <option value="closed">Closed</option>
             </select>
           </div>
           <div class="cv2-field">
-            <label>Visit Reason</label>
-            <input type="text" name="visitReason" [(ngModel)]="createVisitFormData.visitReason" placeholder="Optional" />
+            <label>Client Contact</label>
+            <input type="text" name="clientContact" [(ngModel)]="createVisitFormData.clientContact" />
           </div>
           <div class="cv2-field">
-            <label>Patient Age</label>
-            <input type="text" name="patientAge" [(ngModel)]="createVisitFormData.patientAge" />
-          </div>
-          <div class="cv2-field">
-            <label>Patient Contact</label>
-            <input type="text" name="patientContact" [(ngModel)]="createVisitFormData.patientContact" />
-          </div>
-          <div class="cv2-field">
-            <label>Patient Address</label>
-            <input type="text" name="patientAddress" [(ngModel)]="createVisitFormData.patientAddress" />
+            <label>Client Address</label>
+            <input type="text" name="clientAddress" [(ngModel)]="createVisitFormData.clientAddress" />
           </div>
           <div class="cv2-field">
             <label>Next Of Kin Name</label>
@@ -1071,7 +1412,7 @@
             <input type="text" name="nextOfKinContact" [(ngModel)]="createVisitFormData.nextOfKinContact" />
           </div>
           <div class="cv2-field">
-            <label>Patient Occupation</label>
+            <label>Client Occupation</label>
             <input type="text" name="occupation" [(ngModel)]="createVisitFormData.occupation" />
           </div>
           <div class="cv2-field cv2-span-2">
@@ -1084,20 +1425,20 @@
           <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeCreateVisitModal()">Close</button>
           <button type="button" class="cv2-btn cv2-btn-ghost" (click)="resetCreateVisitForm()">Clear</button>
           <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="isCreatingVisit">
-            {{ isCreatingVisit ? 'Saving...' : 'Save Visit' }}
+            {{ isCreatingVisit ? 'Saving...' : 'Save Order' }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Choose visit modal -->
+  <!-- Select order modal -->
   <div class="cv2-modal-overlay" *ngIf="showChooseVisitModal" (click)="closeChooseVisitModal()">
     <div class="cv2-modal" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-list-check"></i> Choose Visit</h3>
-          <p>Select a visit to load all clinical and billing data.</p>
+          <h3><i class="bi bi-list-check"></i> Select Order</h3>
+          <p>Select an order to load billing and transaction data.</p>
         </div>
         <button type="button" class="cv2-modal-close" (click)="closeChooseVisitModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
@@ -1106,7 +1447,7 @@
       <div class="cv2-modal-body">
         <div class="cv2-visit-search cv2-visit-search--modal">
           <i class="bi bi-search"></i>
-          <input type="text" placeholder="Search visits..." [(ngModel)]="visitSearchQuery" />
+          <input type="text" placeholder="Search orders..." [(ngModel)]="visitSearchQuery" />
         </div>
         <div class="cv2-visit-list cv2-visit-list--modal" *ngIf="!isLoadingVisits; else chooseVisitsLoading">
           <div
@@ -1118,7 +1459,7 @@
                 <span class="cv2-visit-option-title">
                   {{ formatVisitNumberTwoDigits(visit.visitNumber) }} | {{ formatVisitDateDayMonthYear(visit.visitDate) }}
                 </span>
-                <span class="cv2-visit-option-sub">{{ visit.visitType || 'Visit' }}</span>
+                <span class="cv2-visit-option-sub">Order</span>
               </span>
               <span
                 class="cv2-visit-pill"
@@ -1130,39 +1471,39 @@
               <button
                 type="button"
                 class="cv2-visit-action-btn money"
-                title="Receive payment for this visit"
+                title="Receive payment for this order"
                 (click)="receivePaymentFromList(visit, $event)">
                 <i class="bi bi-cash-coin"></i>
               </button>
               <button
                 type="button"
                 class="cv2-visit-action-btn close-visit"
-                title="Close visit"
-                [disabled]="isVisitClosed(visit) || isUpdatingPatientVisit"
+                title="Close order"
+                [disabled]="isVisitClosed(visit) || isUpdatingClientVisit"
                 (click)="closeVisitFromList(visit, $event)">
                 <i class="bi bi-door-closed"></i>
               </button>
               <button
                 type="button"
                 class="cv2-visit-action-btn"
-                title="Edit visit"
+                title="Edit order"
                 (click)="openEditVisitModal(visit, $event)">
                 <i class="bi bi-pencil-square"></i>
               </button>
               <button
                 type="button"
                 class="cv2-visit-action-btn danger"
-                title="Delete visit"
+                title="Delete order"
                 [disabled]="isDeletingVisit"
                 (click)="deleteVisitFromList(visit, $event)">
                 <i class="bi bi-trash"></i>
               </button>
             </div>
           </div>
-          <div class="cv2-empty-inline" *ngIf="!filteredVisits.length">No visits found</div>
+          <div class="cv2-empty-inline" *ngIf="!filteredVisits.length">No orders found</div>
         </div>
         <ng-template #chooseVisitsLoading>
-          <div class="cv2-inline-loader"><span class="cv2-spinner"></span> Loading visits...</div>
+          <div class="cv2-inline-loader"><span class="cv2-spinner"></span> Loading orders...</div>
         </ng-template>
       </div>
     </div>
@@ -1173,8 +1514,8 @@
     <div class="cv2-modal cv2-modal--wide" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-pencil-square"></i> Edit Patient Visit</h3>
-          <p>Update visit details and demographics for this visit.</p>
+          <h3><i class="bi bi-pencil-square"></i> Edit Client Order</h3>
+          <p>Update order details and demographics for this visit.</p>
         </div>
         <button type="button" class="cv2-modal-close" (click)="closeEditVisitModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
@@ -1183,50 +1524,35 @@
       <form class="cv2-modal-body" (ngSubmit)="submitEditVisit()">
         <div class="cv2-modal-scroll">
         <div class="cv2-inline-loader" *ngIf="isLoadingEditVisitDetails">
-          <span class="cv2-spinner"></span> Loading visit details…
+          <span class="cv2-spinner"></span> Loading order details…
         </div>
         <div class="cv2-modal-grid" *ngIf="!isLoadingEditVisitDetails">
           <div class="cv2-field">
-            <label>Visit No</label>
+            <label>Order Number</label>
             <input type="text" [value]="editingVisitNumber" disabled />
           </div>
           <div class="cv2-field">
-            <label>Visit Date</label>
+            <label>Order Date</label>
             <input type="date" name="editVisitDate" [(ngModel)]="editVisitFormData.visitDate" required [readonly]="!mdUser" />
           </div>
           <div class="cv2-field">
-            <label>Visit Time</label>
+            <label>Order Time</label>
             <input type="time" name="editVisitTime" [(ngModel)]="editVisitFormData.visitTime" [readonly]="!mdUser" />
           </div>
           <div class="cv2-field">
-            <label>Visit Type</label>
-            <select name="editVisitType" [(ngModel)]="editVisitFormData.visitType" required>
-              <option value="" disabled>Select visit type</option>
-              <option *ngFor="let type of visitTypeOptions" [value]="type">{{ type }}</option>
-            </select>
-          </div>
-          <div class="cv2-field">
-            <label>Status</label>
+            <label>Order Status</label>
             <select name="editVisitStatus" [(ngModel)]="editVisitFormData.visitStatus" disabled>
               <option value="open">Open</option>
               <option value="closed">Closed</option>
             </select>
           </div>
           <div class="cv2-field">
-            <label>Visit Reason</label>
-            <input type="text" name="editVisitReason" [(ngModel)]="editVisitFormData.visitReason" />
+            <label>Client Contact</label>
+            <input type="text" name="editClientContact" [(ngModel)]="editVisitFormData.clientContact" />
           </div>
           <div class="cv2-field">
-            <label>Patient Age</label>
-            <input type="text" name="editPatientAge" [(ngModel)]="editVisitFormData.patientAge" />
-          </div>
-          <div class="cv2-field">
-            <label>Patient Contact</label>
-            <input type="text" name="editPatientContact" [(ngModel)]="editVisitFormData.patientContact" />
-          </div>
-          <div class="cv2-field">
-            <label>Patient Address</label>
-            <input type="text" name="editPatientAddress" [(ngModel)]="editVisitFormData.patientAddress" />
+            <label>Client Address</label>
+            <input type="text" name="editClientAddress" [(ngModel)]="editVisitFormData.clientAddress" />
           </div>
           <div class="cv2-field">
             <label>Next Of Kin Name</label>
@@ -1241,7 +1567,7 @@
             <input type="text" name="editNextOfKinContact" [(ngModel)]="editVisitFormData.nextOfKinContact" />
           </div>
           <div class="cv2-field">
-            <label>Patient Occupation</label>
+            <label>Client Occupation</label>
             <input type="text" name="editOccupation" [(ngModel)]="editVisitFormData.occupation" />
           </div>
           <div class="cv2-field cv2-span-2">
@@ -1253,46 +1579,46 @@
         <div class="cv2-modal-foot">
           <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeEditVisitModal()">Close</button>
           <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="isUpdatingVisitDetails || isLoadingEditVisitDetails">
-            {{ isUpdatingVisitDetails ? 'Saving...' : 'Update Visit' }}
+            {{ isUpdatingVisitDetails ? 'Saving...' : 'Update Order' }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Edit patient modal -->
-  <div class="cv2-modal-overlay" *ngIf="showEditPatientModal" (click)="closeEditPatientModal()">
+  <!-- Edit client modal -->
+  <div class="cv2-modal-overlay" *ngIf="showEditClientModal" (click)="closeEditClientModal()">
     <div class="cv2-modal cv2-modal--wide" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-person-lines-fill"></i> Edit Patient Details</h3>
+          <h3><i class="bi bi-person-lines-fill"></i> Edit Client Details</h3>
           <p>Update demographics and next of kin information.</p>
         </div>
-        <button type="button" class="cv2-modal-close" (click)="closeEditPatientModal()" aria-label="Close">
+        <button type="button" class="cv2-modal-close" (click)="closeEditClientModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
-      <form class="cv2-modal-body" (ngSubmit)="submitEditPatient()">
+      <form class="cv2-modal-body" (ngSubmit)="submitEditClient()">
         <div class="cv2-modal-scroll">
-        <p class="cv2-modal-error" *ngIf="editPatientError">{{ editPatientError }}</p>
+        <p class="cv2-modal-error" *ngIf="editClientError">{{ editClientError }}</p>
 
         <h4 class="cv2-form-section-title">Basic Information</h4>
         <div class="cv2-modal-grid">
           <div class="cv2-field">
             <label>File Number</label>
-            <input type="text" [value]="editPatientFormData.patientFileNo || patientFileNo" disabled />
+            <input type="text" [value]="editClientFormData.clientFileNo || clientFileNo" disabled />
           </div>
           <div class="cv2-field">
             <label>First Name <span class="cv2-required">*</span></label>
-            <input type="text" name="patientFirstName" [(ngModel)]="editPatientFormData.patientFirstName" required />
+            <input type="text" name="clientFirstName" [(ngModel)]="editClientFormData.clientFirstName" required />
           </div>
           <div class="cv2-field">
             <label>Second Name <span class="cv2-required">*</span></label>
-            <input type="text" name="patientSecondName" [(ngModel)]="editPatientFormData.patientSecondName" required />
+            <input type="text" name="clientSecondName" [(ngModel)]="editClientFormData.clientSecondName" required />
           </div>
           <div class="cv2-field">
             <label>Contact</label>
-            <input type="text" name="patientContact" [(ngModel)]="editPatientFormData.patientContact" />
+            <input type="text" name="clientContact" [(ngModel)]="editClientFormData.clientContact" />
           </div>
         </div>
 
@@ -1300,15 +1626,15 @@
         <div class="cv2-modal-grid">
           <div class="cv2-field">
             <label>Age</label>
-            <input type="number" min="0" step="1" name="patientAge" [(ngModel)]="editPatientFormData.patientAge" />
+            <input type="number" min="0" step="1" name="clientAge" [(ngModel)]="editClientFormData.clientAge" />
           </div>
           <div class="cv2-field">
             <label>Date of Birth</label>
-            <input type="date" name="patientDateOfBirth" [(ngModel)]="editPatientFormData.patientDateOfBirth" />
+            <input type="date" name="clientDateOfBirth" [(ngModel)]="editClientFormData.clientDateOfBirth" />
           </div>
           <div class="cv2-field">
             <label>Gender</label>
-            <select name="patientGender" [(ngModel)]="editPatientFormData.patientGender">
+            <select name="clientGender" [(ngModel)]="editClientFormData.clientGender">
               <option value="">Select gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -1317,17 +1643,17 @@
           </div>
           <div class="cv2-field">
             <label>Occupation</label>
-            <input type="text" name="patientOccupation" [(ngModel)]="editPatientFormData.patientOccupation" />
+            <input type="text" name="clientOccupation" [(ngModel)]="editClientFormData.clientOccupation" />
           </div>
           <div class="cv2-field cv2-span-2">
             <label>Address</label>
-            <textarea name="patientAddress" rows="2" [(ngModel)]="editPatientFormData.patientAddress"></textarea>
+            <textarea name="clientAddress" rows="2" [(ngModel)]="editClientFormData.clientAddress"></textarea>
           </div>
           <div class="cv2-field cv2-span-2">
-            <label>Patient Group</label>
-            <select name="patientGroupId" [(ngModel)]="editPatientFormData.patientGroupId">
+            <label>Client Group</label>
+            <select name="clientGroupId" [(ngModel)]="editClientFormData.clientGroupId">
               <option [ngValue]="null">Choose group</option>
-              <option *ngFor="let group of patientGroupList" [ngValue]="group.id">
+              <option *ngFor="let group of clientGroupList" [ngValue]="group.id">
                 {{ group.groupNameShortForm || group.groupName }}
               </option>
             </select>
@@ -1338,27 +1664,27 @@
         <div class="cv2-modal-grid">
           <div class="cv2-field">
             <label>Name</label>
-            <input type="text" name="nextOfKinName" [(ngModel)]="editPatientFormData.nextOfKinName" />
+            <input type="text" name="nextOfKinName" [(ngModel)]="editClientFormData.nextOfKinName" />
           </div>
           <div class="cv2-field">
             <label>Relationship</label>
-            <input type="text" name="relationship" [(ngModel)]="editPatientFormData.relationship" />
+            <input type="text" name="relationship" [(ngModel)]="editClientFormData.relationship" />
           </div>
           <div class="cv2-field">
             <label>Contact</label>
-            <input type="text" name="nextOfKinContact" [(ngModel)]="editPatientFormData.nextOfKinContact" />
+            <input type="text" name="nextOfKinContact" [(ngModel)]="editClientFormData.nextOfKinContact" />
           </div>
           <div class="cv2-field cv2-span-2">
             <label>Address</label>
-            <textarea name="nextOfKinAddress" rows="2" [(ngModel)]="editPatientFormData.nextOfKinAddress"></textarea>
+            <textarea name="nextOfKinAddress" rows="2" [(ngModel)]="editClientFormData.nextOfKinAddress"></textarea>
           </div>
         </div>
         </div>
 
         <div class="cv2-modal-foot">
-          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeEditPatientModal()">Cancel</button>
-          <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="isUpdatingPatientData">
-            {{ isUpdatingPatientData ? 'Saving...' : 'Save Changes' }}
+          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeEditClientModal()">Cancel</button>
+          <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="isUpdatingClientData">
+            {{ isUpdatingClientData ? 'Saving...' : 'Save Changes' }}
           </button>
         </div>
       </form>
@@ -2329,100 +2655,13 @@
     </div>
   </div>
 
-  <!-- Queue client modal -->
-  <div class="cv2-modal-overlay" *ngIf="showQueueClientModal" (click)="closeQueueClientModal()">
-    <div class="cv2-modal cv2-modal--queue" (click)="$event.stopPropagation()">
-      <div class="cv2-modal-head">
-        <div>
-          <h3><i class="bi bi-list-ol"></i> Queue Client to next station</h3>
-          <p>Queue client to the next station or room.</p>
-        </div>
-        <button type="button" class="cv2-modal-close" (click)="closeQueueClientModal()" aria-label="Close">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-      <div class="cv2-modal-body">
-        <div class="cv2-modal-scroll">
-        <div class="cv2-queue-summary">
-          <div><strong>Surname:</strong> {{ patientSecondName }}</div>
-          <div><strong>O.P NO.:</strong> {{ patientFileNo }}</div>
-          <div><strong>Other Names:</strong> {{ patientFirstName }}</div>
-          <div><strong>Age:</strong> {{ patientAge }} (yrs)</div>
-        </div>
-        <p class="cv2-modal-error" *ngIf="queueClientError">{{ queueClientError }}</p>
-        <div class="cv2-form-grid">
-          <div class="cv2-field">
-            <label>From</label>
-            <select name="cv2QueueFrom" [(ngModel)]="queueClientForm.fromModuleId">
-              <option [ngValue]="null">Select module</option>
-              <option *ngFor="let m of queueClientModules" [ngValue]="m.id">{{ m.name }}</option>
-            </select>
-          </div>
-          <div class="cv2-field">
-            <label>To</label>
-            <select [(ngModel)]="queueClientForm.toModuleId" (ngModelChange)="onQueueClientToModuleChange()">
-              <option [ngValue]="null">Select destination</option>
-              <option *ngFor="let m of queueClientDestinationModules" [ngValue]="m.id">{{ m.name }}</option>
-            </select>
-          </div>
-          <p class="cv2-queue-hint cv2-span-2" *ngIf="isQueueDischargeDestination(queueClientForm.toModuleId)">
-            Patient will be removed from every active queue across all departments.
-          </p>
-          <div class="cv2-field" *ngIf="!isQueueDischargeDestination(queueClientForm.toModuleId)">
-            <label>Clinic</label>
-            <select [(ngModel)]="queueClientForm.clinicId">
-              <option [ngValue]="null">—</option>
-              <option *ngFor="let c of queueClientClinics" [ngValue]="c.id">{{ c.name }}</option>
-            </select>
-          </div>
-          <div class="cv2-field">
-            <label>Visit Default Scheme</label>
-            <select [(ngModel)]="queueClientForm.patientGroupId" (ngModelChange)="onQueueClientSchemeChange()">
-              <option [ngValue]="null">—</option>
-              <option *ngFor="let g of patientGroupList" [ngValue]="g.id">{{ g.groupName }}</option>
-            </select>
-          </div>
-          <div class="cv2-field cv2-span-2">
-            <label>Note</label>
-            <textarea [(ngModel)]="queueClientForm.note" rows="3"></textarea>
-          </div>
-        </div>
-        <div class="cv2-queue-checks">
-          <label class="cv2-check">
-            <input type="checkbox" [(ngModel)]="queueClientForm.emergency" />
-            <span>Is Emergency</span>
-          </label>
-          <label class="cv2-check">
-            <input type="checkbox" [(ngModel)]="queueClientForm.revisit" />
-            <span>Is Revisit</span>
-          </label>
-          <label class="cv2-check" *ngIf="!isQueueDischargeDestination(queueClientForm.toModuleId)">
-            <input type="checkbox" [(ngModel)]="queueClientForm.printQueueTicket" />
-            <span>Print Queue Ticket</span>
-          </label>
-        </div>
-        </div>
-        <div class="cv2-modal-foot">
-          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeQueueClientModal()">Cancel</button>
-          <button type="button" class="cv2-btn cv2-btn-primary" (click)="submitQueueClient()" [disabled]="queueClientSaving">
-            {{
-              queueClientSaving
-                ? (isQueueDischargeDestination(queueClientForm.toModuleId) ? 'Discharging...' : 'Queuing...')
-                : (isQueueDischargeDestination(queueClientForm.toModuleId) ? 'Discharge patient' : 'Queue patient')
-            }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Close visit outcome modal -->
+  <!-- Close order outcome modal -->
   <div class="cv2-modal-overlay" *ngIf="showCloseVisitModal" (click)="closeCloseVisitModal()">
     <div class="cv2-modal" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-door-closed"></i> Close Visit</h3>
-          <p>Where is this patient now?</p>
+          <h3><i class="bi bi-door-closed"></i> Close Order</h3>
+          <p>Set the final status for this order.</p>
         </div>
         <button type="button" class="cv2-modal-close" (click)="closeCloseVisitModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
@@ -2432,19 +2671,23 @@
         <div class="cv2-modal-scroll">
           <div class="cv2-form-grid">
             <div class="cv2-field cv2-span-2">
-              <label>Outcome</label>
+              <label>Order Status</label>
               <div class="cv2-queue-checks">
                 <label class="cv2-check">
-                  <input type="radio" name="closeOutcome" value="DISCHARGED" [(ngModel)]="closeVisitForm.outcome" />
-                  <span>Discharged</span>
+                  <input type="radio" name="closeOutcome" value="COMPLETED" [(ngModel)]="closeVisitForm.outcome" />
+                  <span>Completed</span>
                 </label>
                 <label class="cv2-check">
-                  <input type="radio" name="closeOutcome" value="REFERRED" [(ngModel)]="closeVisitForm.outcome" />
-                  <span>Referred</span>
+                  <input type="radio" name="closeOutcome" value="PENDING" [(ngModel)]="closeVisitForm.outcome" />
+                  <span>Pending</span>
                 </label>
                 <label class="cv2-check">
-                  <input type="radio" name="closeOutcome" value="DECEASED" [(ngModel)]="closeVisitForm.outcome" />
-                  <span>Deceased</span>
+                  <input type="radio" name="closeOutcome" value="WAITING_FOR_PAYMENT" [(ngModel)]="closeVisitForm.outcome" />
+                  <span>Waiting for payment</span>
+                </label>
+                <label class="cv2-check">
+                  <input type="radio" name="closeOutcome" value="FAILED" [(ngModel)]="closeVisitForm.outcome" />
+                  <span>Failed</span>
                 </label>
                 <label class="cv2-check">
                   <input type="radio" name="closeOutcome" value="OTHER" [(ngModel)]="closeVisitForm.outcome" />
@@ -2454,35 +2697,35 @@
             </div>
             <div class="cv2-field cv2-span-2">
               <label>Notes (optional)</label>
-              <textarea rows="3" [(ngModel)]="closeVisitForm.note" placeholder="Add referral reason, destination, or other note"></textarea>
+              <textarea rows="3" [(ngModel)]="closeVisitForm.note" placeholder="Add a note about this order status"></textarea>
             </div>
           </div>
         </div>
         <div class="cv2-modal-foot">
-          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeCloseVisitModal()" [disabled]="isUpdatingPatientVisit">
+          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closeCloseVisitModal()" [disabled]="isUpdatingClientVisit">
             Cancel
           </button>
-          <button type="button" class="cv2-btn cv2-btn-primary" (click)="confirmCloseVisit()" [disabled]="isUpdatingPatientVisit">
-            {{ isUpdatingPatientVisit ? 'Closing...' : 'Confirm Close Visit' }}
+          <button type="button" class="cv2-btn cv2-btn-primary" (click)="confirmCloseVisit()" [disabled]="isUpdatingClientVisit">
+            {{ isUpdatingClientVisit ? 'Closing...' : 'Confirm Close Order' }}
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Pay all patient debt modal -->
-  <div class="cv2-modal-overlay" *ngIf="showPayAllDebtModal" (click)="closePayAllPatientDebtModal()">
+  <!-- Pay all client debt modal -->
+  <div class="cv2-modal-overlay" *ngIf="showPayAllDebtModal" (click)="closePayAllClientDebtModal()">
     <div class="cv2-modal cv2-modal--wide" (click)="$event.stopPropagation()">
       <div class="cv2-modal-head">
         <div>
-          <h3><i class="bi bi-wallet2"></i> Pay all patient debt</h3>
+          <h3><i class="bi bi-wallet2"></i> Pay all client debt</h3>
           <p>Payment is applied from the oldest visit first until the amount is used up.</p>
         </div>
-        <button type="button" class="cv2-modal-close" (click)="closePayAllPatientDebtModal()" aria-label="Close">
+        <button type="button" class="cv2-modal-close" (click)="closePayAllClientDebtModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
-      <form class="cv2-modal-body" (ngSubmit)="submitPayAllPatientDebt()">
+      <form class="cv2-modal-body" (ngSubmit)="submitPayAllClientDebt()">
         <div class="cv2-modal-scroll">
         <div class="cv2-debt-summary">
           <div class="cv2-debt-stat">
@@ -2490,13 +2733,13 @@
             <strong>UGX {{ formatMoney(payAllDebtTotalOutstanding()) }}</strong>
           </div>
           <div class="cv2-debt-stat" *ngIf="totalAmountDue">
-            <span>Patient total debt</span>
+            <span>Client total debt</span>
             <strong>UGX {{ formatMoney(totalAmountDue) }}</strong>
           </div>
         </div>
 
         <div class="cv2-inline-loader" *ngIf="payAllDebtLoading">
-          <span class="cv2-spinner"></span> Loading visits…
+          <span class="cv2-spinner"></span> Loading orders…
         </div>
 
         <ng-container *ngIf="!payAllDebtLoading">
@@ -2522,7 +2765,7 @@
             </div>
             <div class="cv2-field">
               <label>Notes</label>
-              <input type="text" [(ngModel)]="payAllDebtForm.notes" name="payAllNotes" placeholder="Pay all patient debt" />
+              <input type="text" [(ngModel)]="payAllDebtForm.notes" name="payAllNotes" placeholder="Pay all client debt" />
             </div>
           </div>
 
@@ -2549,13 +2792,13 @@
           </div>
 
           <div class="cv2-modal-alert warning" *ngIf="!payAllDebtLoading && payAllDebtTotalOutstanding() <= 0">
-            No outstanding visit balances found for this patient.
+            No outstanding visit balances found for this client.
           </div>
 
           <div
             class="cv2-modal-alert warning"
             *ngIf="!payAllDebtAllocation.length && payAllDebtForm.amountToPay && payAllDebtTotalOutstanding() > 0">
-            No visits with outstanding balance match this amount.
+            No orders with outstanding balance match this amount.
           </div>
 
           <div
@@ -2574,8 +2817,8 @@
         </div>
 
         <div class="cv2-modal-foot">
-          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closePayAllPatientDebtModal()">Close</button>
-          <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="!canApplyPayAllPatientDebt">
+          <button type="button" class="cv2-btn cv2-btn-ghost" (click)="closePayAllClientDebtModal()">Close</button>
+          <button type="submit" class="cv2-btn cv2-btn-primary" [disabled]="!canApplyPayAllClientDebt">
             <span *ngIf="!payAllDebtSaving">Apply payment</span>
             <span *ngIf="payAllDebtSaving">Processing…</span>
           </button>
@@ -3074,8 +3317,8 @@
                   [drugLabel]="pharmacySelectedLabel"
                   [lastUnitValue]="lastUnitValue"
                   [unitOfMeasure]="unitOfMeasure"
-                  [patientAgeYears]="pharmacyStandardDosagePatientAge()"
-                  [patientWeightKg]="pharmacyStandardDosagePatientWeight()"
+                  [clientAgeYears]="pharmacyStandardDosageClientAge()"
+                  [clientWeightKg]="pharmacyStandardDosageClientWeight()"
                   [visitId]="visitId"
                   [currentDoseValue]="pharmacyForm.amountPerFrequencyValue"
                   [defaultRoute]="pharmacyForm.route"
@@ -3663,7 +3906,7 @@
       <div class="cv2-modal-head">
         <div>
           <h3><i class="bi bi-file-earmark-text"></i> Export statement</h3>
-          <p>Choose which sections and patient details to include on the PDF.</p>
+          <p>Choose which sections and client details to include on the PDF.</p>
         </div>
         <button type="button" class="cv2-modal-close" (click)="closeStatementExportModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
@@ -3672,32 +3915,32 @@
       <div class="cv2-modal-body">
         <div class="cv2-modal-scroll">
           <div class="cv2-statement-export-cards">
-            <!-- Patient details -->
-            <section class="cv2-statement-export-card" [class.open]="isStatementExportAccordionOpen('patient')">
+            <!-- Client details -->
+            <section class="cv2-statement-export-card" [class.open]="isStatementExportAccordionOpen('client')">
               <button
                 type="button"
                 class="cv2-statement-export-accordion-trigger"
-                (click)="toggleStatementExportAccordion('patient')"
-                [attr.aria-expanded]="isStatementExportAccordionOpen('patient')">
+                (click)="toggleStatementExportAccordion('client')"
+                [attr.aria-expanded]="isStatementExportAccordionOpen('client')">
                 <div class="cv2-statement-export-accordion-title">
-                  <h4><i class="bi bi-person-vcard"></i> Patient details</h4>
-                  <p>Choose which patient fields appear on the statement header.</p>
+                  <h4><i class="bi bi-person-vcard"></i> Client details</h4>
+                  <p>Choose which client fields appear on the statement header.</p>
                 </div>
                 <i class="bi bi-chevron-down cv2-statement-export-chevron" aria-hidden="true"></i>
               </button>
-              <div class="cv2-statement-export-accordion-body" *ngIf="isStatementExportAccordionOpen('patient')">
+              <div class="cv2-statement-export-accordion-body" *ngIf="isStatementExportAccordionOpen('client')">
                 <div class="cv2-statement-export-card-toolbar">
                   <label class="cv2-statement-check" (click)="$event.stopPropagation()">
                     <input type="checkbox"
-                      [checked]="allStatementExportPatientFieldsSelected"
-                      (change)="toggleAllStatementExportPatientFields($any($event.target).checked)" />
+                      [checked]="allStatementExportClientFieldsSelected"
+                      (change)="toggleAllStatementExportClientFields($any($event.target).checked)" />
                     <span>Select all</span>
                   </label>
                 </div>
                 <div class="cv2-statement-export-field-grid">
-                  <label class="cv2-statement-check" *ngFor="let field of statementExportPatientFieldOptions">
+                  <label class="cv2-statement-check" *ngFor="let field of statementExportClientFieldOptions">
                     <input type="checkbox"
-                      [(ngModel)]="statementExportPatientFields[field.key]"
+                      [(ngModel)]="statementExportClientFields[field.key]"
                       [ngModelOptions]="{standalone: true}" />
                     <span>{{ field.label }}</span>
                   </label>
@@ -3997,6 +4240,20 @@
   </div>
 
   <div
+    #orderDocActionMenuPop
+    class="cv2-action-menu-pop cv2-action-menu-pop--portaled"
+    *ngIf="orderDocActionMenuDoc as doc"
+    [ngStyle]="orderDocActionMenuStyle"
+    (click)="$event.stopPropagation()">
+    <button type="button" class="cv2-action-menu-item" (click)="printOrderDocument(doc)" [disabled]="isPrintingOrderDoc">
+      <i class="bi bi-printer"></i> Print
+    </button>
+    <button type="button" class="cv2-action-menu-item" (click)="shareOrderDocument(doc)">
+      <i class="bi bi-share"></i> Share
+    </button>
+  </div>
+
+  <div
     #paymentActionMenuPop
     class="cv2-action-menu-pop cv2-action-menu-pop--portaled"
     *ngIf="paymentActionMenuPayment as payment"
@@ -4017,7 +4274,10 @@
       <i class="bi bi-arrow-counterclockwise"></i> Reverse
     </button>
     <button type="button" class="cv2-action-menu-item" (click)="printPaymentReceipt(payment)">
-      <i class="bi bi-printer"></i> Print receipt
+      <i class="bi bi-printer"></i> Print
+    </button>
+    <button type="button" class="cv2-action-menu-item" (click)="sharePaymentReceipt(payment)">
+      <i class="bi bi-share"></i> Share
     </button>
   </div>
 
@@ -4111,7 +4371,7 @@
   <app-treatment-chart-modal
     [visitId]="visitId"
     [(open)]="showTreatmentChartModal"
-    [facilityDisplayName]="facilityDisplayName || patientFullName || ''"
+    [facilityDisplayName]="facilityDisplayName || clientFullName || ''"
     [facilityLogoUrl]="facilityLogoUrl"
     (closed)="onTreatmentChartClosed()"
     (chartSaved)="loadPharmacy()">

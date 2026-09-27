@@ -1,74 +1,113 @@
 <div class="usm-picker"
-     [class.usm-picker--disabled]="disabled || !isPickerEnabled"
+     [class.usm-picker--disabled]="disabled || (useUnitSellingModel && !isPickerEnabled)"
      [class.usm-picker--compact]="compact && !toolbarButton"
-     [class.usm-picker--toolbar-btn]="toolbarButton">
-  <label class="usm-picker-label" *ngIf="label && !toolbarButton">{{ label }}</label>
-  <div class="dropdown usm-item-dropdown" [class.show]="dropdownOpen">
-    <button
-      #dropdownToggle
-      type="button"
-      class="btn btn-outline-primary btn-sm dropdown-toggle usm-item-dropdown-toggle"
-      [class.pv-treatment-toolbar-btn]="toolbarButton"
-      [class.pv-treatment-toolbar-btn--request]="toolbarButton"
-      (click)="toggleDropdown($event)"
-      [attr.aria-expanded]="dropdownOpen"
-      [disabled]="disabled || !isPickerEnabled">
-      <ng-container *ngIf="toolbarButton; else defaultToggleContent">
-        <i class="bi bi-tags"></i>
-        <span>{{ label || 'Unit Sell Model' }}</span>
-        <i class="bi bi-chevron-down pv-treatment-toolbar-chevron"></i>
-      </ng-container>
-      <ng-template #defaultToggleContent>
-        <span class="usm-chip-label" *ngIf="compact && label">{{ label }}</span>
-        <span class="usm-item-dropdown-label">{{ selectedLabel }}</span>
-      </ng-template>
-    </button>
-    <ul
-      #dropdownMenu
-      class="dropdown-menu custom-scrollbar pl-2 pr-2 usm-item-dropdown-menu"
-      [class.show]="dropdownOpen"
-      [class.usm-item-dropdown-menu--portaled]="dropdownMenuPortaled"
-      (click)="$event.stopPropagation()"
-      style="max-height: 400px; overflow-y: auto; width: 100%;">
-      <li class="mt-2 usm-toolbar usm-search-container">
-        <input
-          type="text"
-          class="form-control dropdown-search ml-0"
-          placeholder="Search models…"
-          [(ngModel)]="searchText"
-          (ngModelChange)="onSearchChange()"
-          style="height: 30px; font-size: 14px; width: 100%;" />
-        <button type="button" class="usm-add-btn" (click)="openAddEditor($event)">
-          <i class="bi bi-plus-lg"></i> Add new
-        </button>
-      </li>
-      <li *ngIf="loading" class="text-muted text-center p-2">Loading unit sell models…</li>
-      <ng-container *ngIf="!loading && filteredModels.length; else noModels">
-        <li
-          class="usm-stock-item-card"
-          *ngFor="let model of filteredModels"
-          [class.usm-stock-item-card--selected]="selectedModelId === model.id">
-          <div class="usm-stock-item-group-header">
-            <button type="button" class="usm-model-select-btn" (click)="selectModel(model, $event)">
-              <span class="usm-stock-item-group-title">{{ model.name | uppercase }}</span>
-              <span class="usm-model-summary">{{ modelSummary(model) }}</span>
-            </button>
-            <span class="usm-row-actions">
-              <button type="button" class="btn btn-link btn-sm p-0" title="Edit" (click)="openEditEditor(model, $event)">
-                <i class="bi bi-pencil-square"></i>
-              </button>
-              <button type="button" class="btn btn-link btn-sm p-0 text-danger" title="Delete" (click)="deleteModel(model, $event)">
-                <i class="bi bi-trash"></i>
-              </button>
-            </span>
-          </div>
-        </li>
-      </ng-container>
-      <ng-template #noModels>
-        <li *ngIf="!loading" class="text-muted text-center p-2">No unit sell models yet.</li>
-      </ng-template>
-    </ul>
+     [class.usm-picker--toolbar-btn]="toolbarButton"
+     [class.usm-picker--open-price]="showPriceModeSwitch && !useUnitSellingModel">
+  <div class="usm-picker-label-row" *ngIf="label && !toolbarButton">
+    <label class="usm-picker-label">
+      <button
+        *ngIf="showPriceModeSwitch"
+        type="button"
+        class="usm-price-mode-switch"
+        role="switch"
+        [attr.aria-checked]="useUnitSellingModel"
+        [class.on]="useUnitSellingModel"
+        [disabled]="disabled"
+        (click)="togglePriceMode($event)"
+        title="{{ useUnitSellingModel ? 'Fixed price via unit sell model' : 'Open price at point of sale' }}">
+        <span class="usm-price-mode-knob" aria-hidden="true"></span>
+      </button>
+      <span>{{ label }}</span>
+    </label>
+    <span class="usm-price-mode-hint" *ngIf="showPriceModeSwitch">
+      {{ useUnitSellingModel ? 'Fixed · unit sell model' : 'Open · set at sale' }}
+    </span>
   </div>
+
+  <!-- Fixed / predictable: unit selling model dropdown -->
+  <ng-container *ngIf="!showPriceModeSwitch || useUnitSellingModel; else freePriceField">
+    <div class="dropdown usm-item-dropdown" [class.show]="dropdownOpen">
+      <button
+        #dropdownToggle
+        type="button"
+        class="btn btn-outline-primary btn-sm dropdown-toggle usm-item-dropdown-toggle"
+        [class.pv-treatment-toolbar-btn]="toolbarButton"
+        [class.pv-treatment-toolbar-btn--request]="toolbarButton"
+        (click)="toggleDropdown($event)"
+        [attr.aria-expanded]="dropdownOpen"
+        [disabled]="disabled || !isPickerEnabled">
+        <ng-container *ngIf="toolbarButton; else defaultToggleContent">
+          <i class="bi bi-tags"></i>
+          <span>{{ label || 'Unit Sell Model' }}</span>
+          <i class="bi bi-chevron-down pv-treatment-toolbar-chevron"></i>
+        </ng-container>
+        <ng-template #defaultToggleContent>
+          <span class="usm-chip-label" *ngIf="compact && label">{{ label }}</span>
+          <span class="usm-item-dropdown-label">{{ selectedLabel }}</span>
+        </ng-template>
+      </button>
+      <ul
+        #dropdownMenu
+        class="dropdown-menu custom-scrollbar pl-2 pr-2 usm-item-dropdown-menu"
+        [class.show]="dropdownOpen"
+        [class.usm-item-dropdown-menu--portaled]="dropdownMenuPortaled"
+        (click)="$event.stopPropagation()"
+        style="max-height: 400px; overflow-y: auto; width: 100%;">
+        <li class="mt-2 usm-toolbar usm-search-container">
+          <input
+            type="search"
+            class="usm-dropdown-search"
+            placeholder="Search models…"
+            [(ngModel)]="searchText"
+            (ngModelChange)="onSearchChange()"
+            autocomplete="off" />
+          <button type="button" class="usm-add-btn" (click)="openAddEditor($event)">
+            <i class="bi bi-plus-lg"></i> Add new
+          </button>
+        </li>
+        <li *ngIf="loading" class="text-muted text-center p-2">Loading unit sell models…</li>
+        <ng-container *ngIf="!loading && filteredModels.length; else noModels">
+          <li
+            class="usm-stock-item-card"
+            *ngFor="let model of filteredModels"
+            [class.usm-stock-item-card--selected]="selectedModelId === model.id">
+            <div class="usm-stock-item-group-header">
+              <button type="button" class="usm-model-select-btn" (click)="selectModel(model, $event)">
+                <span class="usm-stock-item-group-title">{{ model.name | uppercase }}</span>
+                <span class="usm-model-summary">{{ modelSummary(model) }}</span>
+              </button>
+              <span class="usm-row-actions">
+                <button type="button" class="btn btn-link btn-sm p-0" title="Edit" (click)="openEditEditor(model, $event)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-danger" title="Delete" (click)="deleteModel(model, $event)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </span>
+            </div>
+          </li>
+        </ng-container>
+        <ng-template #noModels>
+          <li *ngIf="!loading" class="text-muted text-center p-2">No unit sell models yet.</li>
+        </ng-template>
+      </ul>
+    </div>
+  </ng-container>
+
+  <!-- Open price: plain amount field (no dropdown) -->
+  <ng-template #freePriceField>
+    <input
+      type="number"
+      class="usm-free-price-input"
+      min="0"
+      step="0.01"
+      [ngModel]="freeSellingPrice"
+      (ngModelChange)="onFreePriceChange($event)"
+      [disabled]="disabled"
+      placeholder="0.00"
+      name="usmFreeSellingPrice"
+      autocomplete="off" />
+  </ng-template>
 
   <div #editorBackdrop class="usm-editor-backdrop" *ngIf="showEditor" (click)="closeEditor()">
     <div class="usm-editor-card" (click)="$event.stopPropagation()">

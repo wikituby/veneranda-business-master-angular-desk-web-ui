@@ -1,158 +1,71 @@
 # Technical Guide
 
-For IT support, implementers, and developers maintaining the HMS deployment.
+For people who install and support the business manager. Staff procedures are in the CRM and ERP guides.
 
-## Solution stack
+## What is deployed
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Angular 16, Bootstrap 5, RxJS |
-| UI libraries | ng-bootstrap, Angular Material (partial), Firebase storage (profile/assets) |
-| Backend | Java health care API (context path `/health_care`) |
-| Auth | JWT (CustomAwareJWTAuthMechanism on backend) |
-| Default API port | 8080 |
+| Part | Role |
+|------|------|
+| Web console | Angular application for back office, POS, and administration |
+| Mobile app | Flutter client for floor sales and stock, same accounts and items |
+| API | Quarkus service. Browser and phone both call it |
+| Database | Clients, orders, stock, finance, and users |
 
-Frontend project name: `wiki` (folder: ngwiki).
+There is one backend. A sale on the phone and a sale on the desk write the same client, order, and stock records.
 
-## Repository layout (frontend)
+## How a sale is stored
+
+| Record | Meaning |
+|--------|---------|
+| Client | CRM account |
+| Order (visit) | One commercial file. A new document creates a new order unless the user is editing |
+| Sale document | Quotation, proforma, invoice, receipt, or delivery note on that order |
+| Payment | Money on the order. Status can be reversed |
+| Stock movement | Quantity change in a store when the document deducts stock |
+
+Editing updates the document and can point the same order at another client. It does not open the new-order dialog.
+
+## Local development
+
+Run the web console and the API on the machine you are testing. Do not publish a production site unless that release was requested.
+
+| Service | Typical local address |
+|---------|------------------------|
+| Web console | `http://localhost:4800/` |
+| API | `http://localhost:8080/` |
+
+The console talks to the API using the configured base URL (direct or through the dev proxy). Sign-in uses a token stored for the session. An expired token sends the user back to login. That is expected.
+
+## Repository layout (web)
 
 ```
 ngwiki/
-├── src/app/              # Application modules and pages
-│   ├── overview/         # Main HMS modules (sidebar)
-│   ├── patient-visit/    # Clinical encounter workspace
-│   ├── header/           # Global header, queue
-│   ├── auth/             # Login, signup, password reset
-│   ├── services/         # API, access control, branding
-│   └── config/           # API URLs, access endpoint catalog
-├── src/assets/
-│   ├── images/           # Logos, UI art
-│   └── documentation/    # Client documentation (this folder)
-└── angular.json          # Build configuration
+├── src/app/
+│   ├── overview/          # CRM, ERP, finance, administration pages
+│   ├── header/            # Toolbar, inventory menu, More
+│   ├── auth/              # Sign in and registration
+│   ├── services/          # API client and access control
+│   └── config/            # Server URL and this documentation catalog
+└── src/assets/documentation/   # These guides
 ```
 
-## Running locally
+POS and the products orders list are the business checkout. They use the same clients, orders, and stock as the rest of the console.
 
-```bash
-npm install
-ng serve
-```
+## Support checks
 
-Browser: `http://localhost:4200/`
+| Check | Healthy result |
+|-------|----------------|
+| Console opens | Login page with the business name |
+| API listens | Port 8080 accepts connections |
+| Sign in | Dashboard or POS loads menus for that role |
+| Save a quotation | A new order number appears and stock is unchanged |
+| Save a receipt | Stock in the selling store falls |
+| Reverse a payment | Row remains, paid total drops |
 
-Ensure the backend is running and reachable at the configured base URL.
+Startup messages about unrelated database migrations can appear in development and still leave the API listening. If the console cannot load data, confirm the API process is up before changing application code.
 
-## API connection
+## Documentation files
 
-Configuration: `src/app/config/api-server.config.ts`
+Guides in this folder are loaded by **System Documentation**. The sidebar list is `system-documentation.catalog.ts`. Edit the Markdown, keep the file name, and the page picks up the new text.
 
-| Constant | Default |
-|----------|---------|
-| Context path | `/health_care` |
-| Port | 8080 |
-| Local base | `http://localhost:8080/health_care` |
-
-Runtime selection:
-
-- `ApiConfigService` runs on `APP_INITIALIZER`
-- Active base URL stored in `localStorage` / session keys: `apiActiveBaseUrl`, `apiSavedServers`
-- Health check: `/health` with timeout (4s)
-
-Staff may use **Server connection** UI to switch hosts on LAN deployments.
-
-## Authentication flow
-
-1. User posts credentials to login endpoint.
-2. JWT and user metadata stored in **sessionStorage** (role, username, email, access lists).
-3. `subscriptionGuard` and `blockDashboardForClinicalRoleGuard` protect routes.
-4. HTTP interceptor (`GlobalFeedbackInterceptor`) surfaces API errors globally.
-
-## Access control implementation
-
-| Piece | Location |
-|-------|----------|
-| Page keys / user grants | `AccessControlService`, session cache |
-| Endpoint catalog (frontend) | `src/app/config/app-access-endpoints.ts` |
-| Endpoint catalog (backend) | `EndpointAccessCatalog`, `RoleEndpointAccess` entity |
-| Enforcement | `EndpointAuthorizationFilter` |
-
-When adding a new protected API:
-
-1. Register key in backend catalog
-2. Add matching entry to `APP_ACCESS_ENDPOINTS`
-3. Expose toggles in Access control UI
-4. Exclude path from open JWT bypass only if intentional
-
-## Key routes
-
-| Route | Component |
-|-------|-----------|
-| `/login`, `/login4` | Login variants |
-| `/overview/*` | Module shell |
-| `/patient-visit` | PatientVisitComponent |
-| `/patient-visits-list` | Visit list |
-| `/dashboard` | Dashboard (guarded) |
-
-Full route table: `src/app/app-routing.module.ts`.
-
-## Build for production
-
-```bash
-ng build --configuration production
-```
-
-Output: `dist/` — deploy to static web server (nginx, IIS, etc.). Configure reverse proxy to API and enable HTTPS.
-
-## Environment
-
-- `environment.ts` / `environment.prod.ts` — Firebase and feature flags
-- Facility-specific values prefer **business settings API** over hard-coded branding
-
-## Database and migrations
-
-Backend uses JPA/Hibernate entities (e.g. `StockBatch` with `profitMarginForRetail`, `profitMarginForWholeSale`, `profitMarginForSpecialCase`).
-
-After entity changes:
-
-1. Run backend compile/deploy
-2. Allow schema update or run migration scripts
-3. Migrate legacy `profitMargin` column data to retail fields if applicable
-
-## CORS and LAN deployment
-
-Typical clinic setup:
-
-- Frontend: one host (e.g. `192.168.x.x:4200` or port 80)
-- API: `192.168.x.x:8080/health_care`
-- Configure CORS on backend for frontend origin
-
-## Backup and recovery
-
-Use Overview → **Data backup** for application-supported backup flows. IT should also snapshot database and file storage at hypervisor or DB level.
-
-## Support diagnostics
-
-| Symptom | Check |
-|---------|--------|
-| 401 / 403 on API | JWT expiry, role endpoint map |
-| Blank overview | sessionStorage role; subscription guard |
-| Queue visit won't open | API `getPatientVisitByVisitId` / network tab |
-| Wrong facility name | Business settings cache; clear session |
-
-## Documentation maintenance
-
-Update `src/assets/documentation/*.md` when:
-
-- New modules go live for clients
-- Access control or pharmacy workflow changes
-- API path or port defaults change
-
-## Version history
-
-| Version | Date | Notes |
-|---------|------|-------|
-| 1.0 | June 2026 | Initial client documentation pack |
-
----
-
-*Document 06 — Technical guide — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

@@ -11,8 +11,8 @@
     </button>
 
     <!-- Brand -->
-    <a [routerLink]="['/overview/all-patients']" class="toolbar-brand-wrap text-decoration-none">
-      <span class="toolbar-brand-mark">V<strong>MD</strong></span>
+    <a [routerLink]="['/overview/all-clients']" class="toolbar-brand-wrap text-decoration-none">
+      <span class="toolbar-brand-mark">V<strong>BM</strong></span>
     </a>
 
     <!-- Nav pills -->
@@ -26,6 +26,60 @@
         <i class="bi bi-grid-1x2"></i>
         <span class="toolbar-label">Dashboard</span>
       </a>
+
+      <!-- Inventory mega menu -->
+      <div class="toolbar-inventory-wrap" *ngIf="account && businessSettings && hasAnyInventoryMegaLink()">
+        <button
+          type="button"
+          class="toolbar-nav-pill"
+          [class.active]="inventoryMenuOpen"
+          (click)="toggleInventoryMenu($event)"
+          [attr.aria-expanded]="inventoryMenuOpen">
+          <i class="bi bi-box-seam"></i>
+          <span class="toolbar-label">Inventory</span>
+          <i class="bi bi-chevron-down toolbar-pill-caret" [class.rotated]="inventoryMenuOpen"></i>
+        </button>
+
+        <div class="toolbar-inventory-mega" *ngIf="inventoryMenuOpen" (click)="$event.stopPropagation()">
+          <div class="toolbar-inventory-mega-inner">
+            <div class="toolbar-inventory-mega-head">
+              <div>
+                <h3>Inventory</h3>
+                <p>Stock, products, stores, and related tools.</p>
+              </div>
+              <a
+                routerLink="/overview/inventory-dashboard"
+                (click)="onInventoryMegaLinkClick($event)"
+                *ngIf="canAccessDepartment('inventory-dashboard')">
+                Open dashboard
+                <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+            <div class="toolbar-inventory-mega-groups">
+              <section
+                class="toolbar-inventory-mega-group"
+                *ngFor="let group of visibleInventoryMegaGroups()">
+                <h4>{{ group.title }}</h4>
+                <div class="toolbar-inventory-mega-grid">
+                  <a
+                    class="toolbar-inventory-mega-item"
+                    *ngFor="let link of group.links"
+                    [routerLink]="[link.route]"
+                    (click)="onInventoryMegaLinkClick($event)">
+                    <span class="toolbar-inventory-mega-thumb" aria-hidden="true">
+                      <i class="bi" [ngClass]="link.icon"></i>
+                    </span>
+                    <span class="toolbar-inventory-mega-copy">
+                      <strong>{{ link.label }}</strong>
+                      <small>{{ link.description }}</small>
+                    </span>
+                  </a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- More pill + custom panel -->
       <div class="toolbar-more-wrap" *ngIf="account && businessSettings">
@@ -41,86 +95,26 @@
         <!-- More dropdown panel -->
         <div class="toolbar-more-panel" *ngIf="moreMenuOpen" (click)="$event.stopPropagation()">
           <div class="toolbar-more-panel-inner">
-
-            <a class="toolbar-more-item"
-               [routerLink]="['/patient-visits-list']"
-               (click)="onMoreMenuLinkClick($event)"
-               *ngIf="canAccessDepartment('patient-visits-list')">
-              <i class="bi bi-calendar-check"></i>
-              <span>Visits list</span>
-            </a>
-
-            <!-- Departments submenu -->
-            <div class="toolbar-more-submenu-group" *ngIf="hasAnyHeaderDepartmentLink()">
-              <button type="button"
-                      class="toolbar-more-item toolbar-more-submenu-toggle"
-                      (click)="toggleSubmenu('departments', $event)">
-                <i class="bi bi-hospital"></i>
-                <span>Departments</span>
-                <i class="bi ms-auto"
-                   [ngClass]="isSubmenuOpen('departments') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-              </button>
-              <div class="toolbar-more-submenu" *ngIf="isSubmenuOpen('departments')">
-                <a class="toolbar-more-item toolbar-more-submenu-item"
-                   *ngFor="let link of visibleHeaderDepartmentLinks()"
-                   [routerLink]="[link.path]"
-                   (click)="onDepartmentLinkClick($event)">
-                  <i class="bi" [ngClass]="link.icon"></i>
-                  <span>{{ link.label }}</span>
-                </a>
-              </div>
-            </div>
-
-            <!-- Inventory submenu -->
-            <div class="toolbar-more-submenu-group" *ngIf="hasAnyLegacyInventoryLink()">
-              <button type="button"
-                      class="toolbar-more-item toolbar-more-submenu-toggle"
-                      (click)="toggleSubmenu('inventory', $event)">
-                <i class="bi bi-box-seam"></i>
-                <span>Old Inventory</span>
-                <i class="bi ms-auto"
-                   [ngClass]="isSubmenuOpen('inventory') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-              </button>
-              <div class="toolbar-more-submenu" *ngIf="isSubmenuOpen('inventory')">
-                <ng-container *ngFor="let link of legacyInventoryLinks">
-                  <a class="toolbar-more-item toolbar-more-submenu-item"
-                     *ngIf="canAccessDepartment(link.pageKey)"
-                     [routerLink]="[link.route]"
-                     (click)="onLegacyInventoryLinkClick($event)">
-                    <i class="bi" [ngClass]="link.icon"></i>
-                    <span>{{ link.label }}</span>
-                  </a>
-                </ng-container>
-              </div>
-            </div>
-
-            <a class="toolbar-more-item"
-               [routerLink]="['/overview/otc-dispensary']"
-               (click)="onMoreMenuLinkClick($event)"
-               *ngIf="canAccessDepartment('otc-dispensary')">
-              <i class="bi bi-capsule"></i>
-              <span>Pharmacy</span>
-            </a>
-
-            <hr class="toolbar-more-divider" *ngIf="canAccessDepartment('otc-dispensary')">
-
             <a class="toolbar-more-item" routerLink="/help" (click)="onMoreMenuLinkClick($event)">
               <i class="bi bi-question-circle"></i>
-              <span>Help &amp; FAQ</span>
+              <span>Help</span>
             </a>
-
+            <a class="toolbar-more-item" routerLink="/help" fragment="faq" (click)="onMoreMenuLinkClick($event)">
+              <i class="bi bi-chat-square-text"></i>
+              <span>FAQ</span>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- Pharmacy -->
+      <!-- POS -->
       <a class="toolbar-nav-pill toolbar-otc-pill"
          routerLink="/overview/otc-dispensary"
          routerLinkActive="active"
          [routerLinkActiveOptions]="{ exact: true }"
          *ngIf="account && businessSettings && canAccessDepartment('otc-dispensary')">
-        <i class="bi bi-capsule toolbar-otc-icon"></i>
-        <span class="toolbar-label">Pharmacy</span>
+        <i class="bi bi-cash-register toolbar-otc-icon"></i>
+        <span class="toolbar-label">POS</span>
       </a>
 
     </nav>
@@ -130,41 +124,17 @@
   <!-- ═══ RIGHT: action buttons ═══ -->
   <div class="toolbar-right">
 
-    <!-- Work context chip -->
-    <button type="button"
-            class="toolbar-work-ctx-btn"
-            [class.has-context]="hasWorkContext"
-            [class.switchable]="canSwitchWorkContext"
-            (click)="onWorkContextButtonClick()"
-            [disabled]="workContextLoading"
-            [title]="canSwitchWorkContext ? ('Switch dept / room — ' + workContextTitle) : workContextTitle"
-            *ngIf="canUseQueueAndWorkContext">
-      <i class="bi bi-door-open"></i>
-      <span class="work-ctx-label">
-        <ng-container *ngIf="workContextLoading">Loading…</ng-container>
-        <ng-container *ngIf="!workContextLoading && hasWorkContext">{{ workContextSummary }}</ng-container>
-        <ng-container *ngIf="!workContextLoading && !hasWorkContext">No dept / room</ng-container>
-      </span>
-      <i *ngIf="canSwitchWorkContext" class="bi bi-chevron-down work-ctx-caret"></i>
-    </button>
+    <!-- Work context (queue dept/room) removed for business app -->
 
-    <!-- Queue button -->
-    <button type="button"
-            class="toolbar-icon-btn"
-            (click)="openQueueModal()"
-            title="Patient queue"
-            *ngIf="canUseQueueAndWorkContext">
-      <i class="bi bi-list-ol"></i>
-      <span class="toolbar-label">Queue</span>
-    </button>
+    <!-- Queue button removed for business POS app -->
 
-    <!-- Patient → Registry -->
-    <a [routerLink]="['/overview/all-patients']"
+    <!-- Client → Registry -->
+    <a [routerLink]="['/overview/all-clients']"
        class="toolbar-icon-btn"
-       title="Patient registry"
+       title="Client registry"
        *ngIf="account && businessSettings">
       <i class="bi bi-person-gear"></i>
-      <span class="toolbar-label">Patient</span>
+      <span class="toolbar-label">Client</span>
     </a>
 
     <!-- Services -->
@@ -231,8 +201,8 @@
           <a class="dropdown-item small" routerLink="/overview/reorder-levels" (click)="closeToolbarMenus()">
             <i class="bi bi-box-seam me-1"></i> Stock alerts
           </a>
-          <a class="dropdown-item small" routerLink="/overview/queue-management" (click)="closeToolbarMenus()">
-            <i class="bi bi-list-ol me-1"></i> Queue
+          <a class="dropdown-item small" routerLink="/overview/all-clients" (click)="closeToolbarMenus()">
+            <i class="bi bi-people me-1"></i> Registry
           </a>
           <a class="dropdown-item small" routerLink="/overview/subscription" (click)="closeToolbarMenus()">
             <i class="bi bi-calendar-check me-1"></i> Subscription
@@ -253,6 +223,19 @@
         <span class="badge header-messages-badge" *ngIf="messagesUnreadTotal > 0">
           {{ messagesUnreadTotal > 99 ? '99+' : messagesUnreadTotal }}
         </span>
+      </span>
+    </button>
+
+    <!-- ── Full screen ── -->
+    <button type="button"
+            class="toolbar-icon-btn header-fullscreen-toggle"
+            *ngIf="account && businessSettings"
+            [attr.aria-label]="isAppFullscreen ? 'Exit full screen' : 'Full screen'"
+            [attr.title]="isAppFullscreen ? 'Exit full screen' : 'Full screen'"
+            (click)="toggleAppFullscreen($event)">
+      <span class="header-icon-wrap" aria-hidden="true">
+        <i class="bi header-action-icon"
+           [ngClass]="isAppFullscreen ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'"></i>
       </span>
     </button>
 
@@ -392,7 +375,7 @@
     </div>
     <div class="header-modal-body">
       <p class="work-context-hint text-muted">
-        Choose your working department and room. The queue shows patients for your current selection.
+        Choose your working department and room. The queue shows clients for your current selection.
       </p>
       <section class="work-context-section" *ngIf="accessibleDepartments.length > 0">
         <h4 class="work-context-section-title">
@@ -445,7 +428,7 @@
     <div class="header-modal-head">
       <h3 class="header-modal-title">
         <i class="bi bi-signpost-split-fill" style="color:#059669;"></i>
-        Take client — {{ takeClientEntry?.patientSurname }} {{ takeClientEntry?.patientOtherNames }}
+        Take client — {{ takeClientEntry?.clientSurname }} {{ takeClientEntry?.clientOtherNames }}
       </h3>
       <button type="button" class="btn btn-light btn-sm" (click)="closeTakeClientModal()">Cancel</button>
     </div>
@@ -485,14 +468,14 @@
   </div>
 </div>
 
-<!-- Patient queue modal -->
+<!-- Client queue modal -->
 <div class="header-modal-overlay"
      *ngIf="showQueueModal"
      (click)="closeQueueModal()">
   <div class="header-modal-card header-modal-card-wide" (click)="$event.stopPropagation()">
     <div class="header-modal-head">
       <h3 class="header-modal-title">
-        <i class="bi bi-list-ol"></i> Patient queue
+        <i class="bi bi-list-ol"></i> Client queue
         <span class="header-queue-room-tag" *ngIf="queuePageDepartmentLabel">
           · {{ queuePageDepartmentLabel }}
         </span>
@@ -516,7 +499,7 @@
              *ngIf="!queueLoading && queueTab === 'current'">
         <thead>
           <tr>
-            <th>#</th><th>Queue #</th><th>Patient</th><th>OP No</th>
+            <th>#</th><th>Queue #</th><th>Client</th><th>OP No</th>
             <th>From</th><th>To</th><th>Status</th><th>Queued by</th><th>Queued at</th><th></th>
           </tr>
         </thead>
@@ -528,14 +511,14 @@
             <td>
               <span *ngIf="q.emergency" class="queue-emergency-badge">EMERGENCY</span>
               <button type="button"
-                      class="btn btn-link btn-sm p-0 queue-patient-link"
+                      class="btn btn-link btn-sm p-0 queue-client-link"
                       [disabled]="queueVisitLoadingEntryId != null"
-                      (click)="openQueuePatientVisit(q)"
-                      title="Open patient visit">
-                {{ q.patientSurname }} {{ q.patientOtherNames }}
+                      (click)="openQueueClientVisit(q)"
+                      title="Open client order">
+                {{ q.clientSurname }} {{ q.clientOtherNames }}
               </button>
             </td>
-            <td>{{ q.patientFileNo }}</td>
+            <td>{{ q.clientFileNo }}</td>
             <td>{{ q.fromModuleName }}</td>
             <td><span class="queue-dest-badge">{{ q.toModuleName || '—' }}</span></td>
             <td>
@@ -574,7 +557,7 @@
              *ngIf="!queueLoading && queueTab === 'discharged'">
         <thead>
           <tr>
-            <th>#</th><th>Queue #</th><th>Patient</th><th>OP No</th>
+            <th>#</th><th>Queue #</th><th>Client</th><th>OP No</th>
             <th>From</th><th>Last room / dept</th><th>Discharged at</th><th>Queued by</th>
           </tr>
         </thead>
@@ -582,8 +565,8 @@
           <tr *ngFor="let q of queueEntries; let i = index">
             <td>{{ i + 1 }}</td>
             <td><strong>{{ q.queueNumber }}</strong></td>
-            <td>{{ q.patientSurname }} {{ q.patientOtherNames }}</td>
-            <td>{{ q.patientFileNo }}</td>
+            <td>{{ q.clientSurname }} {{ q.clientOtherNames }}</td>
+            <td>{{ q.clientFileNo }}</td>
             <td>{{ q.fromModuleName }}</td>
             <td><span class="queue-dest-badge">{{ q.toModuleName || '—' }}</span></td>
             <td>{{ formatQueueDate(q.completedAt) }}</td>
@@ -600,15 +583,15 @@
              *ngIf="!queueLoading && queueTab === 'referred'">
         <thead>
           <tr>
-            <th>#</th><th>Patient</th><th>OP No</th>
+            <th>#</th><th>Client</th><th>OP No</th>
             <th>Referred from</th><th>Referred to</th><th>Referred by</th><th>Referred at</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let q of queueEntries; let i = index">
             <td>{{ i + 1 }}</td>
-            <td>{{ q.patientSurname }} {{ q.patientOtherNames }}</td>
-            <td>{{ q.patientFileNo }}</td>
+            <td>{{ q.clientSurname }} {{ q.clientOtherNames }}</td>
+            <td>{{ q.clientFileNo }}</td>
             <td>{{ q.referredFromModuleName || q.fromModuleName || '—' }}</td>
             <td><span class="queue-dest-badge">{{ q.toModuleName || '—' }}</span></td>
             <td>{{ q.referredBy || q.queuedBy || '—' }}</td>
@@ -635,9 +618,9 @@
       <button type="button" class="btn btn-light btn-sm" (click)="closeQueueEditModal()">Cancel</button>
     </div>
     <div class="header-modal-body" *ngIf="editingQueueEntry">
-      <p class="queue-edit-patient">
-        <strong>{{ editingQueueEntry.patientSurname }} {{ editingQueueEntry.patientOtherNames }}</strong>
-        <span class="text-muted"> · {{ editingQueueEntry.patientFileNo }}</span>
+      <p class="queue-edit-client">
+        <strong>{{ editingQueueEntry.clientSurname }} {{ editingQueueEntry.clientOtherNames }}</strong>
+        <span class="text-muted"> · {{ editingQueueEntry.clientFileNo }}</span>
       </p>
       <div class="row g-2">
         <div class="col-md-6">
@@ -657,7 +640,7 @@
         </div>
         <div class="col-12" *ngIf="isQueueDischargeDestination(queueEditForm.toModuleId)">
           <p class="text-muted small mb-0">
-            Patient will be removed from every active queue across all departments.
+            Client will be removed from every active queue across all departments.
           </p>
         </div>
         <div class="col-12">

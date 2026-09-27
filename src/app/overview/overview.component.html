@@ -63,29 +63,27 @@
       <div class="nav-group" *ngIf="canAccessNavGroup('dashboard')" [class.active]="activeGroup==='dashboard'" [class.menu-open]="isMenuOpen('dashboard') && collapsedFlyoutMode">
         <button class="nav-group-title" (click)="toggleMenu('dashboard')">
           <i class="bi bi-speedometer2"></i>
-          <span>Dashboard &amp; Analytics</span>
+          <span>Analytics &amp; Reports</span>
           <i class="bi" [ngClass]="isMenuOpen('dashboard') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
         </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('dashboard') && collapsedFlyoutMode">Dashboard &amp; Analytics</div>
+        <div class="menu-title-popup" *ngIf="isMenuOpen('dashboard') && collapsedFlyoutMode">Analytics &amp; Reports</div>
         <ul class="submenu" *ngIf="isMenuOpen('dashboard')" (click)="$event.stopPropagation()">
           <li *ngIf="canAccessPage('main-dashboard')" (click)="navigateTo('overview/main-dashboard', $event)" [class.active]="activeSubmenu==='main-dashboard'">Main Dashboard</li>
+          <li *ngIf="canAccessPage('departmental-reports')" (click)="navigateTo('overview/departmental-reports', $event)" [class.active]="activeSubmenu==='departmental-reports'">Departmental Reports</li>
+          <li *ngIf="canAccessPage('revenue-reports')" (click)="navigateTo('overview/revenue-reports', $event)" [class.active]="activeSubmenu==='revenue-reports'">Revenue Reports</li>
         </ul>
       </div>
 
-      <div class="nav-group" *ngIf="canAccessNavGroup('patient-management')" [class.active]="activeGroup==='patient-management'" [class.menu-open]="isMenuOpen('patient-management') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('patient-management')">
+      <div class="nav-group" *ngIf="canAccessNavGroup('client-management')" [class.active]="activeGroup==='client-management'" [class.menu-open]="isMenuOpen('client-management') && collapsedFlyoutMode">
+        <button class="nav-group-title" (click)="toggleMenu('client-management')">
           <i class="bi bi-people-fill"></i>
-          <span>Patient Management</span>
-          <i class="bi" [ngClass]="isMenuOpen('patient-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          <span>Client Management</span>
+          <i class="bi" [ngClass]="isMenuOpen('client-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
         </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('patient-management') && collapsedFlyoutMode">Patient Management</div>
-        <ul class="submenu" *ngIf="isMenuOpen('patient-management')" (click)="$event.stopPropagation()">
-          <li *ngIf="canAccessPage('all-patients')" (click)="navigateTo('overview/all-patients')" [class.active]="activeSubmenu==='all-patients'">Registry</li>
-          <li *ngIf="canAccessPage('patient-groups')" (click)="navigateTo('overview/patient-groups')" [class.active]="activeSubmenu==='patient-groups'">Patient Groups</li>
-          <li *ngIf="canAccessPage('queue-management')" (click)="navigateTo('overview/queue-management')" [class.active]="activeSubmenu==='queue-management'">Queue Management</li>
-          <li *ngIf="canAccessPage('patient-visit') || canAccessPage('consultations-center')" (click)="navigateTo('overview/consultations-center', $event)" [class.active]="activeSubmenu==='consultations-center'">Patient Visit</li>
-          <li *ngIf="canAccessPage('patient-visits-list')" (click)="navigateTo('patient-visits-list', $event)" [class.active]="activeSubmenu==='patient-visits-list'">Patient Visits List</li>
-          <li *ngIf="canAccessPage('doctor-assistant')" (click)="navigateTo('doctor-assistant', $event)" [class.active]="activeSubmenu==='doctor-assistant'">Doctor Assistant Chat</li>
+        <div class="menu-title-popup" *ngIf="isMenuOpen('client-management') && collapsedFlyoutMode">Client Management</div>
+        <ul class="submenu" *ngIf="isMenuOpen('client-management')" (click)="$event.stopPropagation()">
+          <li *ngIf="canAccessPage('all-clients')" (click)="navigateTo('overview/all-clients')" [class.active]="activeSubmenu==='all-clients'">Registry</li>
+          <li *ngIf="canAccessPage('client-groups')" (click)="navigateTo('overview/client-groups')" [class.active]="activeSubmenu==='client-groups'">Client Groups</li>
         </ul>
       </div>
 
@@ -99,11 +97,11 @@
         <ul class="submenu" *ngIf="isMenuOpen('inventory')" (click)="$event.stopPropagation()">
           <li class="submenu-item">
             <div class="submenu-header" (click)="toggleSubMenu('item-management')">
-              <span>Item Management</span>
+              <span>Product Management</span>
               <i class="bi" [ngClass]="isSubMenuOpen('item-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
             <ul class="nested-submenu" *ngIf="isSubMenuOpen('item-management')" (click)="$event.stopPropagation()">
-              <li *ngIf="canAccessPage('consumable-items')" (click)="navigateTo('overview/consumable-items')" [class.active]="activeSubmenu==='consumable-items'">Consumable Items</li>
+              <li *ngIf="canAccessPage('consumable-items')" (click)="navigateTo('overview/consumable-items')" [class.active]="activeSubmenu==='consumable-items'">Consumable Products</li>
               <li *ngIf="canAccessPage('asset-management')" (click)="navigateTo('overview/asset-management')" [class.active]="activeSubmenu==='asset-management'">Assets Management</li>
             </ul>
           </li>
@@ -145,17 +143,58 @@
       <div class="nav-group" *ngIf="canAccessNavGroup('consultations-center')" [class.active]="activeGroup==='consultations-center'" [class.menu-open]="isMenuOpen('consultations-center') && collapsedFlyoutMode">
         <button class="nav-group-title" (click)="toggleMenu('consultations-center')">
           <i class="bi bi-chat-dots"></i>
-          <span>Hospital Departments</span>
+          <span>Business Departments</span>
           <i class="bi" [ngClass]="isMenuOpen('consultations-center') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
         </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('consultations-center') && collapsedFlyoutMode">Hospital Departments</div>
+        <div class="menu-title-popup" *ngIf="isMenuOpen('consultations-center') && collapsedFlyoutMode">Business Departments</div>
         <ul class="submenu" *ngIf="isMenuOpen('consultations-center')" (click)="$event.stopPropagation()">
-          <li *ngIf="canAccessPage('consultation-v2')" (click)="navigateTo('overview/consultation-v2')" [class.active]="activeSubmenu==='consultation-v2'">Consultation V2</li>
-          <li *ngIf="canAccessPage('scan')" (click)="navigateTo('overview/scan-v2', $event)" [class.active]="activeSubmenu==='scan' || activeSubmenu==='scan-v2'">Ultrasound Scan</li>
-          <li *ngIf="canAccessPage('lab')" (click)="navigateTo('overview/lab-v2', $event)" [class.active]="activeSubmenu==='lab' || activeSubmenu==='lab-v2'">Medical Laboratory</li>
-          <li *ngIf="canAccessPage('dental')" (click)="navigateTo('overview/dental-v2', $event)" [class.active]="activeSubmenu==='dental' || activeSubmenu==='dental-v2'">Dental Department</li>
-          <li *ngIf="canAccessPage('lab-mobile')" (click)="navigateTo('overview/lab-mobile', $event)" [class.active]="activeSubmenu==='lab-mobile'">Lab Mobile Page</li>
-          <li *ngIf="canAccessPage('maternal-child-health-requests')" (click)="navigateTo('overview/mch-v2', $event)" [class.active]="activeSubmenu==='maternal-child-health-requests' || activeSubmenu==='mch-v2'">Maternal &amp; Child Health</li>
+          <li *ngIf="canAccessPage('consultation-v2') || canAccessPage('clienttransactions')" (click)="navigateTo('overview/clienttransactions')" [class.active]="activeSubmenu==='clienttransactions' || activeSubmenu==='consultation-v2'">Client Transactions</li>
+        </ul>
+      </div>
+
+      <div class="nav-group" *ngIf="canAccessNavGroup('finance')" [class.active]="activeGroup==='finance'" [class.menu-open]="isMenuOpen('finance') && collapsedFlyoutMode">
+        <button class="nav-group-title" (click)="toggleMenu('finance')">
+          <i class="bi bi-cash-stack"></i>
+          <span>Financial Management</span>
+          <i class="bi" [ngClass]="isMenuOpen('finance') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+        </button>
+        <div class="menu-title-popup" *ngIf="isMenuOpen('finance') && collapsedFlyoutMode">Financial Management</div>
+        <ul class="submenu" *ngIf="isMenuOpen('finance')" (click)="$event.stopPropagation()">
+          <li
+            *ngIf="!isClinicalRoleBlockedFromDashboard() && canAccessPage('dashboard')"
+            (click)="navigateTo('overview/dashboard', $event)"
+            [class.active]="activeSubmenu==='dashboard'">Balance Sheet</li>
+          <li class="submenu-item">
+            <div class="submenu-header" (click)="toggleSubMenu('expense-management')">
+              <span>Expense Management</span>
+              <i class="bi" [ngClass]="isSubMenuOpen('expense-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <ul class="nested-submenu" *ngIf="isSubMenuOpen('expense-management')" (click)="$event.stopPropagation()">
+              <li *ngIf="canAccessPage('expenses')" (click)="navigateTo('overview/expenses', $event)" [class.active]="activeSubmenu==='expenses'">Overview</li>
+              <li *ngIf="canAccessPage('expense-categories')" (click)="navigateTo('overview/expense-categories', $event)" [class.active]="activeSubmenu==='expense-categories'">Expense Categories</li>
+              <li *ngIf="canAccessPage('expense-accounts')" (click)="navigateTo('overview/expense-accounts', $event)" [class.active]="activeSubmenu==='expense-accounts'">Expense Accounts</li>
+              <li *ngIf="canAccessPage('expense-transactions')" (click)="navigateTo('overview/expense-transactions', $event)" [class.active]="activeSubmenu==='expense-transactions'">Expense Transactions</li>
+              <li *ngIf="canAccessPage('expense-analytics')" (click)="navigateTo('overview/expense-analytics', $event)" [class.active]="activeSubmenu==='expense-analytics'">Analytics &amp; Reports</li>
+            </ul>
+          </li>
+          <li *ngIf="canAccessPage('loan-management')" (click)="navigateTo('overview/loan-management', $event)" [class.active]="activeSubmenu==='loan-management'">Loan Management</li>
+          <li class="submenu-item">
+            <div class="submenu-header" (click)="toggleSubMenu('income-management')">
+              <span>Income Management</span>
+              <i class="bi" [ngClass]="isSubMenuOpen('income-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+            <ul class="nested-submenu" *ngIf="isSubMenuOpen('income-management')" (click)="$event.stopPropagation()">
+              <li *ngIf="canAccessPage('income-management')" (click)="navigateTo('overview/income-management', $event)" [class.active]="activeSubmenu==='income-management'">Overview</li>
+              <li *ngIf="canAccessPage('income-transactions')" (click)="navigateTo('overview/income-transactions', $event)" [class.active]="activeSubmenu==='income-transactions'">Income Transactions</li>
+              <li *ngIf="canAccessPage('income-accounts')" (click)="navigateTo('overview/income-accounts', $event)" [class.active]="activeSubmenu==='income-accounts'">Income Accounts</li>
+              <li *ngIf="canAccessPage('income-categories')" (click)="navigateTo('overview/income-categories', $event)" [class.active]="activeSubmenu==='income-categories'">Income Categories</li>
+            </ul>
+          </li>
+          <li *ngIf="canAccessPage('cashier')" (click)="navigateTo('overview/cashier', $event)" [class.active]="activeSubmenu==='cashier'">Cashier Desk / Receipts</li>
+          <li *ngIf="canAccessPage('finance-dashboard')" (click)="navigateTo('overview/finance-dashboard', $event)" [class.active]="activeSubmenu==='finance-dashboard'">Finance Dashboard</li>
+          <li *ngIf="canAccessPage('service-charges')" (click)="navigateTo('overview/service-charges', $event)" [class.active]="activeSubmenu==='service-charges'">Service Charges Setup</li>
+          <li *ngIf="canAccessPage('refunds')" (click)="navigateTo('overview/refunds', $event)" [class.active]="activeSubmenu==='refunds'">Refunds &amp; Adjustments</li>
+          <li *ngIf="canAccessPage('finance-reports')" (click)="navigateTo('overview/finance-reports', $event)" [class.active]="activeSubmenu==='finance-reports'">Financial Reports</li>
         </ul>
       </div>
 
@@ -186,322 +225,46 @@
           <li *ngIf="canAccessPage('mobile-money-settings') || canManageUsers" (click)="navigateTo('overview/subscription/momo-settings', $event)" [class.active]="activeSubmenu==='momo-settings' || activeSubmenu==='mobile-money-settings'">DGateway / Mobile Money</li>
           <li *ngIf="canManageUsers" (click)="navigateTo('overview/business-settings', $event)" [class.active]="activeSubmenu==='business-settings'">Business Settings</li>
           <li *ngIf="canManageUsers" (click)="navigateTo('overview/website-contact-messages', $event)" [class.active]="activeSubmenu==='website-contact-messages'">Website Contact Messages</li>
-          <li *ngIf="canAccessPage('department-setup')" (click)="navigateTo('overview/department-setup', $event)" [class.active]="activeSubmenu==='department-setup'">Hospital Directory Setup</li>
+          <li *ngIf="canAccessPage('department-setup')" (click)="navigateTo('overview/department-setup', $event)" [class.active]="activeSubmenu==='department-setup'">Business Directory Setup</li>
           <li *ngIf="canAccessPage('data-backup')" (click)="navigateTo('overview/data-backup', $event)" [class.active]="activeSubmenu==='data-backup'">Backups &amp; Restoration</li>
           <li *ngIf="canAccessPage('system-documentation')" (click)="navigateTo('overview/system-documentation', $event)" [class.active]="activeSubmenu==='system-documentation'">System Documentation</li>
-          <li class="coming-soon">System Configuration <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Audit Logs <span class="coming-soon-badge inactive-badge">Inactive</span></li>
+          <li *ngIf="canAccessPage('system-configuration')" (click)="navigateTo('overview/system-configuration', $event)" [class.active]="activeSubmenu==='system-configuration'">System Configuration</li>
+          <li *ngIf="canAccessPage('audit-logs')" (click)="navigateTo('overview/audit-logs', $event)" [class.active]="activeSubmenu==='audit-logs'">Audit Logs</li>
         </ul>
       </div>
 
-      <div class="nav-group" *ngIf="canAccessNavGroup('finance')" [class.active]="activeGroup==='finance'" [class.menu-open]="isMenuOpen('finance') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('finance')">
-          <i class="bi bi-cash-stack"></i>
-          <span>Financial Management</span>
-          <i class="bi" [ngClass]="isMenuOpen('finance') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('finance') && collapsedFlyoutMode">Financial Management</div>
-        <ul class="submenu" *ngIf="isMenuOpen('finance')" (click)="$event.stopPropagation()">
-          <li
-            *ngIf="!isClinicalRoleBlockedFromDashboard() && canAccessPage('dashboard')"
-            (click)="navigateTo('overview/dashboard', $event)"
-            [class.active]="activeSubmenu==='dashboard'">Balance Sheet</li>
-          <li *ngIf="canAccessPage('patient-billing')" (click)="navigateTo('overview/patient-billing', $event)" [class.active]="activeSubmenu==='patient-billing'">Patient Billing</li>
-          <li class="submenu-item">
-            <div class="submenu-header" (click)="toggleSubMenu('expense-management')">
-              <span>Expense Management</span>
-              <i class="bi" [ngClass]="isSubMenuOpen('expense-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </div>
-            <ul class="nested-submenu" *ngIf="isSubMenuOpen('expense-management')" (click)="$event.stopPropagation()">
-              <li *ngIf="canAccessPage('expenses')" (click)="navigateTo('overview/expenses', $event)" [class.active]="activeSubmenu==='expenses'">Overview</li>
-              <li *ngIf="canAccessPage('expense-categories')" (click)="navigateTo('overview/expense-categories', $event)" [class.active]="activeSubmenu==='expense-categories'">Expense Categories</li>
-              <li *ngIf="canAccessPage('expense-accounts')" (click)="navigateTo('overview/expense-accounts', $event)" [class.active]="activeSubmenu==='expense-accounts'">Expense Accounts</li>
-              <li *ngIf="canAccessPage('expense-transactions')" (click)="navigateTo('overview/expense-transactions', $event)" [class.active]="activeSubmenu==='expense-transactions'">Expense Transactions</li>
-              <li *ngIf="canAccessPage('expense-analytics')" (click)="navigateTo('overview/expense-analytics', $event)" [class.active]="activeSubmenu==='expense-analytics'">Analytics &amp; Reports</li>
-            </ul>
-          </li>
-          <li *ngIf="canAccessPage('loan-management')" (click)="navigateTo('overview/loan-management', $event)" [class.active]="activeSubmenu==='loan-management'">Loan Management</li>
-          <li class="submenu-item">
-            <div class="submenu-header" (click)="toggleSubMenu('income-management')">
-              <span>Income Management</span>
-              <i class="bi" [ngClass]="isSubMenuOpen('income-management') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </div>
-            <ul class="nested-submenu" *ngIf="isSubMenuOpen('income-management')" (click)="$event.stopPropagation()">
-              <li *ngIf="canAccessPage('income-management')" (click)="navigateTo('overview/income-management', $event)" [class.active]="activeSubmenu==='income-management'">Overview</li>
-              <li *ngIf="canAccessPage('income-transactions')" (click)="navigateTo('overview/income-transactions', $event)" [class.active]="activeSubmenu==='income-transactions'">Income Transactions</li>
-              <li *ngIf="canAccessPage('income-accounts')" (click)="navigateTo('overview/income-accounts', $event)" [class.active]="activeSubmenu==='income-accounts'">Income Accounts</li>
-              <li *ngIf="canAccessPage('income-categories')" (click)="navigateTo('overview/income-categories', $event)" [class.active]="activeSubmenu==='income-categories'">Income Categories</li>
-            </ul>
-          </li>
-          <li *ngIf="canAccessPage('cashier')" (click)="navigateTo('overview/cashier', $event)" [class.active]="activeSubmenu==='cashier'">Cashier Desk / Receipts</li>
-          <li class="coming-soon">Finance Dashboard <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Service Charges Setup <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Insurance / NHIF / Third-Party Billing <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Refunds &amp; Adjustments <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Financial Reports <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='radiology'" [class.menu-open]="isMenuOpen('radiology') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('radiology')">
-          <i class="bi bi-camera-reels"></i>
-          <span>Radiology / Imaging <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('radiology') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('radiology') && collapsedFlyoutMode">Radiology / Imaging</div>
-        <ul class="submenu" *ngIf="isMenuOpen('radiology')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Scan Requests <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Report Upload & Approval <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">PACS Integration <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Radiologist Worklist <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='hr'" [class.menu-open]="isMenuOpen('hr') && collapsedFlyoutMode">
+      <div class="nav-group" [class.active]="activeGroup==='hr'" [class.menu-open]="isMenuOpen('hr') && collapsedFlyoutMode">
         <button class="nav-group-title" (click)="toggleMenu('hr')">
           <i class="bi bi-people"></i>
-          <span>Human Resource <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
+          <span>Human Resource</span>
           <i class="bi" [ngClass]="isMenuOpen('hr') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
         </button>
         <div class="menu-title-popup" *ngIf="isMenuOpen('hr') && collapsedFlyoutMode">Human Resource</div>
         <ul class="submenu" *ngIf="isMenuOpen('hr')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Employee Registration <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Department & Role Assignment <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Attendance & Shift Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Leave Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Payroll Generation <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Performance Tracking <span class="coming-soon-badge inactive-badge">Inactive</span></li>
+          <li *ngIf="canAccessPage('employee-registration')" (click)="navigateTo('overview/employee-registration', $event)" [class.active]="activeSubmenu==='employee-registration'">Employee Registration</li>
+          <li *ngIf="canAccessPage('department-assignment')" (click)="navigateTo('overview/department-assignment', $event)" [class.active]="activeSubmenu==='department-assignment'">Department & Role Assignment</li>
+          <li *ngIf="canAccessPage('attendance')" (click)="navigateTo('overview/attendance', $event)" [class.active]="activeSubmenu==='attendance'">Attendance & Shift Management</li>
+          <li *ngIf="canAccessPage('leave-management')" (click)="navigateTo('overview/leave-management', $event)" [class.active]="activeSubmenu==='leave-management'">Leave Management</li>
+          <li *ngIf="canAccessPage('payroll')" (click)="navigateTo('overview/payroll', $event)" [class.active]="activeSubmenu==='payroll'">Payroll Generation</li>
+          <li *ngIf="canAccessPage('performance-tracking')" (click)="navigateTo('overview/performance-tracking', $event)" [class.active]="activeSubmenu==='performance-tracking'">Performance Tracking</li>
         </ul>
       </div>
 
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='insurance'" [class.menu-open]="isMenuOpen('insurance') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('insurance')">
-          <i class="bi bi-shield-check"></i>
-          <span>Insurance Scheme <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('insurance') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('insurance') && collapsedFlyoutMode">Insurance Scheme</div>
-        <ul class="submenu" *ngIf="isMenuOpen('insurance')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Insurance Company Registration <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Pre-authorization Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Claim Submissions <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Claim Tracking <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Corporate Patient Billing <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='specialized'" [class.menu-open]="isMenuOpen('specialized') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('specialized')">
-          <i class="bi bi-heart-pulse"></i>
-          <span>Specialized Modules <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('specialized') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('specialized') && collapsedFlyoutMode">Specialized Modules</div>
-        <ul class="submenu" *ngIf="isMenuOpen('specialized')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Blood Bank — Donations <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Blood Bank — Screening <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Blood Bank — Inventory <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Mortuary — Body Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Mortuary — Autopsy <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Mortuary — Release Tracking <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Theatre / OT — Schedule <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Theatre / OT — Records <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Theatre / OT — Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Dialysis Unit — Sessions <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Dialysis Unit — Patient Data <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Equipment Maintenance <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Business Intelligence (BI) <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Integration Hub <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='clinical-decision-support'" [class.menu-open]="isMenuOpen('clinical-decision-support') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('clinical-decision-support')">
-          <i class="bi bi-lightbulb"></i>
-          <span>Clinical Decision Support <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('clinical-decision-support') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('clinical-decision-support') && collapsedFlyoutMode">Clinical Decision Support</div>
-        <ul class="submenu" *ngIf="isMenuOpen('clinical-decision-support')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Drug Interaction Alerts <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Disease Protocols <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Treatment Guidelines <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Predictive Analytics (AI) <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='opd'" [class.menu-open]="isMenuOpen('opd') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('opd')">
-          <i class="bi bi-clipboard-pulse"></i>
-          <span>Outpatient (OPD) <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('opd') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('opd') && collapsedFlyoutMode">Outpatient (OPD)</div>
-        <ul class="submenu" *ngIf="isMenuOpen('opd')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Consultation <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Prescriptions <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Investigation Requests <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Diagnosis & Notes <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Follow-Up Visits <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Patient Visit List <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='ipd'" [class.menu-open]="isMenuOpen('ipd') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('ipd')">
-          <i class="bi bi-hospital"></i>
-          <span>Inpatient (IPD) <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('ipd') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('ipd') && collapsedFlyoutMode">Inpatient (IPD)</div>
-        <ul class="submenu" *ngIf="isMenuOpen('ipd')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Bed / Ward Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Admissions <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Discharges <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Nursing Notes <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Doctor Rounds <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Medication Charts <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Procedure Records <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Ward Transfers <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='laboratory'" [class.menu-open]="isMenuOpen('laboratory') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('laboratory')">
-          <i class="bi bi-droplet"></i>
-          <span>Laboratory <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('laboratory') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('laboratory') && collapsedFlyoutMode">Laboratory</div>
-        <ul class="submenu" *ngIf="isMenuOpen('laboratory')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Test Requests <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Sample Collection <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Test Processing <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Result Entry & Validation <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Lab Result Reports <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Equipment & Reagents Tracking <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='pharmacy'" [class.menu-open]="isMenuOpen('pharmacy') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('pharmacy')">
-          <i class="bi bi-capsule"></i>
-          <span>Pharmacy <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('pharmacy') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('pharmacy') && collapsedFlyoutMode">Pharmacy</div>
-        <ul class="submenu" *ngIf="isMenuOpen('pharmacy')" (click)="$event.stopPropagation()">
-          <li *ngIf="canAccessPage('otc-dispensary')" (click)="navigateTo('overview/otc-dispensary', $event)" [class.active]="activeSubmenu==='otc-dispensary'">Pharmacy (Counter &amp; Rx)</li>
-          <li class="coming-soon">Drug Dispensing <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Prescription Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Drug Pricing <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Pharmacy Stock Tracking <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Purchase Orders <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Drug Expiry Alerts <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Supplier Management <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='sales'" [class.menu-open]="isMenuOpen('sales') && collapsedFlyoutMode">
+      <div class="nav-group" [class.active]="activeGroup==='sales'" [class.menu-open]="isMenuOpen('sales') && collapsedFlyoutMode">
         <button class="nav-group-title" (click)="toggleMenu('sales')">
           <i class="bi bi-cart-check"></i>
-          <span>Sales <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
+          <span>Sales &amp; Orders</span>
           <i class="bi" [ngClass]="isMenuOpen('sales') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
         </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('sales') && collapsedFlyoutMode">Sales</div>
+        <div class="menu-title-popup" *ngIf="isMenuOpen('sales') && collapsedFlyoutMode">Sales &amp; Orders</div>
         <ul class="submenu" *ngIf="isMenuOpen('sales')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Orders <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Point of Sale <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Customers <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group" *ngIf="isMdUser()" [class.active]="activeGroup==='reports'" [class.menu-open]="isMenuOpen('reports') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('reports')">
-          <i class="bi bi-bar-chart"></i>
-          <span>Analytics &amp; Reports</span>
-          <i class="bi" [ngClass]="isMenuOpen('reports') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('reports') && collapsedFlyoutMode">Analytics &amp; Reports</div>
-        <ul class="submenu" *ngIf="isMenuOpen('reports')" (click)="$event.stopPropagation()">
-          <li (click)="navigateTo('overview/main-dashboard', $event)" [class.active]="activeSubmenu==='main-dashboard'">Main Dashboard</li>
-          <li class="coming-soon">Departmental Reports <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Revenue Reports <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='support-services'" [class.menu-open]="isMenuOpen('support-services') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('support-services')">
-          <i class="bi bi-tools"></i>
-          <span>Support Services <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('support-services') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('support-services') && collapsedFlyoutMode">Support Services</div>
-        <ul class="submenu" *ngIf="isMenuOpen('support-services')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Laundry <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Kitchen / Diet Orders <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Transport / Ambulance <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Housekeeping <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Maintenance Requests <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='telemedicine'" [class.menu-open]="isMenuOpen('telemedicine') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('telemedicine')">
-          <i class="bi bi-camera-video"></i>
-          <span>Telemedicine <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('telemedicine') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('telemedicine') && collapsedFlyoutMode">Telemedicine</div>
-        <ul class="submenu" *ngIf="isMenuOpen('telemedicine')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Online Consultations <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">E-Prescriptions <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Video Call Scheduling <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Remote Monitoring <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Patient Portal <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='security-compliance'" [class.menu-open]="isMenuOpen('security-compliance') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('security-compliance')">
-          <i class="bi bi-shield-lock"></i>
-          <span>Security & Compliance <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('security-compliance') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('security-compliance') && collapsedFlyoutMode">Security & Compliance</div>
-        <ul class="submenu" *ngIf="isMenuOpen('security-compliance')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Data Encryption & Logs <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Access History <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Role-Based Controls <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Compliance Reports (HIPAA, GDPR, MOH) <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-        </ul>
-      </div>
-
-
-      <div class="nav-group nav-group-inactive" [class.active]="activeGroup==='settings'" [class.menu-open]="isMenuOpen('settings') && collapsedFlyoutMode">
-        <button class="nav-group-title" (click)="toggleMenu('settings')">
-          <i class="bi bi-sliders"></i>
-          <span>Settings <span class="coming-soon-badge inactive-badge nav-group-badge">Inactive</span></span>
-          <i class="bi" [ngClass]="isMenuOpen('settings') ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-        </button>
-        <div class="menu-title-popup" *ngIf="isMenuOpen('settings') && collapsedFlyoutMode">Settings</div>
-        <ul class="submenu" *ngIf="isMenuOpen('settings')" (click)="$event.stopPropagation()">
-          <li class="coming-soon">Profile <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Preferences <span class="coming-soon-badge inactive-badge">Inactive</span></li>
-          <li class="coming-soon">Security <span class="coming-soon-badge inactive-badge">Inactive</span></li>
+          <li *ngIf="canAccessPage('otc-dispensary')" (click)="navigateTo('overview/otc-dispensary', $event)" [class.active]="activeSubmenu==='otc-dispensary'">Point of Sale</li>
+          <li *ngIf="canAccessPage('pharmacy-dispensing')" (click)="navigateTo('overview/pharmacy-dispensing', $event)" [class.active]="activeSubmenu==='pharmacy-dispensing'">Sales Dispensing</li>
+          <li *ngIf="canAccessPage('pharmacy-purchase-orders')" (click)="navigateTo('overview/pharmacy-purchase-orders', $event)" [class.active]="activeSubmenu==='pharmacy-purchase-orders'">Purchase Orders</li>
+          <li (click)="navigateTo('overview/all-clients', $event)" [class.active]="activeSubmenu==='all-clients'">Customers</li>
+          <li *ngIf="canAccessPage('pharmacy-pricing')" (click)="navigateTo('overview/pharmacy-pricing', $event)" [class.active]="activeSubmenu==='pharmacy-pricing'">Product Pricing</li>
+          <li *ngIf="canAccessPage('pharmacy-expiry-alerts')" (click)="navigateTo('overview/pharmacy-expiry-alerts', $event)" [class.active]="activeSubmenu==='pharmacy-expiry-alerts'">Expiry Alerts</li>
+          <li *ngIf="canAccessPage('pharmacy-suppliers')" (click)="navigateTo('overview/pharmacy-suppliers', $event)" [class.active]="activeSubmenu==='pharmacy-suppliers'">Product Suppliers</li>
         </ul>
       </div>
 

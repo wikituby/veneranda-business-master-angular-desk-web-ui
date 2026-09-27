@@ -69,18 +69,18 @@
                     {{ visitCreationResponse }}
                 </li>
 
-                <!-- Current Patient Visits Dropdown (Open by Default) -->
+                <!-- Current Client Orders Dropdown (Open by Default) -->
                 <li>
                     <div class="dropdown show">
                         <button class="btn btn-lg btn-block btn-sm br-12 dropdown-toggle show" type="button"
                             id="dropdownMenuButton" aria-expanded="true" style="border: 1px solid rgb(204, 204, 204);">
-                            {{currentPatientVisit}}
+                            {{currentClientVisit}}
                         </button>
                         <ul class="dropdown-menu custom-scrollbar pl-2 pr-2 show" aria-labelledby="dropdownMenuButton"
                             style="max-height: 600px; overflow-y: auto; width:100%;">
 
                             <!-- Loading -->
-                            <li *ngIf="isLoadingPatientVisits" class="text-center p-3">
+                            <li *ngIf="isLoadingClientVisits" class="text-center p-3">
                                 <div class="spinner-border text-primary" role="status"
                                     style="width: 2rem; height: 2rem;">
                                     <span class="visually-hidden">Loading...</span>
@@ -102,7 +102,7 @@
     style="border: 1px solid rgb(220, 220, 223); border-radius: 5px; text-align: center;font-size: 10.5px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; padding-left: 2px; padding-right: 2px;"
     (click)="selectScanRequest(scanRequest)">
     
-    {{ filteredScanRequestsList().length - i }}. {{ getRequestPatientName(scanRequest) | uppercase }} | 
+    {{ filteredScanRequestsList().length - i }}. {{ getRequestClientName(scanRequest) | uppercase }} | 
     {{scanRequest.procedureRequestedName | uppercase}} | {{scanRequest.report | uppercase}} |
     {{scanRequest.dateOfProcedure}}
     <span class="badge badge-primary" [ngStyle]="{
@@ -155,10 +155,10 @@
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
 
-                    <button class="nav-link " id="nav-patientBio-tab" data-bs-toggle="tab"
-                        data-bs-target="#nav-patientBio" type="button" role="tab" aria-controls="nav-patientBio"
+                    <button class="nav-link " id="nav-clientBio-tab" data-bs-toggle="tab"
+                        data-bs-target="#nav-clientBio" type="button" role="tab" aria-controls="nav-clientBio"
                         aria-selected="true"
-                        style="margin-left: 15px;border-top-left-radius: 12px;border-top-right-radius: 12px;">Patient
+                        style="margin-left: 15px;border-top-left-radius: 12px;border-top-right-radius: 12px;">Client
                         Data</button>
 
                     <button class="nav-link " id="nav-initialVitals-tab" data-bs-toggle="tab"
@@ -200,13 +200,13 @@
 
             <div class="tab-content" id="nav-tabContent" style="background-color: white;height:500px;">
 
-                <div class="tab-pane fade custom-scrollbar" id="nav-patientBio" role="tabpanel"
-                    aria-labelledby="nav-patientBio-tab" style="padding-left: 15px;padding-right: 15px;">
+                <div class="tab-pane fade custom-scrollbar" id="nav-clientBio" role="tabpanel"
+                    aria-labelledby="nav-clientBio-tab" style="padding-left: 15px;padding-right: 15px;">
                     
-                    <div *ngIf="selectedScanRequest" class="patient-bio-container" style="padding: 20px;">
+                    <div *ngIf="selectedScanRequest" class="client-bio-container" style="padding: 20px;">
                         <!-- Header Section with Avatar and Basic Info -->
                         <div class="row mb-4" style="border-bottom: 2px solid #e9ecef; padding-bottom: 20px;">
-                            <!-- Patient Avatar -->
+                            <!-- Client Avatar -->
                             <div class="col-md-3 text-center mb-3" style="position: relative;">
                                 <!-- Loading Spinner -->
                                 <div *ngIf="isLoadingProfilePic" class="d-flex justify-content-center align-items-center"
@@ -217,71 +217,71 @@
                                 </div>
                                 
                                 <!-- Profile Picture -->
-                                <img [src]="getPatientProfilePic()" 
-                                     [alt]="(patientFirstName || '') + ' ' + (patientSecondName || '')"
+                                <img [src]="getClientProfilePic()" 
+                                     [alt]="(clientFirstName || '') + ' ' + (clientSecondName || '')"
                                      class="img-fluid rounded-circle"
                                      style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #e9ecef;"
                                      (error)="onImageError($event)"
                                      (load)="onImageLoad($event)">
                             </div>
                             
-                            <!-- Patient Basic Details -->
+                            <!-- Client Basic Details -->
                             <div class="col-md-9">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h4 class="mb-0" style="color: #2c3e50; font-weight: 600;">
-                                        {{ patientFirstName | uppercase }} {{ patientSecondName | uppercase }}
+                                        {{ clientFirstName | uppercase }} {{ clientSecondName | uppercase }}
                                     </h4>
-                                    <button type="button" class="btn btn-sm btn-primary" (click)="openEditPatientModal()" 
+                                    <button type="button" class="btn btn-sm btn-primary" (click)="openEditClientModal()" 
                                             style="background-color: #467de4; border-color: #467de4;">
-                                        <i class="bi bi-pencil-square"></i> Edit Patient Data
+                                        <i class="bi bi-pencil-square"></i> Edit Client Data
                                     </button>
                                 </div>
                                 
                                 <div class="row">
                                     <div class="col-md-5 mb-2">
                                         <p class="mb-1"><strong>File Number:</strong> 
-                                            <span *ngIf="patientFileNo && patientFileNo !== ''">{{ patientFileNo }}</span>
-                                            <span *ngIf="!patientFileNo || patientFileNo === ''" class="text-muted">N/A</span>
+                                            <span *ngIf="clientFileNo && clientFileNo !== ''">{{ clientFileNo }}</span>
+                                            <span *ngIf="!clientFileNo || clientFileNo === ''" class="text-muted">N/A</span>
                                         </p>
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                        <p class="mb-1"><strong>Patient ID:</strong> 
-                                            <span *ngIf="patientId && patientId !== ''">{{ patientId }}</span>
-                                            <span *ngIf="!patientId || patientId === ''" class="text-muted">N/A</span>
+                                        <p class="mb-1"><strong>Client ID:</strong> 
+                                            <span *ngIf="clientId && clientId !== ''">{{ clientId }}</span>
+                                            <span *ngIf="!clientId || clientId === ''" class="text-muted">N/A</span>
                                         </p>
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <p class="mb-1"><strong>Contact:</strong> 
-                                            <span *ngIf="patientContact && patientContact !== ''">{{ patientContact }}</span>
-                                            <span *ngIf="!patientContact || patientContact === ''" class="text-muted">N/A</span>
+                                            <span *ngIf="clientContact && clientContact !== ''">{{ clientContact }}</span>
+                                            <span *ngIf="!clientContact || clientContact === ''" class="text-muted">N/A</span>
                                         </p>
                                     </div>
                                 </div>
                                 
-                                <div class="row mb-2" *ngIf="getRequestPatientName(selectedScanRequest)">
+                                <div class="row mb-2" *ngIf="getRequestClientName(selectedScanRequest)">
                                     <div class="col-md-12">
-                                        <p class="mb-1"><strong>Full Name:</strong> {{ getRequestPatientName(selectedScanRequest) | uppercase }}</p>
+                                        <p class="mb-1"><strong>Full Name:</strong> {{ getRequestClientName(selectedScanRequest) | uppercase }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Patient Demographics Section -->
+                        <!-- Client Demographics Section -->
                         <div class="row mb-4">
                             <div class="col-md-12">
                                 <h5 class="mb-3" style="color: #467de4; font-weight: 600; border-bottom: 1px solid #e9ecef; padding-bottom: 8px;">
-                                    Patient Demographics
+                                    Client Demographics
                                 </h5>
                             </div>
                             <div class="col-md-4 mb-2">
-                                <h6 class="mb-2" style="color:#1e3a8a;">Patient Details</h6>
-                                <p class="mb-1"><strong>Age:</strong> <span *ngIf="patientAge">{{ patientAge }} years</span><span *ngIf="!patientAge" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Date of Birth:</strong> <span *ngIf="patientDateOfBirth">{{ patientDateOfBirth }}</span><span *ngIf="!patientDateOfBirth" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Gender:</strong> <span *ngIf="patientGender">{{ patientGender | uppercase }}</span><span *ngIf="!patientGender" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Contact:</strong> <span *ngIf="patientContact">{{ patientContact }}</span><span *ngIf="!patientContact" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Patient Group:</strong> <span *ngIf="patientGroupName">{{ patientGroupName | uppercase }}</span><span *ngIf="!patientGroupName" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Address:</strong> <span *ngIf="patientAddress">{{ patientAddress }}</span><span *ngIf="!patientAddress" class="text-muted">N/A</span></p>
-                                <p class="mb-1"><strong>Occupation:</strong> <span *ngIf="patientOccupation">{{ patientOccupation | uppercase }}</span><span *ngIf="!patientOccupation" class="text-muted">N/A</span></p>
+                                <h6 class="mb-2" style="color:#1e3a8a;">Client Details</h6>
+                                <p class="mb-1"><strong>Age:</strong> <span *ngIf="clientAge">{{ clientAge }} years</span><span *ngIf="!clientAge" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Date of Birth:</strong> <span *ngIf="clientDateOfBirth">{{ clientDateOfBirth }}</span><span *ngIf="!clientDateOfBirth" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Gender:</strong> <span *ngIf="clientGender">{{ clientGender | uppercase }}</span><span *ngIf="!clientGender" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Contact:</strong> <span *ngIf="clientContact">{{ clientContact }}</span><span *ngIf="!clientContact" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Client Group:</strong> <span *ngIf="clientGroupName">{{ clientGroupName | uppercase }}</span><span *ngIf="!clientGroupName" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Address:</strong> <span *ngIf="clientAddress">{{ clientAddress }}</span><span *ngIf="!clientAddress" class="text-muted">N/A</span></p>
+                                <p class="mb-1"><strong>Occupation:</strong> <span *ngIf="clientOccupation">{{ clientOccupation | uppercase }}</span><span *ngIf="!clientOccupation" class="text-muted">N/A</span></p>
                             </div>
 
                             <div class="col-md-4 mb-2">
@@ -325,10 +325,10 @@
                     
                     <!-- No Selection Message -->
                     <div *ngIf="!selectedScanRequest" class="text-center p-5">
-                        <img src="assets/images/bro.png" alt="No patient selected" class="img-fluid" width="300" height="300"
+                        <img src="assets/images/bro.png" alt="No client selected" class="img-fluid" width="300" height="300"
                              style="border-radius: 1rem; margin-bottom: 20px;">
                         <h5 class="text-muted">No Scan Request Selected</h5>
-                        <p class="text-muted">Please select a scan request from the list to view patient information</p>
+                        <p class="text-muted">Please select a scan request from the list to view client information</p>
                     </div>
                 </div>
 
@@ -422,7 +422,7 @@
                         <div *ngIf="showDivUpdatedLoaderconsultation" style="align-items: center;padding-left: 500px;">
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
-                                <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;">
+                                <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;">
                                 </div>
                             </button>
                         </div>
@@ -484,7 +484,7 @@
                         <div *ngIf="showDivUpdatedLoaderconsultation" style="align-items: center;padding-left: 500px;">
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
-                                <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;">
+                                <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;">
                                 </div>
                             </button>
                         </div>
@@ -689,7 +689,7 @@
                         <div *ngIf="showDivUpdatedLoaderconsultation" style="align-items: center;padding-left: 500px;">
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
-                                <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;">
+                                <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;">
                                 </div>
                             </button>
                         </div>
@@ -778,7 +778,7 @@
                         <div *ngIf="showDivUpdatedLoaderconsultation" style="align-items: center;padding-left: 500px;">
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
-                                <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;">
+                                <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;">
                                 </div>
                             </button>
                         </div>
@@ -916,7 +916,7 @@
                         <button class="btn btn-primary btn-sm"
                             style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
 
-                            <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;">
+                            <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;">
                             </div>
 
                         </button>
@@ -1285,7 +1285,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group col-md-12" *ngIf="isFemalePatient()">
+                                <div class="form-group col-md-12" *ngIf="isFemaleClient()">
                                     <div class="accordion" style="border-radius: 24px;">
                                         <div class="accordion-item">
                                             <h2 class="accordion-header" style="font-size: 15px; margin-bottom: 0;">
@@ -1309,7 +1309,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group col-md-12" *ngIf="isFemalePatient()">
+                                <div class="form-group col-md-12" *ngIf="isFemaleClient()">
                                     <div class="accordion" style="border-radius: 24px;">
                                         <div class="accordion-item">
                                             <h2 class="accordion-header" style="font-size: 15px; margin-bottom: 0;">
@@ -1542,7 +1542,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -1876,7 +1876,7 @@
                                         <button class="btn btn-primary btn-sm"
                                             style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
 
-                                            <div *ngIf="isLoadingNewPatient" class="simple-loader"
+                                            <div *ngIf="isLoadingNewClient" class="simple-loader"
                                                 style="height: 30px;width: 30px;"></div>
 
                                         </button>
@@ -2063,7 +2063,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -2160,7 +2160,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -2587,8 +2587,8 @@
 
 
                                             <!--<td style="width: 8%;">-->
-                                            <!--<img src="{{item.patientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
-                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.patientProfilePic}}" alt="" height="60" width="60">-->
+                                            <!--<img src="{{item.clientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
+                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.clientProfilePic}}" alt="" height="60" width="60">-->
 
                                             <!--</td>-->
 
@@ -2691,7 +2691,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -2776,7 +2776,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -3203,8 +3203,8 @@
 
 
                                             <!--<td style="width: 8%;">-->
-                                            <!--<img src="{{item.patientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
-                        <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.patientProfilePic}}" alt="" height="60" width="60">-->
+                                            <!--<img src="{{item.clientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
+                        <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.clientProfilePic}}" alt="" height="60" width="60">-->
 
                                             <!--</td>-->
 
@@ -3307,7 +3307,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -3336,22 +3336,22 @@
 
     </div>
 
-    <!-- Edit Patient Modal -->
-    <div class="modal fade" id="editPatientModal" tabindex="-1" role="dialog" aria-labelledby="editPatientModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <!-- Edit Client Modal -->
+    <div class="modal fade" id="editClientModal" tabindex="-1" role="dialog" aria-labelledby="editClientModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog modal-lg" role="document" style="max-width: 900px;">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #467de4; color: white;">
-                    <h5 class="modal-title" id="editPatientModalLabel">
-                        <i class="bi bi-pencil-square"></i> Edit Patient Data
+                    <h5 class="modal-title" id="editClientModalLabel">
+                        <i class="bi bi-pencil-square"></i> Edit Client Data
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="closeEditPatientModal()" style="color: white;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="closeEditClientModal()" style="color: white;">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                    <form #editPatientForm="ngForm" (ngSubmit)="updatePatientData(editPatientForm)">
+                    <form #editClientForm="ngForm" (ngSubmit)="updateClientData(editClientForm)">
                         <!-- Response Message -->
-                        <div *ngIf="showDivUpdatedLoaderPatient" class="alert text-center mb-3" 
+                        <div *ngIf="showDivUpdatedLoaderClient" class="alert text-center mb-3" 
                              [ngStyle]="{'background-color': responseColor, 'color': 'white', 'padding': '10px', 'border-radius': '5px'}">
                             {{ responseMessage }}
                         </div>
@@ -3363,20 +3363,20 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><strong>First Name</strong></label>
-                                <input type="text" class="form-control" name="patientFirstName" 
-                                       [(ngModel)]="editPatientFormData.patientFirstName" required>
+                                <input type="text" class="form-control" name="clientFirstName" 
+                                       [(ngModel)]="editClientFormData.clientFirstName" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Second Name</strong></label>
-                                <input type="text" class="form-control" name="patientSecondName" 
-                                       [(ngModel)]="editPatientFormData.patientSecondName" required>
+                                <input type="text" class="form-control" name="clientSecondName" 
+                                       [(ngModel)]="editClientFormData.clientSecondName" required>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Contact</strong></label>
-                                <input type="text" class="form-control" name="patientContact" 
-                                       [(ngModel)]="editPatientFormData.patientContact">
+                                <input type="text" class="form-control" name="clientContact" 
+                                       [(ngModel)]="editClientFormData.clientContact">
                             </div>
                         </div>
 
@@ -3387,17 +3387,17 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label class="form-label"><strong>Age</strong></label>
-                                <input type="text" class="form-control" name="patientAge" 
-                                       [(ngModel)]="editPatientFormData.patientAge">
+                                <input type="text" class="form-control" name="clientAge" 
+                                       [(ngModel)]="editClientFormData.clientAge">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label"><strong>Date of Birth</strong></label>
-                                <input type="text" class="form-control" name="patientDateOfBirth" 
-                                       [(ngModel)]="editPatientFormData.patientDateOfBirth" placeholder="YYYY-MM-DD">
+                                <input type="text" class="form-control" name="clientDateOfBirth" 
+                                       [(ngModel)]="editClientFormData.clientDateOfBirth" placeholder="YYYY-MM-DD">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label"><strong>Gender</strong></label>
-                                <select class="form-control" name="patientGender" [(ngModel)]="editPatientFormData.patientGender">
+                                <select class="form-control" name="clientGender" [(ngModel)]="editClientFormData.clientGender">
                                     <option value="">Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -3406,7 +3406,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label"><strong>Blood Group</strong></label>
-                                <select class="form-control" name="bloodGroup" [(ngModel)]="editPatientFormData.bloodGroup">
+                                <select class="form-control" name="bloodGroup" [(ngModel)]="editClientFormData.bloodGroup">
                                     <option value="">Select blood group</option>
                                     <option *ngFor="let group of bloodGroupOptions" [value]="group">{{ group }}</option>
                                 </select>
@@ -3415,26 +3415,26 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Address</strong></label>
-                                <textarea class="form-control" name="patientAddress" rows="2" 
-                                          [(ngModel)]="editPatientFormData.patientAddress"></textarea>
+                                <textarea class="form-control" name="clientAddress" rows="2" 
+                                          [(ngModel)]="editClientFormData.clientAddress"></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Occupation</strong></label>
-                                <input type="text" class="form-control" name="patientOccupation" 
-                                       [(ngModel)]="editPatientFormData.patientOccupation">
+                                <input type="text" class="form-control" name="clientOccupation" 
+                                       [(ngModel)]="editClientFormData.clientOccupation">
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label"><strong>Patient Group</strong></label>
+                                <label class="form-label"><strong>Client Group</strong></label>
                                 <div class="dropdown">
                                     <button class="btn btn-lg btn-block btn-sm br-12 dropdown-toggle" type="button"
-                                            id="dropdownMenuButtonEditLab" name="patientGroupId"
-                                            [(ngModel)]="editPatientFormData.patientGroupId"
-                                            (click)="loadPatientGroups()"
+                                            id="dropdownMenuButtonEditLab" name="clientGroupId"
+                                            [(ngModel)]="editClientFormData.clientGroupId"
+                                            (click)="loadClientGroups()"
                                             data-bs-toggle="dropdown" aria-expanded="false"
                                             style="border: 1px solid rgb(204, 204, 204); text-align: left; width: 100%;">
-                                        {{ currentPatientGroup || 'Choose Group' }}                            
+                                        {{ currentClientGroup || 'Choose Group' }}                            
                                     </button>
                                     <ul class="dropdown-menu custom-scrollbar pl-2 pr-2" aria-labelledby="dropdownMenuButtonEditLab"
                                         style="max-height: 400px; overflow-y: auto; width: 100%;">
@@ -3442,20 +3442,20 @@
                                             <input type="text" class="form-control dropdown-search ml-0" placeholder="Search"
                                                    [(ngModel)]="searchText" style="height: 30px; font-size: 14px; width: 100%;" />
                                         </li>
-                                        <ng-container *ngIf="filteredPatientGroupList().length; else noGroupDataEditLab">
-                                            <div class="dropdown-items" *ngFor="let patientGroup of filteredPatientGroupList()">
+                                        <ng-container *ngIf="filteredClientGroupList().length; else noGroupDataEditLab">
+                                            <div class="dropdown-items" *ngFor="let clientGroup of filteredClientGroupList()">
                                                 <li>
-                                                    <button type="button" (click)="changeCurrentGroup(patientGroup); editPatientFormData.patientGroupId = patientGroup.id"
+                                                    <button type="button" (click)="changeCurrentGroup(clientGroup); editClientFormData.clientGroupId = clientGroup.id"
                                                             class="dropdown-item mt-2 d-flex align-items-left"
                                                             style="border: 1px solid rgb(233, 233, 233); border-radius: 5px; text-align: left;">
-                                                        {{ patientGroup.groupNameShortForm || patientGroup.groupName }}
+                                                        {{ clientGroup.groupNameShortForm || clientGroup.groupName }}
                                                     </button>
                                                 </li>
                                             </div>
                                         </ng-container>
                                         <ng-template #noGroupDataEditLab>
                                             <li class="text-muted text-center p-2">
-                                                Please wait Patient Groups Loading...
+                                                Please wait Client Groups Loading...
                                             </li>
                                         </ng-template>
                                     </ul>
@@ -3471,29 +3471,29 @@
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Name</strong></label>
                                 <input type="text" class="form-control" name="nextOfKinName" 
-                                       [(ngModel)]="editPatientFormData.nextOfKinName">
+                                       [(ngModel)]="editClientFormData.nextOfKinName">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Relationship</strong></label>
                                 <input type="text" class="form-control" name="relationship" 
-                                       [(ngModel)]="editPatientFormData.relationship">
+                                       [(ngModel)]="editClientFormData.relationship">
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Contact</strong></label>
                                 <input type="text" class="form-control" name="nextOfKinContact" 
-                                       [(ngModel)]="editPatientFormData.nextOfKinContact">
+                                       [(ngModel)]="editClientFormData.nextOfKinContact">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Address</strong></label>
                                 <textarea class="form-control" name="nextOfKinAddress" rows="2" 
-                                          [(ngModel)]="editPatientFormData.nextOfKinAddress"></textarea>
+                                          [(ngModel)]="editClientFormData.nextOfKinAddress"></textarea>
                             </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" (click)="closeEditPatientModal()">Cancel</button>
+                            <button type="button" class="btn btn-secondary" (click)="closeEditClientModal()">Cancel</button>
                             <button type="submit" class="btn btn-primary" style="background-color: #467de4; border-color: #467de4;">
                                 <i class="bi bi-save"></i> Save Changes
                             </button>

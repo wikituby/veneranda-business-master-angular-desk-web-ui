@@ -11,10 +11,11 @@ export class ContactPageComponent {
   readonly contact = {
     phones: ['+256 784 411 848', '+256 704 968 736'],
     phoneLinks: ['tel:+256784411848', 'tel:+256704968736'],
-    email: 'venerandahospital@gmail.com',
+    email: 'venerandabusinessmaster@gmail.com',
     location: 'H5VH+6R, Lukwemigo',
     hours: [
-      { day: 'Open 24/7', note: 'Full hospital services every day of the week' }
+      { day: 'Mon – Sat', note: 'Business support during working hours' },
+      { day: 'Sunday', note: 'Email support — we reply next business day' }
     ]
   };
 
@@ -33,11 +34,11 @@ export class ContactPageComponent {
 
   readonly subjects = [
     'General enquiry',
-    'Book an appointment',
-    'Emergency support',
-    'Laboratory / scans',
-    'Pharmacy',
-    'Funding / partnership',
+    'Register a business',
+    'Demo / walkthrough',
+    'Billing & subscription',
+    'Technical support',
+    'Partnership',
     'Other'
   ];
 
@@ -82,7 +83,7 @@ export class ContactPageComponent {
           this.submitted = true;
           this.submitSuccess =
             res?.message ||
-            'Your message was received. Veneranda Hospital will respond as soon as possible.';
+            'Your message was received. Veneranda Business Master will respond as soon as possible.';
           this.form = {
             fullName: '',
             phone: '',

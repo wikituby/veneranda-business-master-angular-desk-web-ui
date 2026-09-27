@@ -248,7 +248,7 @@ export class BalanceSheetComponent implements OnInit {
       0
     );
 
-    // Total sells from items sold (drugs, sundries, all item categories).
+    // Total sells from items sold (drugs, sundries, all product categories).
     this.periodOtcRevenue = otcSales
       .filter(s => {
         if (this.isReversedSaleLine(s)) {
@@ -328,7 +328,7 @@ export class BalanceSheetComponent implements OnInit {
 
     this.incomeLines = [
       { label: 'Services payment', amount: this.periodRevenue, indent: true, note: 'Payments from services offered' },
-      { label: 'Items sold', amount: this.periodOtcRevenue, indent: true, note: 'Drugs, sundries & all item categories' },
+      { label: 'Products sold', amount: this.periodOtcRevenue, indent: true, note: 'Drugs, sundries & all product categories' },
       { label: 'Total income', amount: this.periodRevenue + this.periodOtcRevenue, emphasis: true },
       { label: 'Operating expenses', amount: this.periodExpenses, indent: true },
       { label: 'Net income', amount: this.periodNetIncome, emphasis: true }
@@ -451,10 +451,6 @@ export class BalanceSheetComponent implements OnInit {
 
   goToExpenses(): void {
     this.router.navigate(['/overview/expenses']);
-  }
-
-  goToPatientBilling(): void {
-    this.router.navigate(['/overview/patient-billing']);
   }
 
   printReport(): void {

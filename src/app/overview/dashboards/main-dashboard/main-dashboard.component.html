@@ -1,413 +1,204 @@
-<div class="dashboard-wrapper">
-  <div class="page-header">
-    <h2 class="page-title">Dashboard</h2>
-    <form class="page-search" (submit)="$event.preventDefault()" role="search" aria-label="Overview search">
-      <input type="text" name="overviewSearch" placeholder="Search products…" aria-label="Search" />
-      <button type="submit" class="search-btn">Search</button>
-    </form>
-    <nav class="breadcrumbs">
-      <a [routerLink]="['/']">Home</a>
-      <span class="sep">/</span>
-      <a [routerLink]="['/overview']">Dashboard</a>
-      <span class="sep">/</span>
-      <span class="current">Overview</span>
-    </nav>
-  </div>
+<div class="ov" [class.dark]="isDarkMode">
+  <div *ngIf="isLoading" class="ov-state">Loading dashboard…</div>
+  <div *ngIf="!isLoading && errorMessage" class="ov-state ov-state-error">{{ errorMessage }}</div>
 
-  <div *ngIf="isLoading" class="loading">Loading...</div>
-  <div *ngIf="!isLoading && errorMessage" class="error">{{errorMessage}}</div>
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <header class="ov-head">
+      <div>
+        <h2>OVERVIEW <span>Performance at a glance</span></h2>
+      </div>
+      <div class="ov-head-tools">
+        <label class="ov-filter">
+          <span>This</span>
+          <select
+            [ngModel]="periodSide === 'this' ? periodUnit : ''"
+            (ngModelChange)="choosePeriod('this', $event)"
+            name="dashThisUnit">
+            <option value="">Select</option>
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </label>
+        <label class="ov-filter">
+          <span>Last</span>
+          <select
+            [ngModel]="periodSide === 'last' ? periodUnit : ''"
+            (ngModelChange)="choosePeriod('last', $event)"
+            name="dashLastUnit">
+            <option value="">Select</option>
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </label>
+        <label class="ov-filter ov-filter-range">
+          <span>Custom</span>
+          <input type="date" [(ngModel)]="customFrom" name="dashFrom" (change)="chooseCustom()" />
+          <input type="date" [(ngModel)]="customTo" name="dashTo" (change)="chooseCustom()" />
+        </label>
+        <span class="ov-chip">{{ periodRangeLabel }}</span>
+        <button type="button" class="ov-print" (click)="printDashboard()" aria-label="Print dashboard">
+          <i class="bi bi-printer"></i>
+        </button>
+      </div>
+    </header>
 
-  <!-- Main Dashboard Content -->
-  <section class="dashboard-section" *ngIf="!isLoading && !errorMessage">
-    <button
-      type="button"
-      class="section-toggle"
-      (click)="toggleDashboardSection('summary')"
-      [attr.aria-expanded]="isDashboardSectionExpanded('summary')">
-      <div class="row-heading">
-        <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('summary') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-        <h3>Overview Summary</h3>
-        <span class="row-subtitle">Key metrics at a glance</span>
-      </div>
-    </button>
-    <div class="section-body cards" *ngIf="isDashboardSectionExpanded('summary')">
-    <div class="card gradient-blue">
-      <div class="card-row">
-        <i class="bi bi-heart-pulse card-icon"></i>
-        <div class="card-meta">
-          <div class="card-value">{{ totalServices }}</div>
-          <div class="card-label">Services</div>
+    <section class="ov-kpis">
+      <article class="ov-kpi kpi-blue">
+        <span class="ov-kpi-icon"><i class="bi bi-bag"></i></span>
+        <div>
+          <div class="ov-kpi-label">TOTAL ORDERS</div>
+          <div class="ov-kpi-value">{{ todayAppointments | number }}</div>
+          <div class="ov-kpi-sub" [class.down]="!trendDelta(visitsTrend).up">{{ trendDelta(visitsTrend).text }} vs prior period</div>
         </div>
-      </div>
-      <img src="assets/images/card-wave.svg" alt="wave" class="mini-wave-img"/>
-    </div>
-    <div class="card gradient-green">
-      <div class="card-row">
-        <i class="bi bi-people card-icon"></i>
-        <div class="card-meta">
-          <div class="card-value">{{ totalPatients }}</div>
-          <div class="card-label">Patients</div>
+      </article>
+      <article class="ov-kpi kpi-green">
+        <span class="ov-kpi-icon"><i class="bi bi-people"></i></span>
+        <div>
+          <div class="ov-kpi-label">CLIENTS</div>
+          <div class="ov-kpi-value">{{ totalClients | number }}</div>
+          <div class="ov-kpi-sub">{{ newAdmissionsToday | number }} new in period</div>
         </div>
-      </div>
-      <img src="assets/images/card-wave.svg" alt="wave" class="mini-wave-img"/>
-    </div>
-    <div class="card gradient-purple">
-      <div class="card-row">
-        <i class="bi bi-calendar-event card-icon"></i>
-        <div class="card-meta">
-          <div class="card-value">{{ totalVisitsLast30 }}</div>
-          <div class="card-label">Visits (last 30 days)</div>
+      </article>
+      <article class="ov-kpi kpi-purple">
+        <span class="ov-kpi-icon"><i class="bi bi-grid"></i></span>
+        <div>
+          <div class="ov-kpi-label">PRODUCTS</div>
+          <div class="ov-kpi-value">{{ totalItems | number }}</div>
+          <div class="ov-kpi-sub">{{ totalServices | number }} services</div>
         </div>
-      </div>
-      <img src="assets/images/card-wave.svg" alt="wave" class="mini-wave-img"/>
-    </div>
-    <div class="card gradient-blue">
-      <div class="card-row">
-        <i class="bi bi-exclamation-triangle card-icon"></i>
-        <div class="card-meta">
-          <div class="card-value">{{ totalReorderItems }}</div>
-          <div class="card-label">Reorder-level Items</div>
+      </article>
+      <article class="ov-kpi kpi-orange">
+        <span class="ov-kpi-icon"><i class="bi bi-cash-stack"></i></span>
+        <div>
+          <div class="ov-kpi-label">REVENUE</div>
+          <div class="ov-kpi-value">{{ isMdUser() ? todayRevenueFormatted : '—' }}</div>
+          <div class="ov-kpi-sub" [class.down]="!trendDelta(paymentsTrend).up">{{ isMdUser() ? (trendDelta(paymentsTrend).text + ' vs prior') : 'MD only' }}</div>
         </div>
-      </div>
-      <img src="assets/images/card-wave.svg" alt="wave" class="mini-wave-img"/>
-    </div>
+      </article>
+      <article class="ov-kpi kpi-teal">
+        <span class="ov-kpi-icon"><i class="bi bi-exclamation-triangle"></i></span>
+        <div>
+          <div class="ov-kpi-label">REORDER ALERTS</div>
+          <div class="ov-kpi-value">{{ totalReorderItems | number }}</div>
+          <div class="ov-kpi-sub">{{ criticalStockItems | number }} low stock</div>
+        </div>
+      </article>
+    </section>
 
-    <div class="card gradient-green" *ngIf="isMdUser()">
-      <div class="card-row">
-        <i class="bi bi-cash-coin card-icon"></i>
-        <div class="card-meta">
-          <div class="card-value">{{ totalPaymentsReceivedFormatted }}</div>
-          <div class="card-label">Payments Received</div>
-        </div>
-      </div>
-      <img src="assets/images/card-wave.svg" alt="wave" class="mini-wave-img"/>
-    </div>
-    </div>
-  </section>
-
-  <section class="dashboard-section pending-tasks-row" *ngIf="!isLoading && !errorMessage">
-    <button
-      type="button"
-      class="section-toggle"
-      (click)="toggleDashboardSection('pendingTasks')"
-      [attr.aria-expanded]="isDashboardSectionExpanded('pendingTasks')">
-      <div class="row-heading">
-        <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('pendingTasks') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-        <h3>Pending Tasks</h3>
-        <span class="row-subtitle">Items needing attention</span>
-      </div>
-    </button>
-    <div class="section-body pending-tasks-grid" *ngIf="isDashboardSectionExpanded('pendingTasks')">
-      <button
-        type="button"
-        class="pending-task-card"
-        *ngFor="let task of pendingTasks"
-        [class]="'tone-' + task.tone"
-        (click)="openQuickLink(task.route)">
-        <div class="pending-task-icon"><i class="bi" [ngClass]="task.icon"></i></div>
-        <div class="pending-task-body">
-          <div class="pending-task-count">{{ formatTaskCount(task) }}</div>
-          <div class="pending-task-label">{{ task.label }}</div>
-        </div>
-        <i class="bi bi-chevron-right pending-task-arrow"></i>
-      </button>
-    </div>
-  </section>
-
-  <section class="dashboard-section quick-links-row" *ngIf="!isLoading && !errorMessage">
-    <button
-      type="button"
-      class="section-toggle"
-      (click)="toggleDashboardSection('quickLinks')"
-      [attr.aria-expanded]="isDashboardSectionExpanded('quickLinks')">
-      <div class="row-heading">
-        <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('quickLinks') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-        <h3>Quick Links</h3>
-        <span class="row-subtitle">Jump to common modules</span>
-      </div>
-    </button>
-    <div class="section-body quick-links-grid" *ngIf="isDashboardSectionExpanded('quickLinks')">
-      <button
-        type="button"
-        class="quick-link-card"
-        *ngFor="let link of quickLinks"
-        (click)="openQuickLink(link.route)">
-        <div class="quick-link-icon" [style.background]="link.color + '18'" [style.color]="link.color">
-          <i class="bi" [ngClass]="link.icon"></i>
-        </div>
-        <span class="quick-link-label">{{ link.label }}</span>
-      </button>
-    </div>
-  </section>
-
-  <!-- Hospital-Specific Metrics Grid -->
-  <section class="dashboard-section" *ngIf="!isLoading && !errorMessage">
-    <button
-      type="button"
-      class="section-toggle"
-      (click)="toggleDashboardSection('hospitalMetrics')"
-      [attr.aria-expanded]="isDashboardSectionExpanded('hospitalMetrics')">
-      <div class="row-heading">
-        <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('hospitalMetrics') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-        <h3>Hospital Metrics</h3>
-        <span class="row-subtitle">Appointments, admissions, revenue &amp; stock</span>
-      </div>
-    </button>
-    <div class="section-body hospital-metrics" *ngIf="isDashboardSectionExpanded('hospitalMetrics')">
-    <!-- Today's Appointments -->
-    <div class="metric-card">
-      <div class="metric-header">
-        <i class="bi bi-calendar-check metric-icon blue"></i>
-        <div class="metric-info">
-          <div class="metric-label">Today's Appointments</div>
-          <div class="metric-value">{{ todayAppointments }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          <span class="success">{{ completedAppointments }}</span> completed
-        </span>
-        <span class="metric-detail">
-          <span class="warning">{{ pendingAppointments }}</span> pending
-        </span>
-      </div>
-    </div>
-
-    <!-- Healthcare Banner -->
-    <div class="banner-card banner-in-metrics">
-      <div class="banner-content">
-        <div class="banner-team-images">
-          <div class="team-image team-image-a"></div>
-          <div class="team-image team-image-b"></div>
-          <div class="team-image team-image-c"></div>
-        </div>
-        <div class="banner-text">
-          <h3 class="banner-title">Quality Healthcare</h3>
-          <p class="banner-subtitle">Committed to your well-being</p>
-          <div class="banner-stats">
-            <div class="banner-stat">
-              <div class="banner-stat-value">{{ totalPatients }}+</div>
-              <div class="banner-stat-label">Patients Served</div>
-            </div>
-            <div class="banner-stat">
-              <div class="banner-stat-value">24/7</div>
-              <div class="banner-stat-label">Available</div>
+    <section class="ov-mid">
+      <article class="ov-panel">
+        <h3>ORDER SUMMARY</h3>
+        <div class="ov-donut-row">
+          <div class="ov-donut" [style.background]="categoryDonutBackground">
+            <div class="ov-donut-hole">
+              <strong>{{ categoryTotal | number }}</strong>
+              <span>TOTAL</span>
             </div>
           </div>
-          <button class="banner-btn" (click)="navigateTo('/patient')">
-            <i class="bi bi-calendar-plus"></i> Book Appointment
-          </button>
+          <ul class="ov-legend">
+            <li *ngFor="let slice of categorySlices">
+              <i [style.background]="slice.color"></i>
+              <span>{{ slice.label }}</span>
+              <em>{{ slice.value | number }} ({{ slice.pct }}%)</em>
+            </li>
+            <li *ngIf="!categorySlices.length" class="ov-empty">No category totals yet.</li>
+          </ul>
         </div>
-        <div class="banner-image"></div>
-      </div>
-    </div>
+      </article>
 
-    <!-- Admitted Patients -->
-    <div class="metric-card">
-      <div class="metric-header">
-        <i class="bi bi-hospital metric-icon green"></i>
-        <div class="metric-info">
-          <div class="metric-label">Admitted Patients</div>
-          <div class="metric-value">{{ admittedPatients }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          <i class="bi bi-arrow-up-circle"></i> {{ newAdmissionsToday }} today
-        </span>
-        <span class="metric-detail">
-          <i class="bi bi-arrow-down-circle"></i> {{ dischargesToday }} discharged
-        </span>
-      </div>
-    </div>
-
-    <!-- Lab & Scan Tests -->
-    <div class="metric-card">
-      <div class="metric-header">
-        <i class="bi bi-clipboard2-pulse metric-icon purple"></i>
-        <div class="metric-info">
-          <div class="metric-label">Pending Tests</div>
-          <div class="metric-value">{{ pendingLabTests + pendingScanTests }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          <i class="bi bi-flask"></i> {{ pendingLabTests }} lab
-        </span>
-        <span class="metric-detail">
-          <i class="bi bi-camera"></i> {{ pendingScanTests }} scan
-        </span>
-      </div>
-    </div>
-
-    <!-- Emergency & Critical -->
-    <div class="metric-card alert-card">
-      <div class="metric-header">
-        <i class="bi bi-exclamation-triangle-fill metric-icon red"></i>
-        <div class="metric-info">
-          <div class="metric-label">Critical Cases</div>
-          <div class="metric-value">{{ emergencyCases + criticalPatients }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          {{ emergencyCases }} emergency
-        </span>
-        <span class="metric-detail">
-          {{ criticalPatients }} critical
-        </span>
-      </div>
-    </div>
-
-    <!-- Revenue Metrics (MD only) -->
-    <div class="metric-card" *ngIf="isMdUser()">
-      <div class="metric-header">
-        <i class="bi bi-cash-stack metric-icon teal"></i>
-        <div class="metric-info">
-          <div class="metric-label">Today's Revenue</div>
-          <div class="metric-value money">{{ todayRevenueFormatted }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          Week: {{ weekRevenueFormatted }}
-        </span>
-        <span class="metric-detail warning">
-          Due: {{ outstandingPaymentsFormatted }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Stock Alerts -->
-    <div class="metric-card alert-card" (click)="openQuickLink('/overview/stock-verification')" style="cursor: pointer;">
-      <div class="metric-header">
-        <i class="bi bi-box-seam metric-icon orange"></i>
-        <div class="metric-info">
-          <div class="metric-label">Stock Alerts</div>
-          <div class="metric-value">{{ criticalStockItems + lowConfidenceStockItems }}</div>
-        </div>
-      </div>
-      <div class="metric-footer">
-        <span class="metric-detail">
-          {{ criticalStockItems }} low stock
-        </span>
-        <span class="metric-detail warning">
-          {{ nearExpiryItems }} near expiry · {{ lowConfidenceStockItems }} low confidence
-        </span>
-      </div>
-    </div>
-    </div>
-  </section>
-
-  <section class="dashboard-section" *ngIf="chartsReady && !isLoading && !errorMessage">
-    <button
-      type="button"
-      class="section-toggle"
-      (click)="toggleDashboardSection('charts')"
-      [attr.aria-expanded]="isDashboardSectionExpanded('charts')">
-      <div class="row-heading">
-        <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('charts') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-        <h3>Charts &amp; Analytics</h3>
-        <span class="row-subtitle">Patients, items and visits trends</span>
-      </div>
-    </button>
-    <div class="section-body charts" *ngIf="isDashboardSectionExpanded('charts')">
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">Patients by Age</div>
-          <div class="chart-sub">Brackets 0-10 .. 50-60</div>
-        </div>
-      </div>
-      <canvas id="patientsAgePie"></canvas>
-    </div>
-
-    <div class="chart-card span-2">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">Items by Category</div>
-          <div class="chart-sub">Monthly trends for top categories</div>
-        </div>
-      </div>
-      <canvas id="itemsBar"></canvas>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <div class="chart-title">Total Visits</div>
-          <div class="chart-sub">Total: {{ totalVisits }}</div>
-        </div>
-      </div>
-      <canvas id="visitsLine"></canvas>
-    </div>
-    </div>
-  </section>
-
-  <section class="panels" *ngIf="!isLoading && !errorMessage">
-    <div class="panel dashboard-section">
-      <button
-        type="button"
-        class="section-toggle panel-section-toggle"
-        (click)="toggleDashboardSection('appointments')"
-        [attr.aria-expanded]="isDashboardSectionExpanded('appointments')">
-        <div class="panel-title">
-          <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('appointments') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-          <i class="bi bi-calendar-event"></i> Upcoming Appointments
-        </div>
-      </button>
-      <div class="section-body" *ngIf="isDashboardSectionExpanded('appointments')">
-      <div class="appointments-list" *ngIf="upcomingAppointments.length > 0">
-        <div class="appointment-item" *ngFor="let apt of upcomingAppointments">
-          <div class="appointment-main">
-            <div class="appointment-patient">
-              <i class="bi bi-person-circle"></i>
-              {{ apt.patientName }}
+      <article class="ov-panel">
+        <h3>SHARE BY CATEGORY</h3>
+        <div class="ov-bars" *ngIf="topCategories.length; else noBars">
+          <div class="ov-bar" *ngFor="let row of topCategories; let i = index">
+            <div class="ov-bar-track">
+              <div
+                class="ov-bar-fill"
+                [style.height.%]="(row.value / barScale) * 100"
+                [style.background]="row.color">
+                <span>{{ categorySlices[i]?.pct || 0 }}%</span>
+              </div>
             </div>
-            <div class="appointment-service">{{ apt.service }}</div>
-          </div>
-          <div class="appointment-meta">
-            <span class="appointment-time">{{ getTimeAgo(apt.time) }}</span>
-            <span class="appointment-priority" [ngClass]="getPriorityClass(apt.priority)">
-              {{ apt.priority }}
-            </span>
+            <em>{{ row.label }}</em>
           </div>
         </div>
-      </div>
-      <div class="placeholder" *ngIf="upcomingAppointments.length === 0">
-        No upcoming appointments
-      </div>
-      </div>
-    </div>
+        <ng-template #noBars><p class="ov-empty">No category share yet.</p></ng-template>
+      </article>
 
-    <div class="panel dashboard-section">
-      <button
-        type="button"
-        class="section-toggle panel-section-toggle"
-        (click)="toggleDashboardSection('activities')"
-        [attr.aria-expanded]="isDashboardSectionExpanded('activities')">
-        <div class="panel-title">
-          <i class="bi section-chevron" [ngClass]="isDashboardSectionExpanded('activities') ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-          <i class="bi bi-activity"></i> Recent Activities
+      <article class="ov-panel">
+        <h3>TOP CATEGORIES</h3>
+        <ol class="ov-rank">
+          <li *ngFor="let row of topCategories; let i = index">
+            <span class="ov-medal" [attr.data-rank]="i + 1">{{ i + 1 }}</span>
+            <span class="ov-rank-name">{{ row.label }}</span>
+            <strong>{{ categorySlices[i]?.pct || 0 }}%</strong>
+          </li>
+          <li *ngIf="!topCategories.length" class="ov-empty">No ranking yet.</li>
+        </ol>
+      </article>
+    </section>
+
+    <section class="ov-lower">
+      <article class="ov-panel ov-table-panel">
+        <h3>CATEGORY PERFORMANCE</h3>
+        <div class="ov-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Items</th>
+                <th>Share</th>
+                <th>Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of topCategories; let i = index">
+                <td>{{ row.label }}</td>
+                <td>{{ row.value | number }}</td>
+                <td>{{ categorySlices[i]?.pct || 0 }}%</td>
+                <td>
+                  <svg viewBox="0 0 140 36" class="ov-spark" aria-hidden="true">
+                    <path [attr.d]="sparkPath(i)" fill="none" [attr.stroke]="trendDelta(visitsTrend).up ? '#16a34a' : '#dc2626'" stroke-width="2.5" />
+                  </svg>
+                </td>
+              </tr>
+              <tr *ngIf="!topCategories.length">
+                <td colspan="4" class="ov-empty">No category performance yet.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </button>
-      <div class="section-body" *ngIf="isDashboardSectionExpanded('activities')">
-      <div class="activities-list" *ngIf="recentActivities.length > 0">
-        <div class="activity-item" *ngFor="let activity of recentActivities">
-          <div class="activity-icon" [style.background]="activity.color + '20'" [style.color]="activity.color">
-            <i [class]="'bi ' + activity.icon"></i>
+      </article>
+
+      <div class="ov-side">
+        <article class="ov-panel">
+          <h3>ORDER STATUS</h3>
+          <div class="ov-status-row">
+            <div class="ov-donut ov-donut-sm" [style.background]="orderStatusBackground">
+              <div class="ov-donut-hole">
+                <strong>{{ completedShareLabel }}</strong>
+                <span>COMPLETED</span>
+              </div>
+            </div>
+            <ul class="ov-legend">
+              <li *ngFor="let part of orderStatusParts">
+                <i [style.background]="part.color"></i>
+                <span>{{ part.label }}</span>
+                <em>{{ part.pct }}%</em>
+              </li>
+            </ul>
           </div>
-          <div class="activity-content">
-            <div class="activity-title">{{ activity.title }}</div>
-            <div class="activity-description">{{ activity.description }}</div>
-          </div>
-          <div class="activity-time">{{ getTimeAgo(activity.time) }}</div>
-        </div>
+        </article>
+        <article class="ov-quote">
+          <p>{{ totalReorderItems || criticalStockItems ? 'Stock needs attention. Clear reorder alerts to keep sales moving.' : 'Sales, clients, and stock are moving together. Keep the counter stocked.' }}</p>
+          <button type="button" class="ov-quote-btn" (click)="navigateTo('/overview/otc-dispensary')">Open Point of Sale</button>
+        </article>
       </div>
-      <div class="placeholder" *ngIf="recentActivities.length === 0">
-        No recent activities
-      </div>
-      </div>
-    </div>
-  </section>
+    </section>
+
+    <p class="ov-foot">Data as of {{ dashboardDateLabel }} · Veneranda Business Master</p>
+  </ng-container>
 </div>

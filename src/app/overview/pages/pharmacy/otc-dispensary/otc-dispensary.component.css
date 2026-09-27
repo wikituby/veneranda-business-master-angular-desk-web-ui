@@ -1,9 +1,9 @@
-/* Fill overview content area below app header */
+/* Fill overview content pane (not 100vh — that overflows .content and scrolls the header away). */
 :host {
   display: block;
-  height: calc(100vh - var(--app-header-height, 56px));
-  max-height: calc(100vh - var(--app-header-height, 56px));
-  overflow: visible;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -17,6 +17,41 @@
   overflow: hidden;
   background: linear-gradient(180deg, #f0f4ff 0%, #f8fafc 120px, #f8fafc 100%);
   gap: 0;
+}
+
+.otc-dispensary-page--pos {
+  background: #fff;
+  padding: 0;
+}
+
+.otc-dispensary-page--pos .otc-workspace-card {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.otc-sold-back-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 0;
+  flex-shrink: 0;
+}
+
+.otc-sold-back-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.otc-pos-tab-hint {
+  font-size: 0.82rem;
+  color: #78716c;
+  font-weight: 500;
 }
 
 /* Main workspace card */
@@ -157,6 +192,11 @@
   box-sizing: border-box;
 }
 
+/* POS fills the workspace edge-to-edge so the column divider meets the top border. */
+.otc-dispensary-page--pos .otc-tab-content {
+  padding: 0;
+}
+
 .otc-dispensary-page .otc-tab-content > .tab-pane {
   width: 100%;
   box-sizing: border-box;
@@ -182,19 +222,3310 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Form + cart (scrollable) + payment pinned at bottom */
-.otc-dispensary-page .tab-pane.otc-counter-sale-layout.active {
+/* Form + cart on the left; totals panel pinned vertically on the right */
+.otc-dispensary-page .tab-pane.otc-counter-sale-layout.active:not(.otc-pos-layout) {
   display: grid !important;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  grid-template-rows: auto minmax(0, 1fr);
   flex: 1 1 auto;
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  gap: 10px;
+}
+
+/* Cafe-style POS: catalog left + current order right */
+.otc-dispensary-page .tab-pane.otc-pos-layout.active {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(440px, 540px);
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+  background: #fff;
+}
+
+.otc-dispensary-page .tab-pane.otc-pos-layout.active.otc-pos-layout--cart-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.otc-pos-catalog {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 16px 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.otc-pos-catalog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.otc-pos-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+}
+
+.otc-pos-search {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 36px;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+.otc-pos-search i {
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.otc-pos-search input {
+  flex: 1 1 auto;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.86rem;
+  color: #0f172a;
+  min-width: 0;
+}
+
+.otc-pos-filter-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.otc-pos-filter-btn:hover:not(:disabled) {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.otc-pos-filter-btn--add {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.otc-pos-filter-btn--add:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #60a5fa;
+  color: #1e40af;
+}
+
+.otc-pos-filter-btn--active {
+  color: #0f766e;
+  border-color: #5eead4;
+  background: #ecfdf5;
+}
+
+.otc-pos-filter-btn--active:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #2dd4bf;
+  color: #115e59;
+}
+
+.otc-pos-category-dd {
+  position: relative;
+  flex: 0 0 240px;
+  width: 240px;
+}
+
+.otc-pos-category-trigger {
+  width: 100%;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.otc-pos-category-trigger i {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+
+.otc-pos-category-dd.open .otc-pos-category-trigger i {
+  transform: rotate(180deg);
+}
+
+.otc-pos-category-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.otc-pos-category-hint {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.otc-dispensary-page.dark .otc-pos-category-hint {
+  color: #94a3b8;
+}
+
+.otc-pos-category-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  min-width: 240px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.otc-pos-category-add-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  border: 1px dashed #93c5fd;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.otc-pos-category-add-btn:hover {
+  background: #dbeafe;
+}
+
+.otc-pos-category-add-form {
+  display: flex;
+  gap: 6px;
+}
+
+.otc-pos-category-add-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+}
+
+.otc-pos-category-save-btn {
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.otc-pos-category-search {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.otc-pos-category-search input,
+.otc-pos-category-search-input {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.84rem;
+  color: #0f172a;
+  outline: none;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.otc-pos-category-search input:focus,
+.otc-pos-category-search-input:focus {
+  border-color: #93c5fd;
+  box-shadow: none;
+  outline: none;
+}
+
+.otc-pos-category-kind-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #f1f5f9;
+}
+
+.otc-pos-category-kind-tab {
+  border: none;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.otc-pos-category-kind-tab.active {
+  background: #fff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.otc-pos-category-options {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.otc-pos-category-option-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.otc-pos-category-option-row:hover,
+.otc-pos-category-option-row.is-active {
+  background: #f1f5f9;
+}
+
+.otc-pos-category-option-row.is-active {
+  background: #eff6ff;
+}
+
+.otc-pos-category-option {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+.otc-pos-category-option-row.is-active .otc-pos-category-option {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.otc-pos-category-option:hover {
+  background: transparent;
+}
+
+.otc-pos-category-option.active {
+  background: transparent;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.otc-pos-category-option-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-right: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.otc-pos-category-option-row:hover .otc-pos-category-option-actions,
+.otc-pos-category-option-row.is-editing .otc-pos-category-option-actions {
+  opacity: 1;
+}
+
+.otc-pos-category-option-action {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.otc-pos-category-option-action:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.otc-pos-category-option-action--danger:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.otc-pos-category-edit-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  margin: 2px 0 2px 6px;
+  padding: 0 8px;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  outline: none;
+  box-shadow: none;
+}
+
+.otc-pos-category-empty {
+  margin: 8px 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.otc-pos-product-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-content: stretch;
+  grid-auto-rows: max-content;
+  gap: 16px;
+  align-content: start;
+  align-items: stretch;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: whitesmoke transparent;
+}
+
+/* Cart hidden: keep a similar card min size, fit more columns, stretch to fill the row. */
+.otc-pos-layout--cart-hidden .otc-pos-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  justify-content: stretch;
+  align-items: stretch;
+}
+
+/* Thin whitesmoke scrollbars, inset from rounded corners */
+.otc-pos-product-grid::-webkit-scrollbar,
+.otc-pos-order-list::-webkit-scrollbar,
+.otc-pos-category-options::-webkit-scrollbar,
+.otc-pos-product-edit-modal::-webkit-scrollbar,
+.otc-pos-product-images-modal::-webkit-scrollbar,
+.otc-dispensary-page--pos .custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.otc-pos-product-grid::-webkit-scrollbar-track,
+.otc-pos-order-list::-webkit-scrollbar-track,
+.otc-pos-category-options::-webkit-scrollbar-track,
+.otc-pos-product-edit-modal::-webkit-scrollbar-track,
+.otc-pos-product-images-modal::-webkit-scrollbar-track,
+.otc-dispensary-page--pos .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.otc-pos-product-grid::-webkit-scrollbar-thumb,
+.otc-pos-order-list::-webkit-scrollbar-thumb,
+.otc-pos-category-options::-webkit-scrollbar-thumb,
+.otc-pos-product-edit-modal::-webkit-scrollbar-thumb,
+.otc-pos-product-images-modal::-webkit-scrollbar-thumb,
+.otc-dispensary-page--pos .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: whitesmoke;
+  border-radius: 999px;
+  border: 1px solid #e8e8e8;
+}
+
+.otc-pos-product-grid::-webkit-scrollbar-thumb:hover,
+.otc-pos-order-list::-webkit-scrollbar-thumb:hover,
+.otc-pos-category-options::-webkit-scrollbar-thumb:hover,
+.otc-pos-product-edit-modal::-webkit-scrollbar-thumb:hover,
+.otc-pos-product-images-modal::-webkit-scrollbar-thumb:hover,
+.otc-dispensary-page--pos .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #eeeeee;
+}
+
+.otc-pos-product-grid::-webkit-scrollbar-corner,
+.otc-pos-order-list::-webkit-scrollbar-corner,
+.otc-pos-category-options::-webkit-scrollbar-corner,
+.otc-pos-product-edit-modal::-webkit-scrollbar-corner,
+.otc-pos-product-images-modal::-webkit-scrollbar-corner,
+.otc-dispensary-page--pos .custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.otc-pos-order-list,
+.otc-pos-category-options,
+.otc-pos-product-edit-modal,
+.otc-pos-product-images-modal {
+  scrollbar-width: thin;
+  scrollbar-color: whitesmoke transparent;
+}
+
+.otc-pos-product-card {
+  position: relative;
+  z-index: 0;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(28, 25, 23, 0.05);
+  border: 1px solid rgba(231, 229, 228, 0.8);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.otc-pos-product-card:hover:not(.otc-pos-product-card--oos) {
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+}
+
+.otc-pos-product-card--oos {
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.otc-pos-product-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100px;
+  flex: 0 0 100px;
+  background: linear-gradient(145deg, #eff6ff, #dbeafe);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.otc-pos-oos-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #ff6a00;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(255, 106, 0, 0.28);
+}
+
+.otc-pos-low-stk-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.35);
+}
+
+.otc-pos-product-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.otc-pos-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.otc-pos-add-fab {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.12);
+}
+
+.otc-pos-add-fab--in-cart {
+  background: #2563eb;
+  color: #fff;
+}
+
+.otc-pos-product-card:hover:not(.otc-pos-product-card--oos) .otc-pos-add-fab:not(.otc-pos-add-fab--in-cart) {
+  background: #2563eb;
+  color: #fff;
+}
+
+.otc-pos-product-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  padding: 12px 14px 14px;
+  min-width: 0;
+  background: #fff;
+}
+
+.otc-pos-product-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1c1917;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.otc-pos-product-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #78716c;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.otc-pos-product-stock {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #15803d;
+  line-height: 1.3;
+}
+
+.otc-pos-product-stock--low {
+  color: #b45309;
+}
+
+.otc-pos-product-stock--oos {
+  color: #dc2626;
+}
+
+.otc-pos-product-price-row {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 
+.otc-pos-product-price {
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.otc-pos-product-unit {
+  color: #a8a29e;
+  font-size: 0.8rem;
+}
+
+.otc-pos-product-edit-btn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.otc-pos-product-edit-btn i {
+  font-size: 0.7rem;
+}
+
+.otc-pos-product-edit-btn:first-of-type {
+  margin-left: auto;
+}
+
+.otc-pos-product-edit-btn + .otc-pos-product-edit-btn {
+  margin-left: 4px;
+}
+
+.otc-pos-product-edit-btn:hover {
+  border-color: #93c5fd;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+/* —— Product detail page (marketplace-style) —— */
+.otc-pos-pdp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.otc-pos-pdp {
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.otc-pos-pdp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.otc-pos-pdp-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c8c8c;
+  min-width: 0;
+}
+
+.otc-pos-pdp-crumb-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #1677ff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.otc-pos-pdp-crumb-sep {
+  color: #bfbfbf;
+}
+
+.otc-pos-pdp-crumb-current {
+  color: #595959;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+}
+
+.otc-pos-pdp-loading {
+  padding: 48px 16px;
+  text-align: center;
+  color: #8c8c8c;
+}
+
+.otc-pos-pdp-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(260px, 1fr) minmax(240px, 300px);
+  gap: 20px;
+  padding: 18px 20px 24px;
+  align-items: start;
+}
+
+.otc-pos-pdp-gallery {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.otc-pos-pdp-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 56px;
+  flex-shrink: 0;
+}
+
+.otc-pos-pdp-thumb {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.otc-pos-pdp-thumb.active {
+  border-color: #ff6a00;
+  box-shadow: 0 0 0 1px #ff6a00;
+}
+
+.otc-pos-pdp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.otc-pos-pdp-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  max-height: 420px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  background: #fafafa;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otc-pos-pdp-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.otc-pos-pdp-stage-placeholder {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #bfbfbf;
+}
+
+.otc-pos-pdp-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  color: #434343;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.otc-pos-pdp-nav--prev {
+  left: 10px;
+}
+
+.otc-pos-pdp-nav--next {
+  right: 10px;
+}
+
+.otc-pos-pdp-oos {
+  top: 12px;
+  left: 12px;
+}
+
+.otc-pos-pdp-info {
+  min-width: 0;
+}
+
+.otc-pos-pdp-title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1f1f1f;
+  line-height: 1.35;
+}
+
+.otc-pos-pdp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #8c8c8c;
+  margin-bottom: 14px;
+}
+
+.otc-pos-pdp-stock--ok {
+  color: #389e0d;
+  font-weight: 600;
+}
+
+.otc-pos-pdp-stock--oos {
+  color: #cf1322;
+  font-weight: 600;
+}
+
+.otc-pos-pdp-meta-dot {
+  color: #d9d9d9;
+}
+
+.otc-pos-pdp-price-block {
+  margin-bottom: 14px;
+}
+
+.otc-pos-pdp-price {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1f1f1f;
+  letter-spacing: -0.02em;
+}
+
+.otc-pos-pdp-moq {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.otc-pos-pdp-description {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #595959;
+  white-space: pre-wrap;
+}
+
+.otc-pos-pdp-description--muted {
+  color: #bfbfbf;
+  font-style: italic;
+}
+
+.otc-pos-pdp-option-block {
+  margin-bottom: 16px;
+}
+
+.otc-pos-pdp-option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #434343;
+  margin-bottom: 8px;
+}
+
+.otc-pos-pdp-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.otc-pos-pdp-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  background: #fafafa;
+  font-size: 12px;
+  color: #595959;
+}
+
+.otc-pos-pdp-pill.active {
+  border-color: #ff6a00;
+  color: #ff6a00;
+  background: #fff7f0;
+}
+
+.otc-pos-pdp-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.otc-pos-pdp-aside-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+}
+
+.otc-pos-pdp-aside-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.otc-pos-pdp-aside-hint {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #8c8c8c;
+}
+
+.otc-pos-pdp-qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #595959;
+}
+
+.otc-pos-pdp-qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.otc-pos-pdp-qty button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #fafafa;
+  color: #434343;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.otc-pos-pdp-qty input {
+  width: 48px;
+  height: 32px;
+  border: none;
+  border-left: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+
+.otc-pos-pdp-aside-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.otc-pos-pdp-aside-total strong {
+  font-size: 1.05rem;
+  color: #1f1f1f;
+}
+
+.otc-pos-pdp-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.otc-pos-pdp-btn--primary {
+  border: none;
+  background: #ff6a00;
+  color: #fff;
+}
+
+.otc-pos-pdp-btn--primary:hover:not(:disabled) {
+  background: #e85f00;
+}
+
+.otc-pos-pdp-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otc-pos-pdp-btn--secondary {
+  border: 1px solid #1f1f1f;
+  background: #fff;
+  color: #1f1f1f;
+}
+
+.otc-pos-pdp-btn--secondary:hover {
+  background: #fafafa;
+}
+
+.otc-pos-pdp-btn--ghost {
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  color: #595959;
+  font-weight: 600;
+}
+
+.otc-pos-pdp-btn--ghost:hover {
+  border-color: #bfbfbf;
+  background: #fafafa;
+}
+
+.otc-pos-pdp-protect {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fafafa;
+}
+
+.otc-pos-pdp-protect h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.otc-pos-pdp-protect ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8c8c8c;
+}
+
+@media (max-width: 980px) {
+  .otc-pos-pdp-main {
+    grid-template-columns: 1fr;
+  }
+
+  .otc-pos-pdp-stage {
+    max-height: 320px;
+  }
+}
+
+.otc-pos-product-edit-modal {
+  width: min(720px, 94vw);
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.otc-pos-modal-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.otc-pos-modal-title-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.otc-pos-modal-title-tab {
+  border: none;
+  border-radius: 8px;
+  height: 34px;
+  padding: 0 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.otc-pos-modal-title-tab.active {
+  background: rgba(255, 255, 255, 0.95);
+  color: #4c1d95;
+}
+
+.otc-pos-modal-title-tab i {
+  font-size: 1rem;
+}
+
+.otc-pos-modal-title-bar h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.otc-pos-modal-title-bar h3 i {
+  font-size: 1.2rem;
+}
+
+.otc-pos-modal-title-close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.otc-pos-modal-title-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.otc-pos-product-edit-modal.dark .otc-pos-modal-title-bar {
+  background: linear-gradient(135deg, #4c1d95 0%, #581c87 100%);
+}
+
+.otc-pos-product-edit-modal.dark {
+  background: #1e293b;
+}
+
+.otc-pos-product-edit-modal.dark .otc-pos-edit-loading,
+.otc-pos-product-edit-modal.dark .otc-pos-discount-field {
+  color: #e2e8f0;
+}
+
+.otc-pos-product-edit-modal.dark .otc-pos-discount-field input,
+.otc-pos-product-edit-modal.dark .otc-pos-discount-field textarea,
+.otc-pos-product-edit-modal.dark .otc-pos-form-category-trigger {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.otc-pos-product-edit-modal .otc-pos-edit-form,
+.otc-pos-product-edit-modal .otc-pos-edit-loading {
+  padding: 16px 20px 18px;
+}
+
+.otc-pos-product-edit-modal .otc-pos-product-sell-model {
+  min-width: 0;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-actions {
+  margin-top: 4px;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-actions .otc-btn {
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.otc-pos-add-client-modal .otc-pos-discount-head h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.otc-pos-add-client-section {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.otc-pos-add-client-section h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-pos-required {
+  color: #dc2626;
+  display: inline;
+  margin-right: 2px;
+}
+
+.otc-pos-field-label {
+  display: inline;
+  white-space: nowrap;
+}
+
+.otc-pos-edit-loading {
+  padding: 24px 8px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.otc-pos-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow: visible;
+}
+
+.otc-pos-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  min-width: 0;
+}
+
+.otc-pos-edit-grid--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.otc-pos-edit-span-2 {
+  grid-column: 1 / -1;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field input,
+.otc-pos-product-edit-modal .otc-pos-discount-field select,
+.otc-pos-product-edit-modal .otc-pos-discount-field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font: inherit;
+  color: #0f172a;
+  background: #fff;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field select:focus {
+  outline: none;
+  border-color: #93c5fd;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field textarea {
+  resize: vertical;
+  min-height: 72px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font: inherit;
+  color: #0f172a;
+  background: #fff;
+}
+
+.otc-pos-product-edit-modal .otc-pos-discount-field textarea:focus {
+  outline: none;
+  border-color: #93c5fd;
+}
+
+.otc-pos-form-category-field {
+  position: relative;
+  z-index: 1;
+}
+
+.otc-pos-form-category-field.is-open {
+  z-index: 30;
+}
+
+.otc-pos-form-category-dd {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.otc-pos-form-category-trigger {
+  width: 100%;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.otc-pos-form-category-trigger:hover,
+.otc-pos-form-category-dd.open .otc-pos-form-category-trigger {
+  border-color: #93c5fd;
+}
+
+.otc-pos-form-category-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #0f172a;
+}
+
+.otc-pos-form-category-trigger span.is-placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.otc-pos-form-category-trigger i {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.otc-pos-form-category-dd.open .otc-pos-form-category-trigger i {
+  transform: rotate(180deg);
+}
+
+.otc-pos-form-category-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.otc-pos-form-category-menu .otc-pos-category-search {
+  order: 0;
+}
+
+.otc-pos-form-category-menu .otc-pos-category-add-btn,
+.otc-pos-form-category-menu .otc-pos-category-add-form {
+  order: 1;
+}
+
+.otc-pos-form-category-menu .otc-pos-category-options {
+  order: 2;
+  max-height: 180px;
+}
+
+.otc-pos-form-category-clear {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.otc-pos-form-category-clear:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.otc-pos-product-images-modal {
+  width: min(1100px, 98vw);
+  max-height: min(96vh, 980px);
+  overflow: hidden;
+  padding: 18px 22px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.otc-pos-images-hint {
+  margin: 0 0 12px;
+  font-size: 0.86rem;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.otc-pos-gallery {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 12px;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.otc-pos-gallery-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.otc-pos-gallery-thumb {
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f1f5f9;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otc-pos-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.otc-pos-gallery-thumb.active {
+  border-color: #0f172a;
+}
+
+.otc-pos-gallery-thumb--add {
+  border: 2px dashed #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 1.25rem;
+}
+
+.otc-pos-gallery-thumb--busy {
+  border: 2px dashed #cbd5e1;
+  color: #94a3b8;
+  cursor: default;
+}
+
+.otc-pos-gallery-stage {
+  position: relative;
+  min-height: 340px;
+  height: min(58vh, 560px);
+  max-height: 560px;
+  border-radius: 28px;
+  background: #f1f5f9;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otc-pos-gallery-stage--empty {
+  color: #94a3b8;
+}
+
+.otc-pos-gallery-stage--uploading {
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+}
+
+.otc-pos-upload-progress {
+  width: min(420px, 88%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otc-pos-upload-progress-label {
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.otc-pos-upload-progress-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.otc-pos-upload-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: #2563eb;
+  transition: width 0.15s ease;
+}
+
+.otc-pos-gallery-main-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.otc-pos-gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+  z-index: 2;
+}
+
+.otc-pos-gallery-nav--prev {
+  left: 14px;
+}
+
+.otc-pos-gallery-nav--next {
+  right: 14px;
+}
+
+.otc-pos-gallery-expand,
+.otc-pos-gallery-remove,
+.otc-pos-gallery-primary {
+  position: absolute;
+  top: 14px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+  z-index: 2;
+}
+
+.otc-pos-gallery-expand,
+.otc-pos-gallery-remove {
+  width: 40px;
+  height: 40px;
+}
+
+.otc-pos-gallery-expand {
+  right: 14px;
+}
+
+.otc-pos-gallery-remove {
+  right: 62px;
+  color: #dc2626;
+}
+
+.otc-pos-gallery-primary {
+  left: 14px;
+  height: 36px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+
+.otc-pos-gallery-thumb {
+  position: relative;
+}
+
+.otc-pos-gallery-thumb--primary::after {
+  content: 'Primary';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 4px;
+  padding: 2px 0;
+}
+
+.otc-pos-gallery-thumb-star {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.7rem;
+  color: #f59e0b;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.otc-pos-gallery-thumb.active::after {
+  content: none;
+}
+
+.otc-pos-receive-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow: visible;
+}
+
+.otc-pos-receive-form .otc-pos-edit-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.otc-pos-receive-form .otc-pos-discount-field {
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+.otc-pos-receive-form .otc-pos-discount-field span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.otc-pos-receive-form .otc-pos-discount-field input {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 38px;
+  padding: 0 10px;
+}
+
+.otc-pos-receive-form .otc-pos-receive-sell-model {
+  overflow: visible;
+}
+
+.otc-pos-receive-form .otc-pos-receive-sell-model app-unit-selling-model-picker {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.otc-pos-receive-form .otc-pos-form-category-field {
+  overflow: visible;
+}
+
+.otc-pos-receive-form .otc-pos-category-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.otc-pos-receive-store-loc {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.otc-pos-receive-form .otc-pos-discount-actions {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+@media (max-width: 520px) {
+  .otc-pos-receive-form .otc-pos-edit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .otc-pos-receive-form .otc-pos-edit-span-2 {
+    grid-column: auto;
+  }
+}
+
+.otc-pos-gallery-empty-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.otc-pos-gallery-empty-add i {
+  font-size: 2rem;
+  color: #94a3b8;
+}
+
+.otc-pos-product-images-modal .otc-pos-discount-actions {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.otc-pos-product-images-modal .otc-pos-discount-apply {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+  min-width: 140px;
+  padding: 10px 18px;
+  border-radius: 10px;
+}
+
+.otc-pos-gallery-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  background: rgba(15, 23, 42, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  outline: none;
+}
+
+.otc-pos-gallery-fullscreen img {
+  max-width: min(96vw, 1200px);
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.otc-pos-gallery-nav--fullscreen {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  font-size: 1.25rem;
+}
+
+.otc-pos-gallery-nav--fullscreen.otc-pos-gallery-nav--prev {
+  left: 28px;
+}
+
+.otc-pos-gallery-nav--fullscreen.otc-pos-gallery-nav--next {
+  right: 28px;
+}
+
+.otc-pos-gallery-fullscreen-counter {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+
+.otc-pos-gallery-fullscreen-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.otc-pos-product-images-modal .otc-pos-discount-head,
+.otc-pos-product-images-modal .otc-pos-discount-product {
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .otc-pos-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .otc-pos-gallery-thumbs {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .otc-pos-gallery-stage {
+    min-height: 260px;
+    height: 42vh;
+    max-height: 380px;
+    border-radius: 20px;
+  }
+}
+
+.otc-pos-image-add--busy {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.otc-pos-empty-catalog {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  color: #a8a29e;
+  text-align: center;
+}
+
+.otc-pos-empty-catalog i {
+  font-size: 1.8rem;
+  color: #93c5fd;
+}
+
+.otc-pos-order {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid #e2e8f0;
+  padding: 16px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.otc-pos-order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.otc-pos-order-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.otc-pos-order-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.otc-pos-order-header-title .otc-pos-client-order {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #f59e0b;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.otc-pos-order-header-title .otc-pos-client-order:hover:not(:disabled) {
+  background: #fde68a;
+  border-color: #d97706;
+  color: #78350f;
+}
+
+.otc-pos-order-header-title .otc-pos-client-order:disabled {
+  opacity: 0.75;
+}
+
+.otc-pos-order-header-title .otc-pos-client-order-caret {
+  color: #b45309;
+}
+
+.otc-pos-client-attach {
+  position: relative;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.otc-pos-client-attach--missing .otc-pos-client-attach-btn {
+  border-color: #f59e0b;
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.otc-pos-client-attach-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed #94a3b8;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.otc-pos-client-attach-btn:hover:not(:disabled) {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.otc-pos-client-attach-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.otc-pos-client-chip {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.otc-pos-client-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.otc-pos-client-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.otc-pos-client-chip-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.otc-pos-client-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0f766e;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.otc-pos-client-order:hover:not(:disabled) {
+  color: #115e59;
+  text-decoration: underline;
+}
+
+.otc-pos-client-order:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.otc-pos-client-order-caret {
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.otc-pos-client-order-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(15, 118, 110, 0.25);
+  border-top-color: #0f766e;
+  border-radius: 50%;
+  animation: otc-pos-spin 0.7s linear infinite;
+}
+
+@keyframes otc-pos-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.otc-pos-order-picker-modal {
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(720px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+}
+
+.otc-pos-order-picker-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.otc-pos-order-picker-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.otc-pos-order-picker-search {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.otc-pos-order-picker-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.otc-pos-order-create-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.otc-pos-order-datetime {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 120px;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.otc-pos-order-datetime input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  outline: none;
+}
+
+.otc-pos-order-datetime input:focus {
+  border-color: #94a3b8;
+}
+
+.otc-pos-order-create-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+.otc-pos-order-picker-list {
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 420px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 2px;
+}
+
+.otc-pos-order-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.otc-pos-order-picker-item:hover:not(:disabled) {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.otc-pos-order-picker-item.active {
+  border-color: #14b8a6;
+  background: #ecfdf5;
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.35);
+}
+
+.otc-pos-order-picker-item:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.otc-pos-order-picker-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.otc-pos-order-picker-item-main strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.otc-pos-order-picker-item-main small {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.otc-pos-order-status {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.otc-pos-order-status--open {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.otc-pos-order-status--closed {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.otc-pos-order-status--other {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.otc-pos-order-picker-empty,
+.otc-pos-order-picker-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 140px;
+  padding: 24px 12px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.otc-pos-client-change,
+.otc-pos-client-clear,
+.otc-pos-client-picker-close {
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.otc-pos-client-clear {
+  width: 34px;
+  padding: 0;
+  height: 34px;
+}
+
+.otc-pos-client-picker {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  padding: 8px;
+}
+
+.otc-pos-client-add-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  margin-bottom: 8px;
+  border: 1px dashed #93c5fd;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.otc-pos-client-add-btn:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.otc-pos-client-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otc-pos-client-picker-list {
+  max-height: 180px;
+  overflow: auto;
+  margin: 8px 0;
+}
+
+.otc-pos-client-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.otc-pos-client-option:hover {
+  background: #f1f5f9;
+}
+
+.otc-pos-client-option small {
+  color: #94a3b8;
+}
+
+.otc-pos-client-picker-hint {
+  margin: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.otc-pos-order-clear {
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.otc-pos-order-clear:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.otc-pos-order-card {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.otc-pos-order-list {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+}
+
+.otc-pos-order-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #94a3b8;
+  text-align: center;
+  padding: 24px 16px;
+  min-height: 0;
+}
+
+.otc-pos-order-empty i {
+  font-size: 1.6rem;
+  color: #93c5fd;
+}
+
+.otc-pos-order-line {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.otc-pos-order-line--divider {
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0;
+  padding-bottom: 8px;
+}
+
+.otc-pos-order-line--muted {
+  opacity: 0.55;
+}
+
+.otc-pos-order-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.otc-pos-order-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.otc-pos-order-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.otc-pos-order-line-price {
+  margin-top: 2px;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.otc-pos-line-sell-model-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.otc-pos-oos-confirm-msg {
+  margin: 0 0 16px;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.otc-pos-similar-product-list {
+  margin: 0 0 16px;
+  padding: 10px 12px 10px 28px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-height: 140px;
+  overflow: auto;
+}
+
+.otc-pos-similar-product-list li + li {
+  margin-top: 4px;
+}
+
+.otc-pos-oos-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.otc-pos-cart-sell-model-body {
+  margin-bottom: 14px;
+}
+
+.otc-pos-cart-sell-model-hint {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.otc-pos-line-discount {
+  color: #dc2626;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.otc-pos-order-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.otc-pos-line-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.otc-pos-line-icon--active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.otc-pos-line-icon--danger:hover:not(:disabled) {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.otc-pos-line-icon:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.otc-pos-discount-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.otc-pos-discount-overlay--stacked {
+  z-index: 1250;
+}
+
+.otc-pos-discount-modal {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+/* Must follow .otc-pos-discount-modal — same element uses both classes */
+.otc-pos-discount-modal.otc-pos-product-edit-modal {
+  width: min(720px, 94vw);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.otc-pos-discount-modal.otc-pos-receive-modal {
+  width: min(600px, 94vw);
+  max-width: 600px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.otc-pos-discount-modal.otc-pos-add-client-modal {
+  width: min(780px, 94vw);
+  max-height: min(90vh, 860px);
+  overflow: auto;
+}
+
+.otc-pos-discount-modal.otc-pos-cart-sell-model-modal {
+  width: min(520px, 94vw);
+}
+
+.otc-pos-discount-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.otc-pos-discount-head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-pos-discount-close {
+  border: none;
+  background: #f1f5f9;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.otc-pos-discount-product {
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.otc-pos-discount-bill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.otc-pos-discount-bill-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.otc-pos-discount-bill-row strong {
+  color: #334155;
+}
+
+.otc-pos-discount-bill-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-pos-discount-bill-total strong {
+  color: #2563eb;
+  font-size: 1.15rem;
+}
+
+.otc-pos-discount-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.otc-pos-discount-mode {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.otc-pos-discount-mode.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.otc-pos-discount-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+.otc-pos-discount-field input {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.otc-pos-discount-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.otc-pos-discount-apply {
+  margin-top: 0;
+  width: auto;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.otc-receipt-line-discount {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.otc-pos-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.otc-pos-qty-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.otc-pos-qty-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.otc-pos-qty-value {
+  min-width: 1.25rem;
+  text-align: center;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.otc-pos-order-summary {
+  margin-top: 12px;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.otc-pos-totals-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.otc-pos-totals-table th,
+.otc-pos-totals-table td {
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 0.78rem;
+  border-right: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.otc-pos-totals-table th:last-child,
+.otc-pos-totals-table td:last-child {
+  border-right: none;
+}
+
+.otc-pos-totals-table thead,
+.otc-pos-totals-table thead tr,
+.otc-pos-totals-table thead th {
+  /* Beat global `table thead th { background #f8fafc !important }` — match documents Total bar */
+  background: #00aeef !important;
+  background-color: #00aeef !important;
+  color: #fff !important;
+  font-weight: 700;
+  border-bottom: none !important;
+  border-color: transparent !important;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
+  padding-right: 10px !important;
+}
+
+.otc-pos-totals-table thead th {
+  border-right-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+.otc-pos-totals-table thead th::before,
+.otc-pos-totals-table thead th::after {
+  content: none !important;
+  display: none !important;
+}
+
+.otc-pos-totals-table thead th .otc-pos-totals-th-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #fff !important;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.otc-pos-totals-table thead th .otc-pos-totals-th-btn:hover,
+.otc-pos-totals-table thead th .otc-pos-totals-th-btn:focus-visible {
+  color: #fff !important;
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.otc-pos-totals-table thead th .otc-pos-totals-th-btn i {
+  font-size: 0.78rem;
+  opacity: 0.95;
+  color: #fff !important;
+}
+
+.otc-pos-totals-table tbody td {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.84rem;
+  background: #fff;
+}
+
+.otc-pos-totals-table tbody td:last-child {
+  color: #00aeef;
+}
+
+.otc-pos-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  color: #78716c;
+}
+
+.otc-pos-summary-row strong {
+  color: #44403c;
+  font-weight: 600;
+}
+
+.otc-pos-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 0;
+  padding: 10px 12px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: #fff;
+}
+
+.otc-pos-summary-total strong {
+  font-size: 1.2rem;
+  color: #2563eb;
+}
+
+.otc-pos-payment-card {
+  margin-top: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: none;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.otc-pos-pay-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.otc-pos-pay-top-row .otc-pos-back-link {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.otc-pos-doc-radios {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.otc-pos-doc-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.otc-pos-doc-radio input {
+  margin: 0;
+  accent-color: #00aeef;
+}
+
+.otc-pos-doc-radio.active {
+  border-color: #00aeef;
+  background: #e0f7ff;
+  color: #0369a1;
+}
+
+.otc-pos-doc-radio.disabled,
+.otc-pos-doc-radio:has(input:disabled) {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.otc-pos-pay-fields {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otc-pos-pay-fields:disabled,
+.otc-pos-pay-fields[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.otc-pos-payment-card .form-control,
+.otc-pos-payment-card select,
+.otc-pos-payment-card input {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.otc-pos-back-link {
+  border: none;
+  background: transparent;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.otc-pos-pay-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.otc-pos-pay-inline {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.otc-pos-pay-row > .otc-pos-pay-field,
+.otc-pos-pay-row .otc-pos-pay-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.otc-pos-pay-row .otc-pos-pay-field .form-control,
+.otc-pos-pay-row .otc-pos-change {
+  height: 34px;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  line-height: 1.25;
+  font-size: 0.875rem;
+}
+
+.otc-pos-pay-field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 3px;
+}
+
+.otc-pos-change {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  font-weight: 700;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+.otc-pos-toast {
+  position: fixed;
+  top: 72px;
+  right: 18px;
+  z-index: 1300;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #0b9b70;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  animation: otc-pos-toast-in 0.22s ease-out;
+}
+
+.otc-pos-toast--error {
+  background: #ee1010;
+}
+
+.otc-pos-toast p {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+@keyframes otc-pos-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.otc-pos-checkout-btn {
+  margin-top: 14px;
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.otc-pos-checkout-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.otc-pos-checkout-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.otc-pos-checkout-cancel-edit {
+  margin-top: 8px;
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.otc-pos-checkout-cancel-edit:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.otc-pos-edit-doc-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .otc-pos-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .otc-pos-layout--cart-hidden .otc-pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .otc-dispensary-page .tab-pane.otc-pos-layout.active {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(280px, 42vh);
+  }
+
+  .otc-dispensary-page .tab-pane.otc-pos-layout.active.otc-pos-layout--cart-hidden {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .otc-pos-order {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .otc-pos-search-row {
+    flex-wrap: wrap;
+  }
+
+  .otc-pos-category-dd {
+    flex: 1 1 240px;
+    width: auto;
+  }
+}
+
 .otc-dispensary-page .otc-sale-form-card {
+  grid-column: 1;
   grid-row: 1;
   min-width: 0;
   min-height: 0;
@@ -208,8 +3539,19 @@
   border-radius: 10px;
 }
 
-.otc-dispensary-page .otc-cart-scroll {
+.otc-dispensary-page .otc-sale-main {
+  grid-column: 1;
   grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.otc-dispensary-page .otc-cart-scroll {
+  grid-row: unset;
+  flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
   height: auto;
@@ -262,6 +3604,8 @@
 .otc-dispensary-page .otc-cart-table-wrap,
 .otc-dispensary-page .otc-rx-queue-table-wrap,
 .otc-dispensary-page .otc-rx-table-wrap,
+.otc-dispensary-page .otc-sales-history-table-shell,
+.otc-dispensary-page .otc-sales-history-table-head,
 .otc-dispensary-page .otc-sales-history-table-wrap {
   width: 100%;
   min-width: 0;
@@ -290,6 +3634,14 @@
 .otc-dispensary-page .otc-cart-table .otc-cart-action-cell {
   padding: 6px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.otc-dispensary-page .otc-cart-table .otc-cart-action-cell .btn-group {
+  margin: 0;
 }
 
 .otc-dispensary-page .otc-cart-table thead th {
@@ -412,29 +3764,29 @@
   white-space: nowrap;
 }
 
-/* Counter sale cart — with prescribing fields; auto column widths from content */
-.otc-cart-table--prescribing col.otc-cart-col-sn { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-given { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-dosage { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-frequency { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-duration { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-qty { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-cost { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-sell { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-tt-cost { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-tt-sell { width: auto; }
-.otc-cart-table--prescribing col.otc-cart-col-action { width: auto; }
+/* Counter sale cart — with prescribing fields; wider readable columns */
+.otc-cart-table--prescribing col.otc-cart-col-sn { width: 3rem; }
+.otc-cart-table--prescribing col.otc-cart-col-given { width: 4.5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-dosage { width: 5.5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-frequency { width: 6rem; }
+.otc-cart-table--prescribing col.otc-cart-col-duration { width: 5.5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-qty { width: 5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-cost { width: 5.5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-sell { width: 5.5rem; }
+.otc-cart-table--prescribing col.otc-cart-col-tt-cost { width: 6rem; }
+.otc-cart-table--prescribing col.otc-cart-col-tt-sell { width: 6rem; }
+.otc-cart-table--prescribing col.otc-cart-col-action { width: 5.5rem; }
 
-/* Counter sale cart — simple mode; compact fixed cols, treatment fills remainder */
-.otc-cart-table--simple col.otc-cart-col-sn { width: 2.25rem; }
-.otc-cart-table--simple col.otc-cart-col-given { width: 3.25rem; }
+/* Counter sale cart — simple mode; wider fixed cols, treatment fills remainder */
+.otc-cart-table--simple col.otc-cart-col-sn { width: 3rem; }
+.otc-cart-table--simple col.otc-cart-col-given { width: 4.5rem; }
 .otc-cart-table--simple col.otc-cart-col-treatment { width: auto; }
-.otc-cart-table--simple col.otc-cart-col-qty { width: 3rem; }
-.otc-cart-table--simple col.otc-cart-col-cost { width: 3.5rem; }
-.otc-cart-table--simple col.otc-cart-col-sell { width: 3.5rem; }
-.otc-cart-table--simple col.otc-cart-col-tt-cost { width: 4rem; }
-.otc-cart-table--simple col.otc-cart-col-tt-sell { width: 4rem; }
-.otc-cart-table--simple col.otc-cart-col-action { width: 4.25rem; }
+.otc-cart-table--simple col.otc-cart-col-qty { width: 5rem; }
+.otc-cart-table--simple col.otc-cart-col-cost { width: 5.5rem; }
+.otc-cart-table--simple col.otc-cart-col-sell { width: 5.5rem; }
+.otc-cart-table--simple col.otc-cart-col-tt-cost { width: 6rem; }
+.otc-cart-table--simple col.otc-cart-col-tt-sell { width: 6rem; }
+.otc-cart-table--simple col.otc-cart-col-action { width: 5.5rem; }
 
 .otc-cart-table col.otc-cart-col-treatment,
 .otc-cart-table .otc-cart-treatment-cell {
@@ -444,7 +3796,12 @@
 
 .otc-cart-table--prescribing col.otc-cart-col-treatment,
 .otc-cart-table--prescribing .otc-cart-treatment-cell {
-  min-width: 10rem;
+  min-width: 12rem;
+}
+
+.otc-cart-table--simple col.otc-cart-col-treatment,
+.otc-cart-table--simple .otc-cart-treatment-cell {
+  min-width: 14rem;
 }
 
 .otc-dispensary-page .otc-rx-queue-table-wrap .otc-cart-table thead th,
@@ -461,35 +3818,107 @@
 }
 
 .otc-dispensary-page .otc-payment-footer {
-  grid-row: 3;
+  grid-column: 2;
+  grid-row: 1 / -1;
   margin-bottom: 0;
-  padding: 10px 18px;
+  padding: 14px 14px 12px;
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
   z-index: 3;
   align-self: stretch;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.otc-dispensary-page .otc-payment-footer-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.otc-dispensary-page .otc-payment-footer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
 }
 
 .otc-dispensary-page .otc-payment-footer .form-group {
+  margin-bottom: 0;
+}
+
+.otc-dispensary-page .otc-payment-footer .form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
   margin-bottom: 4px;
+}
+
+.otc-dispensary-page .otc-payment-footer .otc-payment-total-value {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #0f172a;
 }
 
 .otc-dispensary-page .otc-payment-footer .otc-complete-field {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 8px;
 }
 
 .otc-dispensary-page .otc-payment-footer .otc-complete-btn {
-  padding: 0.375rem 0.375rem;
-  line-height: 1.5;
-  height: calc(1.5em + 0.75rem + 2px);
+  padding: 0.55rem 0.5rem;
+  line-height: 1.4;
+  height: auto;
+  min-height: calc(1.5em + 0.75rem + 2px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  .otc-dispensary-page .tab-pane.otc-counter-sale-layout.active:not(.otc-pos-layout) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .otc-dispensary-page .otc-sale-form-card {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .otc-dispensary-page .otc-sale-main {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .otc-dispensary-page .otc-payment-footer {
+    grid-column: 1;
+    grid-row: 3;
+    max-height: none;
+  }
+
+  .otc-dispensary-page .otc-payment-footer-stack {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .otc-dispensary-page .otc-payment-footer .otc-complete-field {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
 }
 
 body.otc-receipt-modal-open {
@@ -1034,7 +4463,15 @@ body.otc-receipt-modal-open {
 .otc-dispensary-page.dark .otc-payment-footer {
   background: linear-gradient(180deg, #1e293b 0%, #172033 100%) !important;
   border-color: #475569;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.otc-dispensary-page.dark .otc-payment-footer-title {
+  color: #94a3b8;
+}
+
+.otc-dispensary-page.dark .otc-payment-footer .otc-payment-total-value {
+  color: #f8fafc;
 }
 
 /* Drug picker + Add / Clear — always one row */
@@ -1717,13 +5154,14 @@ body.otc-receipt-modal-open {
   font-size: 0.85rem;
 }
 
-/* Items sold tab — toolbar + scrollable table + summary footer */
+/* Items sold tab — toolbar + fixed header + scrollable body + summary footer */
 .otc-dispensary-page .tab-pane.otc-sold-tab-layout.active {
   display: flex !important;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+  max-height: 100%;
   width: 100%;
   overflow: hidden;
 }
@@ -1743,6 +5181,41 @@ body.otc-receipt-modal-open {
   flex-shrink: 0;
 }
 
+.otc-sales-date-filter-modal {
+  width: min(520px, 96vw);
+}
+
+.otc-sales-date-filter-actions {
+  flex-wrap: wrap;
+}
+
+.otc-sales-date-filter-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.otc-sales-date-filter-fields .otc-pos-discount-field {
+  margin-bottom: 0;
+}
+
+.otc-sales-date-filter-fields input[type='date'] {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.otc-sales-date-filter-hint {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
 .otc-sales-history > .text-danger,
 .otc-sales-history > .text-muted {
   flex-shrink: 0;
@@ -1758,37 +5231,88 @@ body.otc-receipt-modal-open {
   width: 100%;
 }
 
-.otc-sales-history-table-wrap {
-  flex: 1 1 auto;
+/* Outer shell: fixed header row + scrollable body (header is outside scroll). */
+.otc-sales-history-table-shell {
+  flex: 1 1 0%;
   min-height: 0;
-  max-height: 100%;
   width: 100%;
-  overflow-y: auto;
-  overflow-x: auto;
-  overflow: auto;
-  margin-bottom: 0;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   background: #fff;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table {
+.otc-sales-history-table-head {
+  flex: 0 0 auto;
+  width: 100%;
+  overflow: hidden;
+  background: #f8fafc;
+  /* Match body scrollbar gutter so header/body columns align */
+  scrollbar-gutter: stable;
+}
+
+.otc-sales-history-table-wrap {
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  margin-bottom: 0;
+  -webkit-overflow-scrolling: touch;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  scrollbar-gutter: stable;
+}
+
+/* Body table: avoid double top border under frozen header */
+.otc-sales-history-table-wrap .otc-orders-table--body {
+  border-top: 0 !important;
+}
+
+.otc-sales-history-table-wrap .otc-orders-table--body tbody tr:first-child td {
+  border-top: 0;
+}
+
+.otc-sales-history-table-shell .otc-orders-table {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
   table-layout: fixed;
   margin-bottom: 0;
+  border-collapse: collapse;
+  /* Global styles.css sets table { overflow: hidden } which breaks sticky; keep visible here. */
+  overflow: visible !important;
+  box-shadow: none;
+  border-radius: 0;
 }
 
-.otc-orders-table col.otc-orders-col-sn { width: 4%; }
-.otc-orders-table col.otc-orders-col-order { width: 14%; }
-.otc-orders-table col.otc-orders-col-date { width: 17%; }
-.otc-orders-table col.otc-orders-col-src { width: 6%; }
-.otc-orders-table col.otc-orders-col-staff { width: 11%; }
-.otc-orders-table col.otc-orders-col-items { width: 6%; }
-.otc-orders-table col.otc-orders-col-cost { width: 12%; }
-.otc-orders-table col.otc-orders-col-sell { width: 12%; }
+.otc-sales-history-table-head .otc-orders-table {
+  border-bottom: 0;
+}
+
+.otc-sales-history-table-head .otc-orders-table thead th {
+  position: static;
+  top: auto;
+  z-index: auto;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  background-color: #f8fafc !important;
+  border-bottom-width: 1px;
+}
+
+.otc-orders-table col.otc-orders-col-sn { width: 3%; }
+.otc-orders-table col.otc-orders-col-order { width: 8%; }
+.otc-orders-table col.otc-orders-col-date { width: 9%; }
+.otc-orders-table col.otc-orders-col-client { width: 12%; }
+.otc-orders-table col.otc-orders-col-status { width: 19%; }
+.otc-orders-table col.otc-orders-col-staff { width: 7%; }
+.otc-orders-table col.otc-orders-col-cost { width: 7%; }
+.otc-orders-table col.otc-orders-col-sell { width: 7%; }
+.otc-orders-table col.otc-orders-col-paid { width: 11%; }
+.otc-orders-table col.otc-orders-col-balance { width: 7%; }
 .otc-orders-table col.otc-orders-col-details { width: 7%; }
 /* summary col fills remainder */
 .otc-orders-table col.otc-orders-col-summary,
@@ -1797,50 +5321,565 @@ body.otc-receipt-modal-open {
   min-width: 0;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table th,
-.otc-sales-history-table-wrap .otc-orders-table td {
+.otc-sales-history-table-shell .otc-orders-table td {
   overflow: hidden;
   text-overflow: ellipsis;
   word-wrap: break-word;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table .itemdata {
+.otc-sales-history-table-shell .otc-orders-table td.otc-orders-status-cell {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.otc-sales-history-table-shell .otc-orders-table th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+}
+
+.otc-sales-history-table-shell .otc-orders-table .itemdata {
   font-size: smaller;
   padding: 6px;
   vertical-align: middle;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table .otc-orders-order-no {
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-order-no {
   font-weight: 600;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table .otc-orders-summary-cell {
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-paid-cell,
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-balance-cell {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-orders-paid-th {
+  white-space: nowrap;
+}
+
+.otc-orders-paid-th-btn,
+.otc-orders-pay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  padding: 2px 5px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #0f172a;
+  line-height: 1;
+  vertical-align: middle;
+  box-shadow: none;
+}
+
+.otc-orders-pay-btn {
+  margin-left: 0;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.otc-orders-pay-btn .bi {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.otc-orders-paid-th-btn:hover,
+.otc-orders-pay-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border: none;
+}
+
+.otc-orders-pay-btn--due {
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.otc-orders-pay-btn--paid {
+  color: #0f766e;
+  background: #f0fdfa;
+}
+
+.otc-orders-pay-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Keep as table-cell — flex on <td> breaks bordered table lines in this column. */
+.otc-orders-paid-cell {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.otc-orders-paid-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.otc-orders-paid-inner > span {
+  min-width: 0;
+}
+
+.otc-pos-amount-due {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #c2410c;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-pos-edit-pay-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.otc-pos-discount-modal.otc-order-payment-modal {
+  width: min(920px, 96vw);
+  max-height: min(92vh, 900px);
+  overflow: auto;
+  padding: 18px 20px 20px;
+  box-sizing: border-box;
+}
+
+.otc-order-payment-sub {
+  margin: 4px 0 0;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
+.otc-order-payment-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.otc-order-payment-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.otc-order-payment-summary span {
+  display: inline;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0;
+}
+
+.otc-order-payment-summary strong {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.otc-order-payment-summary .otc-order-payment-due {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.otc-order-payment-summary .otc-order-payment-due strong {
+  color: #c2410c;
+}
+
+.otc-order-payment-form {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.otc-order-payment-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(168px, 0.9fr);
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.otc-order-payment-form .otc-pos-discount-field {
+  margin-bottom: 0;
+}
+
+.otc-order-payment-top-row .otc-pos-discount-field span,
+.otc-order-payment-top-row .otc-order-payment-method-field > span {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.otc-order-payment-amount-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.otc-order-payment-amount-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+.otc-order-payment-amount-input:disabled,
+.otc-order-payment-amount-input[readonly] {
+  background: #fff;
+  color: #0f172a;
+  cursor: default;
+  opacity: 1;
+}
+
+.otc-order-payment-action-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.otc-order-payment-action-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.otc-order-payment-method-field {
+  margin: 0;
+  min-width: 0;
+}
+
+.otc-order-payment-method-wrap {
+  position: relative;
+}
+
+.otc-order-payment-method-wrap::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #64748b;
+  border-bottom: 2px solid #64748b;
+  transform: translateY(-60%) rotate(45deg);
+  pointer-events: none;
+}
+
+.otc-order-payment-method-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  height: 42px;
+  padding: 0 34px 0 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.otc-order-payment-method-select:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+.otc-order-payment-method-select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+.otc-order-payment-method-select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.otc-order-payment-notes-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.otc-order-payment-notes-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.otc-order-payment-notes-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22);
+}
+
+.otc-order-payment-notes-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.otc-order-payment-row-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 0;
+}
+
+.otc-order-payment-row-btn {
+  height: 42px;
+  border-radius: 999px;
+  padding: 0 16px;
+  white-space: nowrap;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 720px) {
+  .otc-order-payment-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .otc-order-payment-action-row {
+    flex-wrap: wrap;
+  }
+
+  .otc-order-payment-notes-field {
+    flex: 1 1 100%;
+  }
+
+  .otc-order-payment-row-actions {
+    margin-left: auto;
+  }
+}
+
+.otc-order-payment-readonly {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-order-payment-error {
+  margin: 8px 0 0;
+  color: #dc2626;
+  font-size: 0.86rem;
+}
+
+.otc-order-payment-paid-note {
+  margin: 0 0 12px;
+  color: #047857;
+  font-size: 0.88rem;
+}
+
+.otc-order-payment-receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.otc-order-payment-print-btn {
+  color: #0f766e;
+  font-size: 1rem;
+}
+
+.otc-order-payment-print-btn:hover {
+  color: #115e59;
+}
+
+.otc-order-payment-reverse-btn {
+  color: #b45309;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.otc-order-payment-reverse-btn:hover:not(:disabled) {
+  color: #92400e;
+  text-decoration: underline;
+}
+
+.otc-order-payment-reverse-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.otc-order-payment-reversed td {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.otc-order-payment-reversed td:last-child,
+.otc-order-payment-reversed .otc-order-payment-status-pill {
+  text-decoration: none;
+}
+
+.otc-order-payment-status-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #b45309;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+.otc-order-payment-reversed-dash {
+  color: #cbd5e1;
+}
+
+.otc-order-payment-history h4 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-order-payment-history-hint,
+.otc-order-payment-history-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.otc-order-payment-table-wrap {
+  max-height: 280px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.otc-order-payment-table-wrap table {
+  margin: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.otc-order-payment-table-wrap table.table thead th {
+  padding: 6px 8px !important;
+  white-space: nowrap;
+}
+
+.otc-order-payment-table-wrap table.table thead th::before,
+.otc-order-payment-table-wrap table.table thead th::after {
+  content: none !important;
+  display: none !important;
+  border: none !important;
+}
+
+.otc-order-payment-table-wrap th,
+.otc-order-payment-table-wrap td {
+  font-size: 0.82rem;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.otc-order-payment-table-wrap table.table th.otc-order-payment-date-col,
+.otc-order-payment-table-wrap table.table td.otc-order-payment-date-col,
+.otc-order-payment-table-wrap table.table th.otc-order-payment-notes-col,
+.otc-order-payment-table-wrap table.table td.otc-order-payment-notes-col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.otc-order-payment-table-wrap table.table th.otc-order-payment-date-col,
+.otc-order-payment-table-wrap table.table td.otc-order-payment-date-col {
+  width: 22%;
+}
+
+.otc-order-payment-table-wrap table.table th.otc-order-payment-notes-col,
+.otc-order-payment-table-wrap table.table td.otc-order-payment-notes-col {
+  width: 14%;
+  max-width: 140px;
+}
+
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-balance-due {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-summary-cell {
   white-space: nowrap;
   line-height: 1.35;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table .otc-orders-summary-text {
+.otc-sales-history-table-shell .otc-orders-table .otc-orders-summary-text {
   display: inline;
   white-space: nowrap;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table .otc-date-cell {
+.otc-sales-history-table-shell .otc-orders-table .otc-date-cell {
   font-size: 11px;
   padding: 4px 6px;
   line-height: 1.35;
   white-space: nowrap;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding-top: 6px !important;
-  padding-bottom: 6px !important;
+.otc-dispensary-page.dark .otc-sales-history-table-shell,
+.otc-dispensary-page.dark .otc-sales-history-table-head {
+  background: #1e293b;
+  border-color: #475569;
 }
 
-.otc-sales-history-table-wrap .otc-orders-table thead th::before,
-.otc-sales-history-table-wrap .otc-orders-table thead th::after,
+.otc-dispensary-page.dark .otc-sales-history-table-head .otc-orders-table thead th {
+  background-color: #334155 !important;
+}
+
+.otc-sales-history-table-shell .otc-orders-table thead th::before,
+.otc-sales-history-table-shell .otc-orders-table thead th::after,
 .otc-receipt-print .otc-receipt-table thead th::before,
 .otc-receipt-print .otc-receipt-table thead th::after,
 .otc-order-details-modal table thead th::before,
@@ -1850,11 +5889,6 @@ body.otc-receipt-modal-open {
   content: none !important;
   display: none !important;
   border: none !important;
-}
-
-.otc-dispensary-page.dark .otc-sales-history-table-wrap {
-  background: #1e293b;
-  border-color: #475569;
 }
 
 .otc-sales-history-empty {
@@ -2124,8 +6158,8 @@ body.otc-receipt-modal-open {
   line-height: 1;
 }
 
-/* patient col fills remainder */
-.otc-rx-queue-table col.otc-rx-queue-col-patient,
+/* client col fills remainder */
+.otc-rx-queue-table col.otc-rx-queue-col-client,
 .otc-rx-queue-table td:first-child {
   width: auto;
   min-width: 0;
@@ -2315,6 +6349,120 @@ body.otc-receipt-modal-open {
   line-height: 1.3;
 }
 
+.otc-doc-status-badge {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.otc-doc-status--quotation,
+.otc-doc-status--sales_order,
+.otc-doc-status--proforma,
+.otc-doc-status--sales_invoice {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.otc-doc-status--receipt {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
+}
+
+.otc-orders-client-cell {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.otc-orders-status-cell {
+  vertical-align: middle;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.otc-orders-status-cell .otc-doc-status-badge {
+  max-width: none;
+}
+
+.otc-doc-pipeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+  line-height: 1.2;
+}
+
+.otc-doc-pipeline-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55rem;
+  height: 1.35rem;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.otc-doc-pipeline-step:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
+.otc-doc-pipeline-step--todo {
+  cursor: pointer;
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.otc-doc-pipeline-step--todo:hover {
+  opacity: 1;
+  border-color: #94a3b8;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.otc-doc-pipeline-step--done {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #047857;
+}
+
+.otc-doc-pipeline-step--current {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #c2410c;
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.25);
+}
+
+.otc-doc-pipeline--paid .otc-doc-pipeline-step--current {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #047857;
+  box-shadow: none;
+}
+
+.otc-doc-pipeline-sep {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0 1px;
+}
+
 .sale-source-otc {
   background: #dbeafe;
   color: #1d4ed8;
@@ -2343,6 +6491,35 @@ body.otc-receipt-modal-open {
 
 .otc-order-details-btn:hover {
   color: #1d4ed8;
+}
+
+.otc-order-active-btn {
+  color: #b45309;
+  font-size: 1.05rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.otc-order-active-btn:hover:not(:disabled) {
+  color: #92400e;
+}
+
+.otc-order-active-btn--off {
+  color: #047857;
+}
+
+.otc-order-active-btn--off:hover:not(:disabled) {
+  color: #065f46;
+}
+
+.otc-order-active-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.otc-orders-row--inactive td {
+  color: #94a3b8;
+  background: #f8fafc;
 }
 
 .otc-order-details-meta {
@@ -2426,20 +6603,21 @@ body.otc-receipt-modal-open {
 
 .otc-receipt-modal .otc-receipt-dialog {
   width: 100%;
-  max-width: 520px;
-  margin: 1rem auto;
-  max-height: min(72vh, 640px);
+  max-width: 860px;
+  margin: 1.25rem auto;
+  max-height: min(92vh, 920px);
 }
 
 .otc-receipt-modal .otc-receipt-dialog .modal-content.otc-receipt-modal-content {
   display: flex;
   flex-direction: column;
-  max-height: min(72vh, 640px);
+  max-height: min(92vh, 920px);
   overflow: hidden;
 }
 
 .otc-receipt-modal .otc-receipt-dialog .modal-header {
   flex-shrink: 0;
+  align-items: flex-start;
 }
 
 .otc-receipt-modal .otc-receipt-dialog .modal-body {
@@ -2460,6 +6638,147 @@ body.otc-receipt-modal-open {
   background: #fff;
 }
 
+.otc-modal-close-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 12px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.otc-modal-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.otc-modal-close-btn i {
+  font-size: 14px;
+}
+
+.otc-doc-type-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10520;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.otc-doc-type-modal.show {
+  display: block !important;
+}
+
+.otc-doc-type-modal + .modal-backdrop.show {
+  position: fixed;
+  inset: 0;
+  z-index: 10510;
+}
+
+.otc-doc-type-dialog {
+  width: 100%;
+  max-width: 720px;
+  margin: 1.5rem auto;
+}
+
+.otc-doc-type-modal-content {
+  min-height: 420px;
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.otc-doc-type-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1.25rem 1.35rem 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.otc-doc-type-modal-header .modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-doc-type-modal-sub {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.otc-doc-type-modal .modal-body {
+  padding: 1.15rem 1.35rem 0.5rem;
+}
+
+.otc-doc-type-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.otc-doc-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  min-height: 108px;
+  padding: 14px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.otc-doc-type-card:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.otc-doc-type-card.active {
+  border-color: #00aeef;
+  background: #f0faff;
+  box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15);
+}
+
+.otc-doc-type-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.otc-doc-type-card-hint {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.otc-doc-type-modal .modal-footer {
+  padding: 0.9rem 1.35rem 1.2rem;
+  border-top: 1px solid #e2e8f0;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .otc-doc-type-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .otc-receipt-print {
   width: 100%;
   padding: 1rem 1.15rem 1.15rem;
@@ -2468,6 +6787,7 @@ body.otc-receipt-modal-open {
   border-radius: 6px;
   font-size: 13px;
   color: #111;
+  box-sizing: border-box;
 }
 
 .otc-receipt-print .otc-receipt-letterhead {
@@ -2499,54 +6819,183 @@ body.otc-receipt-modal-open {
 
 .otc-receipt-print .otc-receipt-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
-  margin: 10px 0;
+  margin: 12px 0 10px;
 }
 
-.otc-receipt-print.otc-receipt-print--simple .otc-receipt-table th:first-child,
-.otc-receipt-print.otc-receipt-print--simple .otc-receipt-table td:first-child {
-  width: 55%;
+.otc-receipt-print--simple .otc-receipt-col-product {
+  width: 56%;
+}
+
+.otc-receipt-print--simple .otc-receipt-col-qty {
+  width: 16%;
+}
+
+.otc-receipt-print--simple .otc-receipt-col-amount {
+  width: 28%;
+}
+
+.otc-receipt-print--rx .otc-receipt-col-product {
+  width: 40%;
+}
+
+.otc-receipt-print--rx .otc-receipt-col-dosage {
+  width: 28%;
+}
+
+.otc-receipt-print--rx .otc-receipt-col-qty {
+  width: 12%;
+}
+
+.otc-receipt-print--rx .otc-receipt-col-amount {
+  width: 20%;
 }
 
 .otc-receipt-print .otc-receipt-table th,
 .otc-receipt-print .otc-receipt-table td {
-  padding: 4px 2px;
+  padding: 7px 6px;
   border-bottom: 1px solid #e2e8f0;
   vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
-.otc-receipt-print .otc-receipt-table th {
+.otc-receipt-print .otc-receipt-table thead th {
   font-size: 11px;
-  border-bottom: 1px solid #333;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #334155;
+  border-bottom: 1.5px solid #0f172a;
+  padding-bottom: 8px;
+}
+
+.otc-receipt-print .otc-receipt-table tbody td {
+  font-size: 12.5px;
+  color: #0f172a;
 }
 
 .otc-receipt-print .otc-receipt-table .num {
   text-align: right;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  padding-right: 4px;
 }
 
-.otc-receipt-print .otc-receipt-totals {
-  border-top: 1px dashed #333;
-  padding-top: 8px;
+.otc-receipt-print .otc-receipt-table th.num {
+  text-align: right;
+}
+
+.otc-receipt-print .otc-receipt-table .otc-receipt-col-qty,
+.otc-receipt-print .otc-receipt-table th:nth-last-child(2),
+.otc-receipt-print .otc-receipt-table td.otc-receipt-qty {
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-receipt-cell-product {
+  text-align: left;
+  padding-left: 4px;
+}
+
+.otc-receipt-print .otc-receipt-table th:first-child,
+.otc-receipt-print .otc-receipt-table td:first-child {
+  padding-left: 4px;
+}
+
+.otc-receipt-item-name {
+  display: block;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.otc-receipt-line-discount {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.otc-receipt-cell-dosage {
+  text-align: left;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.otc-receipt-empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 12px 6px !important;
+}
+
+.otc-receipt-line-not-given td {
+  opacity: 0.65;
+}
+
+.otc-receipt-totals-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
   margin-top: 4px;
+  border-top: 1px dashed #334155;
+  padding-top: 2px;
 }
 
-.otc-receipt-print .otc-receipt-totals div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 3px 0;
+.otc-receipt-totals-label {
+  width: 72%;
+}
+
+.otc-receipt-totals-value {
+  width: 28%;
+}
+
+.otc-receipt-print--rx .otc-receipt-totals-label {
+  width: 80%;
+}
+
+.otc-receipt-print--rx .otc-receipt-totals-value {
+  width: 20%;
+}
+
+.otc-receipt-totals-table td {
+  padding: 5px 6px;
+  font-size: 12.5px;
+  vertical-align: middle;
+}
+
+.otc-receipt-totals-table td:first-child {
+  text-align: left;
+  color: #475569;
+}
+
+.otc-receipt-totals-table td.num {
+  text-align: right;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.otc-receipt-totals-row--strong td {
+  font-weight: 700;
+  color: #0f172a;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 8px;
 }
 
 .otc-receipt-print .otc-receipt-notes {
   font-size: 11px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: #555;
 }
 
 .otc-receipt-print .otc-receipt-thanks {
   text-align: center;
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   font-size: 12px;
   font-weight: 600;
 }
@@ -2560,11 +7009,629 @@ body.otc-receipt-modal-open {
 }
 
 .otc-dispensary-page.dark .otc-receipt-print .otc-receipt-table th,
-.otc-dispensary-page.dark .otc-receipt-print .otc-receipt-table td {
+.otc-dispensary-page.dark .otc-receipt-print .otc-receipt-table td,
+.otc-dispensary-page.dark .otc-receipt-totals-table td {
   border-bottom-color: #334155;
+  color: #e2e8f0;
 }
 
-/* Queue patient modal — matches patient visit queue layout */
+/* Shared commercial document preview (Receipt / Invoice / Quotation) */
+.otc-doc-type-switch {
+  display: inline-flex;
+  gap: 0;
+  margin-bottom: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.otc-doc-type-btn {
+  border: none;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+
+.otc-doc-type-btn + .otc-doc-type-btn {
+  border-left: 1px solid #cbd5e1;
+}
+
+.otc-doc-type-btn.active {
+  background: #00aeef;
+  color: #fff;
+}
+
+.otc-commercial-doc {
+  --otc-doc-accent: #00aeef;
+  --otc-doc-text: #2d3748;
+  --otc-doc-muted: #64748b;
+  --otc-doc-zebra: #f5f7fa;
+  --otc-doc-footer: #e8ecf1;
+  width: 100%;
+  padding: 1.1rem 1.15rem 1.2rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: var(--otc-doc-text);
+  box-sizing: border-box;
+}
+
+/* —— Delivery Note print template —— */
+.otc-dn {
+  --otc-dn-accent: #00aeef;
+  color: #2d3748;
+  font-size: 12px;
+}
+
+.otc-dn-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.otc-dn-brand {
+  flex: 1 1 45%;
+  min-width: 0;
+}
+
+.otc-dn-company {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #1a202c;
+}
+
+.otc-dn-slogan {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.otc-dn-logo-wrap {
+  margin-top: 0.65rem;
+  width: 72px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.otc-dn-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.otc-dn-meta-block {
+  flex: 0 0 48%;
+  max-width: 280px;
+  text-align: right;
+}
+
+.otc-dn-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--otc-dn-accent);
+  letter-spacing: -0.02em;
+}
+
+.otc-dn-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.otc-dn-meta-label {
+  padding: 0.28rem 0.4rem 0.28rem 0;
+  white-space: nowrap;
+  color: #2d3748;
+  width: 42%;
+  vertical-align: middle;
+}
+
+.otc-dn-meta-value {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--otc-dn-accent);
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.otc-dn-addresses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.otc-dn-addr-head {
+  background: var(--otc-dn-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.55rem;
+}
+
+.otc-dn-addr-body {
+  border: 1px solid #c5ced6;
+  border-top: none;
+  padding: 0.55rem 0.6rem;
+  min-height: 4.5rem;
+  line-height: 1.45;
+  font-size: 0.82rem;
+}
+
+.otc-dn-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 0.35rem 0 0.85rem;
+}
+
+.otc-dn-table thead,
+.otc-dn-table thead tr,
+.otc-dn-table thead th {
+  background: var(--otc-dn-accent) !important;
+  background-color: var(--otc-dn-accent) !important;
+  color: #fff !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.5rem 0.45rem !important;
+  border: none !important;
+}
+
+.otc-dn-table tbody td {
+  padding: 0.45rem;
+  font-size: 0.82rem;
+  border: none;
+  vertical-align: top;
+}
+
+.otc-dn-table tbody tr.zebra td {
+  background: #f5f7fa;
+}
+
+.otc-dn-col-item {
+  width: 14%;
+  text-align: left;
+}
+
+.otc-dn-col-desc {
+  width: 46%;
+  text-align: left;
+}
+
+.otc-dn-col-qty {
+  width: 13.3%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-dn-pay-indicate {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.82rem;
+  color: #2d3748;
+}
+
+.otc-dn-terms {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.otc-dn-terms p {
+  margin: 0 0 0.2rem;
+}
+
+.otc-dn-thanks {
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin: 0.4rem 0 1rem;
+  color: #1a202c;
+}
+
+.otc-dn-signs {
+  display: flex;
+  gap: 1rem;
+  margin: 0.5rem 0 1.1rem;
+}
+
+.otc-dn-sign {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.otc-dn-sign-line {
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid #94a3b8;
+  height: 1.4rem;
+}
+
+.otc-dn-footer {
+  border-top: 1px solid var(--otc-dn-accent);
+  padding-top: 0.55rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.otc-dn-enquiry {
+  margin: 0 0 0.45rem;
+  color: #2d3748;
+  border-bottom: 1px solid var(--otc-dn-accent);
+  padding-bottom: 0.45rem;
+}
+
+.otc-dn-facility-addr,
+.otc-dn-facility-contact {
+  margin: 0.15rem 0 0;
+}
+
+.otc-commercial-doc[data-doc-type='delivery_note'] {
+  --otc-doc-accent: #00aeef;
+}
+
+@media print {
+  .otc-dn-meta-block {
+    max-width: none;
+  }
+}
+
+.otc-doc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.otc-doc-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--otc-doc-text);
+}
+
+.otc-doc-logo-box {
+  width: 96px;
+  height: 52px;
+  background: var(--otc-doc-accent);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.otc-doc-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.otc-doc-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.otc-doc-meta-right {
+  text-align: right;
+}
+
+.otc-doc-client {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.otc-doc-ref-label {
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.otc-doc-subtle {
+  font-size: 12px;
+  color: var(--otc-doc-muted);
+  line-height: 1.4;
+}
+
+.otc-doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 8px 0 14px;
+}
+
+.otc-doc-table thead,
+.otc-doc-table thead tr,
+.otc-doc-table thead th {
+  /* Beat global `table thead th { background #f8fafc !important }` — same cyan as Total bar */
+  background: var(--otc-doc-accent, #00aeef) !important;
+  background-color: var(--otc-doc-accent, #00aeef) !important;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 9px 8px !important;
+  padding-right: 8px !important;
+  border: none !important;
+  border-color: transparent !important;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.otc-doc-table thead th::before,
+.otc-doc-table thead th::after {
+  content: none !important;
+  display: none !important;
+}
+
+.otc-doc-table tbody td {
+  padding: 9px 8px;
+  font-size: 12.5px;
+  border: none;
+  vertical-align: top;
+  color: var(--otc-doc-text);
+}
+
+.otc-doc-table tbody tr.zebra td {
+  background: var(--otc-doc-zebra);
+}
+
+.otc-doc-table .col-no {
+  width: 8%;
+  text-align: center;
+}
+
+.otc-doc-table .col-item {
+  width: 42%;
+  text-align: left;
+}
+
+.otc-doc-table .col-cost {
+  width: 18%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.otc-doc-table .col-qty {
+  width: 12%;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.otc-doc-table .col-total {
+  width: 20%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.otc-doc-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--otc-doc-muted);
+  font-weight: 400;
+}
+
+.otc-doc-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.otc-doc-pay {
+  flex: 1 1 48%;
+  min-width: 0;
+}
+
+.otc-doc-sums {
+  flex: 0 0 42%;
+  min-width: 160px;
+}
+
+.otc-doc-closing {
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.otc-efris-fiscal {
+  margin: 16px 0 8px;
+  padding: 12px 12px 14px;
+  border: 1px solid #00aeef;
+  border-radius: 4px;
+  background: #f8fafc;
+}
+
+.otc-efris-fiscal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.otc-efris-fiscal-head strong {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.otc-efris-template-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #b45309;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.otc-efris-fiscal-grid {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.otc-efris-fiscal-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.otc-efris-fiscal-meta > div {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.otc-efris-fiscal-meta span {
+  min-width: 88px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.otc-efris-fiscal-meta strong {
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.otc-efris-qr-box {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  border: 1.5px solid #0f172a;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+
+.otc-efris-qr-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@media print {
+  .otc-efris-fiscal {
+    break-inside: avoid;
+  }
+}
+
+.otc-doc-sum-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0;
+  font-size: 12.5px;
+  color: var(--otc-doc-text);
+}
+
+.otc-doc-sum-row--due {
+  color: #c2410c;
+  font-weight: 600;
+}
+
+.otc-doc-total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  padding: 9px 10px;
+  background: var(--otc-doc-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.otc-doc-footer {
+  margin-top: 18px;
+  padding: 12px 12px 14px;
+  background: var(--otc-doc-footer);
+  border-radius: 2px;
+}
+
+.otc-commercial-doc .otc-receipt-thanks {
+  text-align: left;
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--otc-doc-text);
+}
+
+.otc-commercial-doc .otc-receipt-notes {
+  margin: 0;
+  font-size: 11px;
+  color: var(--otc-doc-muted);
+}
+
+.otc-receipt-dialog {
+  max-width: 860px;
+}
+
+@media (max-width: 640px) {
+  .otc-doc-bottom,
+  .otc-doc-meta-row,
+  .otc-doc-top {
+    flex-direction: column;
+  }
+
+  .otc-doc-meta-right {
+    text-align: left;
+  }
+
+  .otc-doc-sums {
+    flex-basis: auto;
+    width: 100%;
+  }
+}
+
+/* Queue client modal — matches client visit queue layout */
 .otc-queue-modal-overlay {
   position: fixed;
   inset: 0;
@@ -2600,7 +7667,7 @@ body.otc-receipt-modal-open {
   font-weight: 700;
 }
 
-.otc-queue-patient-summary {
+.otc-queue-client-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -2608,7 +7675,7 @@ body.otc-receipt-modal-open {
   font-size: 14px;
 }
 
-.otc-queue-patient-value {
+.otc-queue-client-value {
   color: #2563eb;
   font-weight: 600;
 }
@@ -2685,7 +7752,7 @@ body.otc-receipt-modal-open {
   color: #e2e8f0;
 }
 
-/* Delete sold line confirm — same overlay/modal shell as queue patient */
+/* Delete sold line confirm — same overlay/modal shell as queue client */
 .otc-delete-sold-line-modal {
   width: min(480px, 96vw);
 }
@@ -2832,7 +7899,7 @@ body.otc-receipt-modal-open {
   font-size: 0.85rem;
 }
 
-.otc-rx-v2-patient {
+.otc-rx-v2-client {
   min-width: 140px;
 }
 

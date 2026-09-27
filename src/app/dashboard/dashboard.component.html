@@ -43,14 +43,14 @@
 
                         </span>
                         <button class="btn btn-lg btn-sm btn-block pb-0">
-                            <span>{{patientFirstName | uppercase}}
-                                {{patientSecondName | uppercase}}
+                            <span>{{clientFirstName | uppercase}}
+                                {{clientSecondName | uppercase}}
                             </span>
                         </button>
                         <button class="btn btn-primary btn-lg btn-sm btn-block pb-0">
                             <span
                             style="color: rgb(253, 254, 255);font-size: 15px;">Client File No:
-                            {{patientFileNo}}
+                            {{clientFileNo}}
                         </span>
                     </button>
 
@@ -70,9 +70,9 @@
 
                     <div class="dropdown">
                         <button class="btn btn-lg btn-block btn-sm br-12 dropdown-toggle" type="button"
-                            id="dropdownMenuButton" (click)="createNewPatientVisits(patientId)" data-bs-toggle="dropdown"
+                            id="dropdownMenuButton" (click)="createNewClientVisits(clientId)" data-bs-toggle="dropdown"
                             aria-expanded="false" style="border: 1px solid rgb(204, 204, 204);">
-                            Create New Patient Visit
+                            Create New Client Order
                         </button>
                         <ul class="dropdown-menu custom-scrollbar pl-2 pr-2" aria-labelledby="dropdownMenuButton"
                             style="max-height: 400px; overflow-y: auto; width: 200px;">
@@ -198,7 +198,7 @@
 
 
                 <li >
-                   <button type="button" [routerLink]="['/account-profile']" class="btn btn-lg btn-block btn-sm br-12" style="border-color: rgb(207, 207, 207);">Create New Patient Visit</button>
+                   <button type="button" [routerLink]="['/account-profile']" class="btn btn-lg btn-block btn-sm br-12" style="border-color: rgb(207, 207, 207);">Create New Client Order</button>
                 </li>
 
 
@@ -223,14 +223,14 @@
 
                     <div class="dropdown">
                         <button class="btn btn-lg btn-block btn-sm br-12 dropdown-toggle" type="button"
-                            id="dropdownMenuButton" (click)="loadPatientVisits(patientId)" data-bs-toggle="dropdown"
+                            id="dropdownMenuButton" (click)="loadClientVisits(clientId)" data-bs-toggle="dropdown"
                             aria-expanded="false" style="border: 1px solid rgb(204, 204, 204);">
-                            {{currentPatientVisit}}
+                            {{currentClientVisit}}
                         </button>
                         <ul class="dropdown-menu custom-scrollbar pl-2 pr-2" aria-labelledby="dropdownMenuButton"
                             style="max-height: 400px; overflow-y: auto; width: 200px;">
 
-                            <li *ngIf="isLoadingPatientVisits" class="text-center p-3">
+                            <li *ngIf="isLoadingClientVisits" class="text-center p-3">
                                 <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
@@ -244,8 +244,8 @@
                                 <input type="text" class="form-control dropdown-search ml-0" placeholder="Search"
                                     [(ngModel)]="searchText" style="height: 30px; font-size: 14px; width: 100%;" />
                             </li>
-                            <ng-container *ngIf="filteredPatientVisitList().length; else noData">
-                                <div class="dropdown-items" *ngFor="let visit of filteredPatientVisitList()">
+                            <ng-container *ngIf="filteredClientVisitList().length; else noData">
+                                <div class="dropdown-items" *ngFor="let visit of filteredClientVisitList()">
                                     <li>
                                         <button type="button"
                                             class="dropdown-item mt-2 mb-2 d-flex justify-content-center align-items-center"
@@ -281,9 +281,9 @@
                 <li ><hr class="dropdown-divider"></li>
 
                 <li > 
-                    <ng-container *ngIf="patientVisitList.length != 0; else noData">
+                    <ng-container *ngIf="clientVisitList.length != 0; else noData">
                         <div style="max-height: 400px;" id="htmlData">
-                          <div *ngFor="let visit of patientVisitList">
+                          <div *ngFor="let visit of clientVisitList">
                             <button
                               type="button"
                               (click)="loadInitialTriageVitalsForVisitId(visit.id)"
@@ -383,12 +383,12 @@
 
   <button *ngIf="isOpen" (click)="closeVisit(visit)" class="btn btn-danger br-12 w-100" type="button"
     style="color:white;line-height: 1;font-size:small">
-    Close Visit 
+    Close Order 
   </button>
 
   <button  *ngIf="isClosed" class="btn btn-primary br-12 w-100" type="button"
     style="color:white;line-height: 1;font-size:small">
-    Open Visit
+    Open Order
   </button>
 
    <button *ngIf="isNoVisit" class="btn btn-secondary br-12 w-100" type="button"
@@ -406,7 +406,7 @@
                 </li>
 
                             <li>
-                <div *ngIf="isUpdatingPatientVisit" style="align-items: center;padding-left: 75px;">
+                <div *ngIf="isUpdatingClientVisit" style="align-items: center;padding-left: 75px;">
 
                     <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
         
@@ -430,7 +430,7 @@
                 <li>
 
                     <button class="btn btn-lg btn-block btn-sm br-12 " type="button"
-                        (click)="loadPatientVisits(patientId)" data-bs-toggle="dropdown" aria-expanded="false"
+                        (click)="loadClientVisits(clientId)" data-bs-toggle="dropdown" aria-expanded="false"
                         style="border: 1px solid rgb(204, 204, 204);">
                         Total Debt: UGX: {{totalAmountDue}}
                     </button>
@@ -618,7 +618,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -935,7 +935,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClient" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -1209,7 +1209,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -1622,8 +1622,8 @@
 
 
                                             <!--<td style="width: 8%;">-->
-                                            <!--<img src="{{item.patientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
-                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.patientProfilePic}}" alt="" height="60" width="60">-->
+                                            <!--<img src="{{item.clientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
+                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.clientProfilePic}}" alt="" height="60" width="60">-->
 
                                             <!--</td>-->
 
@@ -1713,7 +1713,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -1797,7 +1797,7 @@
                                     <option [ngValue]="10">10 per page </option>
                                     <option [ngValue]="20">20 per page </option>
                                     <option [ngValue]="100">100 per page </option>
-                                    <option [ngValue]="productList.length">All Items</option>
+                                    <option [ngValue]="productList.length">All Products</option>
 
                                 </select>
 
@@ -2210,8 +2210,8 @@
 
 
                                         <!--<td style="width: 8%;">-->
-                                        <!--<img src="{{item.patientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
-                        <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.patientProfilePic}}" alt="" height="60" width="60">-->
+                                        <!--<img src="{{item.clientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
+                        <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.clientProfilePic}}" alt="" height="60" width="60">-->
 
                                         <!--</td>-->
 
@@ -2301,7 +2301,7 @@
 
                                     <button (click)="openPopup()" type="button" class="btn btn-success"
                                         style="border-radius: 15px;font-size: 1rem;">
-                                        Add New Items Now
+                                        Add New Products Now
 
                                     </button>
                                 </div>
@@ -2385,7 +2385,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -2699,7 +2699,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientPharmacy" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientPharmacy" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -2726,7 +2726,7 @@
 
                             <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                             
-                                <div *ngIf="isLoadingNewPatientPharmacyOut" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                <div *ngIf="isLoadingNewClientPharmacyOut" class="simple-loader" style="height: 30px;width: 30px;"></div>
                             
                             </button>
                     
@@ -2855,7 +2855,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -2955,7 +2955,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -3300,7 +3300,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientServices" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientServices" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -3328,7 +3328,7 @@
 
                             <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                             
-                                <div *ngIf="isLoadingNewPatientDeleteOut" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                <div *ngIf="isLoadingNewClientDeleteOut" class="simple-loader" style="height: 30px;width: 30px;"></div>
                             
                             </button>
                     
@@ -3396,8 +3396,8 @@
 
 
                                             <!--<td style="width: 8%;">-->
-                                            <!--<img src="{{item.patientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
-                                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.patientProfilePic}}" alt="" height="60" width="60">-->
+                                            <!--<img src="{{item.clientProfilePic}}" style="width: 90px;max-height: 90px;" alt="">
+                                            <img class="avatar-img rounded-circle border border-white border-2 avatar status-online" src="{{item.clientProfilePic}}" alt="" height="60" width="60">-->
                                             <!--</td>-->
 
                                             <td class="itemdata" style="padding: 6px;"><span
@@ -3544,7 +3544,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -3842,7 +3842,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -3938,7 +3938,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientTaxDiscount" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientTaxDiscount" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -3970,7 +3970,7 @@
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                         
-                                <div *ngIf="isLoadingNewPatientInvoice" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                <div *ngIf="isLoadingNewClientInvoice" class="simple-loader" style="height: 30px;width: 30px;"></div>
                         
                             </button>
                         
@@ -4091,7 +4091,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>
@@ -4121,7 +4121,7 @@
                                     [attr.aria-expanded]="!isCollapsedPayment"
 
                                     (click)="isCollapsedItemsUsedShowExpenseAccount = !isCollapsedItemsUsedShowExpenseAccount"
-                                    [attr.aria-expanded]="!isCollapsedItemsUsedShowExpenseAccount"  (click)="clearFormShowNewPatientGroupExpenseAccount()"
+                                    [attr.aria-expanded]="!isCollapsedItemsUsedShowExpenseAccount"  (click)="clearFormShowNewClientGroupExpenseAccount()"
 
                                     style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;background-color:#217cd1;color:white; ">
                                     <span>
@@ -4145,7 +4145,7 @@
     
 
 
-                                <button type="button" class="btn btn-secondary ms-2 btn-sm" (click)="isCollapsedTaxDiscount = !isCollapsedTaxDiscount" (click)="clearFormShowNewPatientGroup()"
+                                <button type="button" class="btn btn-secondary ms-2 btn-sm" (click)="isCollapsedTaxDiscount = !isCollapsedTaxDiscount" (click)="clearFormShowNewClientGroup()"
                                     [attr.aria-expanded]="!isCollapsedTaxDiscount" 
 
                                     (click)="isCollapsedItemsUsedShow = !isCollapsedItemsUsedShow"
@@ -4196,7 +4196,7 @@
                                         <option [ngValue]="10">10 per page </option>
                                         <option [ngValue]="20">20 per page </option>
                                         <option [ngValue]="100">100 per page </option>
-                                        <option [ngValue]="productList.length">All Items</option>
+                                        <option [ngValue]="productList.length">All Products</option>
 
                                     </select>
 
@@ -4520,7 +4520,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -4679,7 +4679,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientPayment" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -4763,7 +4763,7 @@
 
                                         <button class="btn btn-primary btn-sm" style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                                                         
-                                            <div *ngIf="isLoadingNewPatientTaxDiscount" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                            <div *ngIf="isLoadingNewClientTaxDiscount" class="simple-loader" style="height: 30px;width: 30px;"></div>
                                         
                                         </button>
                                 
@@ -5062,7 +5062,7 @@
                             <button class="btn btn-primary btn-sm"
                                 style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px;">
                         
-                                <div *ngIf="isLoadingNewPatientInvoice" class="simple-loader" style="height: 30px;width: 30px;"></div>
+                                <div *ngIf="isLoadingNewClientInvoice" class="simple-loader" style="height: 30px;width: 30px;"></div>
                         
                             </button>
                         
@@ -5209,7 +5209,7 @@
 
                                         <button (click)="openPopup()" type="button" class="btn btn-success"
                                             style="border-radius: 15px;font-size: 1rem;">
-                                            Add New Items Now
+                                            Add New Products Now
 
                                         </button>
                                     </div>

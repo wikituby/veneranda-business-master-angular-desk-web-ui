@@ -95,7 +95,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private applyApiConnectionState(state: ApiConnectionState): void {
-    this.showServerConnection = this.apiConfig.shouldShowServerConnection();
+    const onMarketing = isMarketingSitePath(this.router.url);
+    this.showServerConnection =
+      !onMarketing && this.apiConfig.shouldShowServerConnection();
     this.showApiResolving =
       state === 'resolving' && !isPublicAppPath(this.router.url);
   }
@@ -104,9 +106,9 @@ export class AppComponent implements OnInit, OnDestroy {
   private syncOverviewShellClass(): void {
     const path = this.router.url.split('?')[0].split('#')[0];
     const isOverview = path === '/overview' || path.startsWith('/overview/');
-    const isPatientVisit = path === '/patient-visit' || path.endsWith('/patient-visit');
+    const isClientVisit = path === '/client-visit' || path.endsWith('/client-visit');
     this.isOverviewRoute = isOverview;
     document.body.classList.toggle('app-overview-shell', isOverview);
-    document.body.classList.toggle('app-patient-visit-shell', isPatientVisit);
+    document.body.classList.toggle('app-client-visit-shell', isClientVisit);
   }
 }

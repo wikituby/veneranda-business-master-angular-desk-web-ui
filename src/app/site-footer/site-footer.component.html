@@ -9,13 +9,13 @@
               <div class="site-footer-news-meta">
                 <span><i class="bi bi-check2-circle"></i> Available now</span>
               </div>
-              <h4>Maternity, paediatrics, consultation, pharmacy, laboratory &amp; dental</h4>
+              <h4>Inventory, stock, sales, clients, finance &amp; reports</h4>
             </div>
             <div class="site-footer-news-item">
               <div class="site-footer-news-meta">
                 <span><i class="bi bi-hourglass-split"></i> Coming soon</span>
               </div>
-              <h4>Theatre, CS &amp; laparoscopy, blood bank &amp; ambulance</h4>
+              <h4>Online catalogue sync, supplier portal &amp; advanced analytics</h4>
             </div>
           </div>
         </div>
@@ -23,43 +23,43 @@
         <div class="site-footer-column">
           <h3 class="site-footer-title">Quick links</h3>
           <ul class="site-footer-links">
-            <li><a routerLink="/about">About Us</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Our Services</a></li>
-            <li><a routerLink="/landingpage" fragment="upcoming">Coming Soon</a></li>
-            <li><a routerLink="/landingpage" fragment="doctors">Our Team</a></li>
+            <li><a routerLink="/landingpage" fragment="features">Features</a></li>
+            <li><a routerLink="/landingpage" fragment="platforms">Platforms</a></li>
+            <li><a routerLink="/landingpage" fragment="upcoming">Roadmap</a></li>
+            <li><a routerLink="/landingpage" fragment="outcomes">Why switch</a></li>
             <li><a routerLink="/contact">Contact</a></li>
           </ul>
         </div>
 
         <div class="site-footer-column">
-          <h3 class="site-footer-title">Our services</h3>
+          <h3 class="site-footer-title">Modules</h3>
           <ul class="site-footer-links">
-            <li><a routerLink="/landingpage" fragment="services">Maternity</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Paediatrics</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Ultrasound &amp; scans</a></li>
-            <li><a routerLink="/landingpage" fragment="services">General consultation</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Pharmacy</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Laboratory</a></li>
-            <li><a routerLink="/landingpage" fragment="services">Dental</a></li>
+            <li><a routerLink="/service/product-inventory">Product &amp; inventory</a></li>
+            <li><a routerLink="/service/stock-management">Stock management</a></li>
+            <li><a routerLink="/service/sales-pos">Sales &amp; checkout</a></li>
+            <li><a routerLink="/service/client-management">Client management</a></li>
+            <li><a routerLink="/service/finance-expenses">Finance &amp; expenses</a></li>
+            <li><a routerLink="/service/reports-statements">Reports &amp; statements</a></li>
+            <li><a routerLink="/service/multi-store">Multi-store</a></li>
           </ul>
         </div>
 
         <div class="site-footer-column">
           <div class="site-footer-brand">
             <div class="site-footer-brand-logo">
-              <img class="site-footer-logo-img" [src]="venerandaLogo" alt="Veneranda Hospital logo" />
+              <img class="site-footer-logo-img" [src]="venerandaLogo" alt="Veneranda Business Master logo" />
               <div class="site-footer-logo-text">
-                <span class="site-footer-brand-name">Veneranda Hospital</span>
-                <span class="site-footer-brand-tagline">HOSPITAL &amp; HEALTH CARE</span>
+                <span class="site-footer-brand-name">Veneranda Business Master</span>
+                <span class="site-footer-brand-tagline">STOCK · SALES · FINANCE</span>
               </div>
             </div>
             <p class="site-footer-brand-description">
-              Serving families with maternity, paediatric, imaging, consultation, pharmacy, laboratory, and dental care —
-              with theatre, blood bank, and ambulance services on the horizon.
+              Desktop and mobile tools for inventory, stock floors, checkout, clients, expenses, and reports —
+              connected to one shared business backend.
             </p>
             <button class="site-footer-cta" type="button" (click)="navigateToOverview()">
               <i class="bi bi-arrow-up-right"></i>
-              Book / Login
+              Sign in
             </button>
           </div>
         </div>
@@ -98,11 +98,11 @@
 
         <div class="site-footer-contact-card">
           <div class="site-footer-contact-info">
-            <span class="site-footer-contact-label">Location</span>
-            <span class="site-footer-contact-value">{{ contactDetails.location }}</span>
+            <span class="site-footer-contact-label">Focus</span>
+            <span class="site-footer-contact-value">Business operations · inventory · sales</span>
           </div>
           <div class="site-footer-contact-icon">
-            <i class="bi bi-geo-alt"></i>
+            <i class="bi bi-briefcase"></i>
           </div>
         </div>
       </div>

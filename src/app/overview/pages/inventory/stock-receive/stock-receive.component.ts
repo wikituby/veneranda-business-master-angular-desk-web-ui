@@ -115,6 +115,12 @@ export class StockReceiveComponent implements OnInit {
   selectedSupplierName: string = '';
   currentSupplierName: string = 'Select supplier';
   currentSupplierId: any = null;
+
+  purchaseOrderList: any[] = [];
+  filteredPurchaseOrderList: any[] = [];
+  purchaseOrderSearchQuery = '';
+  isPurchaseOrderDropdownOpen = false;
+  currentPurchaseOrderNo = '';
   
   // Date properties
   receiveDate: any = null;
@@ -184,7 +190,7 @@ export class StockReceiveComponent implements OnInit {
 
   initializeTableData() {
     this.isLoadingService = true;
-    this.api.getAllStockReceivedHospitalItem().subscribe({
+    this.api.getAllStockReceivedBusinessItem().subscribe({
       next: (res) => {
         this.isLoadingService = false;
         console.log("Raw stock receives response:", res);
@@ -270,7 +276,7 @@ export class StockReceiveComponent implements OnInit {
   loadSuppliers(): Promise<void> {
     return new Promise((resolve) => {
       console.log("Loading suppliers...");
-      this.api.getAllSuppliersHospitalItem().subscribe({
+      this.api.getAllSuppliersBusinessItem().subscribe({
         next: (res: any) => {
           console.log("Raw suppliers response:", res);
           if (Array.isArray(res)) {
@@ -413,6 +419,7 @@ export class StockReceiveComponent implements OnInit {
       this.isStockItemDropdownOpen = false;
       this.isStoreDropdownOpen = false;
       this.isSupplierDropdownOpen = false;
+      this.isPurchaseOrderDropdownOpen = false;
     }
   }
 
@@ -422,6 +429,7 @@ export class StockReceiveComponent implements OnInit {
     if (this.isStockItemDropdownOpen) {
       this.isStoreDropdownOpen = false; // Close other dropdowns
       this.isSupplierDropdownOpen = false;
+      this.isPurchaseOrderDropdownOpen = false;
       this.stockItemSearchQuery = '';
       this.filterStockItems();
     }
@@ -625,6 +633,7 @@ export class StockReceiveComponent implements OnInit {
     if (this.isStoreDropdownOpen) {
       this.isStockItemDropdownOpen = false; // Close other dropdowns
       this.isSupplierDropdownOpen = false;
+      this.isPurchaseOrderDropdownOpen = false;
       this.storeSearchQuery = '';
       this.filterStores();
     }
@@ -652,12 +661,77 @@ export class StockReceiveComponent implements OnInit {
     this.isStoreDropdownOpen = false;
   }
 
+  togglePurchaseOrderDropdown() {
+    this.isPurchaseOrderDropdownOpen = !this.isPurchaseOrderDropdownOpen;
+    if (this.isPurchaseOrderDropdownOpen) {
+      this.isStockItemDropdownOpen = false;
+      this.isStoreDropdownOpen = false;
+      this.isSupplierDropdownOpen = false;
+      this.purchaseOrderSearchQuery = '';
+      this.loadPurchaseOrders();
+    }
+  }
+
+  loadPurchaseOrders() {
+    this.api.getPurchaseOrders().subscribe({
+      next: (rows: any) => {
+        this.purchaseOrderList = Array.isArray(rows) ? rows : [];
+        this.filterPurchaseOrders();
+      },
+      error: () => {
+        this.purchaseOrderList = [];
+        this.filteredPurchaseOrderList = [];
+      },
+    });
+  }
+
+  filterPurchaseOrders() {
+    const query = (this.purchaseOrderSearchQuery || '').trim().toLowerCase();
+    const list = Array.isArray(this.purchaseOrderList) ? this.purchaseOrderList : [];
+    this.filteredPurchaseOrderList = !query
+      ? [...list]
+      : list.filter((order) =>
+          String(order?.orderNo || '').toLowerCase().includes(query) ||
+          String(order?.supplierName || '').toLowerCase().includes(query)
+        );
+  }
+
+  selectPurchaseOrder(order: any) {
+    this.clearStockReceiveModalValidationError();
+    if (!order) {
+      this.currentPurchaseOrderNo = '';
+      this.currentStockReceive.purchaseOrderId = null;
+      this.currentStockReceive.purchaseOrderNo = null;
+    } else {
+      this.currentPurchaseOrderNo = String(order.orderNo || '');
+      this.currentStockReceive.purchaseOrderId = order.id;
+      this.currentStockReceive.purchaseOrderNo = order.orderNo;
+      if (order.supplierId && !this.currentSupplierId) {
+        const supplier = (this.supplierList || []).find(
+          (row: any) => Number(row?.id) === Number(order.supplierId)
+        );
+        if (supplier) {
+          this.selectSupplier(supplier);
+        }
+      }
+    }
+    this.isPurchaseOrderDropdownOpen = false;
+  }
+
+  openNewPurchaseOrder(event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.closeStockReceiveModal();
+    this.router.navigate(['/overview/pharmacy-purchase-orders']);
+  }
+
   // Supplier dropdown methods
   toggleSupplierDropdown() {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
     if (this.isSupplierDropdownOpen) {
       this.isStockItemDropdownOpen = false; // Close other dropdowns
       this.isStoreDropdownOpen = false;
+      this.isPurchaseOrderDropdownOpen = false;
       // Load suppliers if not already loaded
       if (this.supplierList.length === 0) {
         this.loadSuppliers();
@@ -764,7 +838,7 @@ export class StockReceiveComponent implements OnInit {
 
     console.log("Supplier data to save:", supplierData);
 
-    this.api.saveSupplierHospitalItem(supplierData).subscribe({
+    this.api.saveSupplierBusinessItem(supplierData).subscribe({
       next: (response) => {
         console.log("Supplier saved successfully:", response);
         this.showDivUpdatedLoaderNewSupplier = false;
@@ -1085,6 +1159,9 @@ export class StockReceiveComponent implements OnInit {
     this.currentStockItemId = null;
     this.currentStoreId = null;
     this.currentSupplierId = null;
+    this.currentPurchaseOrderNo = '';
+    this.isPurchaseOrderDropdownOpen = false;
+    this.purchaseOrderSearchQuery = '';
     this.receiveDate = null;
     this.expiryDate = null;
     this.isEditingStockReceive = false;
@@ -1207,7 +1284,7 @@ export class StockReceiveComponent implements OnInit {
     console.log("Sending stock receive data:", requestData);
     console.log("JWT Token:", this.api.getSessionToken());
 
-    this.api.receiveNewStockHospitalItem(requestData).subscribe({
+    this.api.receiveNewStockBusinessItem(requestData).subscribe({
       next: (response: any) => {
         this.showDivUpdatedLoaderNewStockReceive = false;
         this.isButtonDisabled = false;
@@ -1281,8 +1358,11 @@ export class StockReceiveComponent implements OnInit {
       invoiceNumber: receive.invoiceNumber || '',
       notes: receive.notes || '',
       brand: receive.brand || '',
-      packaging: receive.packaging || ''
+      packaging: receive.packaging || '',
+      purchaseOrderId: receive.purchaseOrderId ?? null,
+      purchaseOrderNo: receive.purchaseOrderNo || null,
     };
+    this.currentPurchaseOrderNo = receive.purchaseOrderNo || '';
     this.syncProfitMarginFromUnitSell();
     this.normalizeAllMoneyFields();
 
@@ -1342,7 +1422,7 @@ export class StockReceiveComponent implements OnInit {
       return;
     }
 
-    this.api.deleteStockReceivedByIdHospitalItem(this.stockReceiveToDelete.id).subscribe({
+    this.api.deleteStockReceivedByIdBusinessItem(this.stockReceiveToDelete.id).subscribe({
       next: (response: any) => {
         this.showDeleteConfirmModal = false;
         this.stockReceiveToDelete = null;

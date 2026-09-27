@@ -231,7 +231,7 @@ function hydrateCacheFromCategories(categories: any[], cache: CategoryCache): vo
 }
 
 async function fetchCategories(api: ApiService): Promise<any[]> {
-  const list = await firstValueFrom(api.getAllItemCategoriesHospitalItem());
+  const list = await firstValueFrom(api.getAllItemCategoriesBusinessItem());
   return Array.isArray(list) ? list : [];
 }
 
@@ -317,7 +317,7 @@ async function ensureCategoryNode(
   };
 
   try {
-    const res: any = await firstValueFrom(api.addItemCategoryHospitalItem(payload));
+    const res: any = await firstValueFrom(api.addItemCategoryBusinessItem(payload));
     const createError = extractCreateError(res);
     if (createError) {
       throw new Error(createError);

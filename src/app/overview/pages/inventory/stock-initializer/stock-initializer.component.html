@@ -37,7 +37,7 @@
     <div class="stat-card accent-blue">
       <i class="bi bi-sliders"></i>
       <div>
-        <div class="stat-value">{{ inventoryIsStockBatch ? 'Batch' : 'Item' }}</div>
+        <div class="stat-value">{{ inventoryIsStockBatch ? 'Batch' : 'Product' }}</div>
         <div class="stat-label">Inventory mode</div>
       </div>
     </div>
@@ -70,7 +70,7 @@
             [(ngModel)]="itemSearch"
             (focus)="isItemDropdownOpen = true"
             (input)="onItemSearchInput()"
-            [placeholder]="'Search ' + (inventoryIsStockBatch ? 'batches or catalog items' : 'shop items') + '...'"
+            [placeholder]="'Search ' + (inventoryIsStockBatch ? 'batches or catalog products' : 'shop products') + '...'"
           />
           <button type="button" class="clear-btn" *ngIf="selectedItem" (click)="clearSelection()">
             <i class="bi bi-x-lg"></i>
@@ -142,7 +142,7 @@
       <table>
         <thead>
           <tr>
-            <th>Item</th>
+            <th>Product</th>
             <th *ngIf="inventoryIsStockBatch">Store</th>
             <th>Initial qty</th>
             <th>Current qty</th>

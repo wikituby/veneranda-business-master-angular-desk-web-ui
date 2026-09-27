@@ -25,7 +25,7 @@ export class LabTestRequestsComponent implements OnInit {
   testRequests = [
     {
       requestId: 'LAB-2024-001',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
       testName: 'Complete Blood Count',
       testCode: 'CBC',
       testType: 'hematology',
@@ -38,7 +38,7 @@ export class LabTestRequestsComponent implements OnInit {
     },
     {
       requestId: 'LAB-2024-002',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
       testName: 'Blood Glucose',
       testCode: 'BG',
       testType: 'biochemistry',
@@ -51,7 +51,7 @@ export class LabTestRequestsComponent implements OnInit {
     },
     {
       requestId: 'LAB-2024-003',
-      patient: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
+      client: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
       testName: 'Culture & Sensitivity',
       testCode: 'C&S',
       testType: 'microbiology',
@@ -67,7 +67,7 @@ export class LabTestRequestsComponent implements OnInit {
   get filteredRequests(): any[] {
     return this.testRequests.filter(request => {
       const matchesSearch = !this.searchQuery || 
-        request.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         request.testName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         request.requestId.toLowerCase().includes(this.searchQuery.toLowerCase());
       

@@ -1,142 +1,76 @@
-# Expense Management
+# ERP — Finance
 
-Guide for recording hospital expenses, categories, and expense accounts.
+Finance in the business manager is the money that is not the sales document itself: operating spend, client debt, and loans. Sales invoices and receipts stay on the order. This guide is how the rest of the cash picture is recorded.
 
-**Path:** Overview → Finance → **Expenses** (`/overview/expenses`)
+**Path:** Overview → **Finance**.
 
-## Setup order
+## What belongs here
 
-Always configure in this order:
+| Book | Question |
+|------|----------|
+| Expenses | What did the business pay to run? |
+| Client debt | What is still owed on orders, and what was collected later? |
+| Loans | What was borrowed or lent, and what instalment was paid? |
+| Reports | What do sales, stock, and spend look like together? |
 
-1. **Categories** — group expenses (e.g. Utilities, Salaries, Supplies)
-2. **Accounts** — specific ledgers under each category (e.g. Electricity under Utilities)
-3. **Transactions** — individual expense payments
+## Expenses — setup order
 
-A hint bar at the top of the Expenses page shows this order.
+**Path:** Finance → **Expenses**.
 
----
+Configure in this order. The page shows the same hint.
 
-## Creating expense categories
+1. **Categories** — groups such as utilities, rent, transport, salaries, supplies
+2. **Accounts** — a ledger under a category, such as electricity under utilities
+3. **Transactions** — the actual payment: date, account, amount, and note
 
-1. Open the **Categories** tab.
-2. Click **New Category**.
-3. Enter **Category name** and optional **Description**.
-4. Click **Save Category**.
+Do not post a transaction before its account exists. Do not create an account before its category exists.
 
-Examples: `Operational Expenses`, `Medical Supplies`, `Transport`.
+### Category
 
----
+1. Open **Categories**.
+2. Choose **New category**.
+3. Enter a name and an optional description.
+4. Save.
 
-## Creating expense accounts (Accounts tab)
+### Account
 
-Expense accounts are the accounts you post expenses against when recording a transaction.
+1. Open **Accounts**.
+2. Choose the category.
+3. Name the account and save.
 
-### Steps
+### Transaction
 
-1. Ensure at least one **category** exists (Categories tab).
-2. Open the **Accounts** tab.
-3. Read the on-page **How to create expense accounts** panel (step-by-step).
-4. Click **New Account**.
-5. Select a **Category**.
-6. Enter **Account name** (e.g. `Office Rent`, `Diesel`, `Cleaning supplies`).
-7. Optional: add a **Description**.
-8. Click **Save Account**.
+1. Open **Transactions**.
+2. Pick the account, date, and amount.
+3. Add a short note a manager can audit later (supplier, receipt number, period).
+4. Save.
 
-The new account appears in the accounts table and becomes available when recording expenses.
+Examples: `Rent — March`, `Delivery fuel`, `Shop electricity`.
 
-### Accounts tab reference
+## Client debt
 
-| Column | Meaning |
-|--------|---------|
-| ID | System identifier |
-| Account | Account name |
-| Category | Parent expense category |
-| Description | Notes |
-| Created | Date account was added |
+When a POS sale is saved for less than the total, and a client is attached, the remainder is **amount due** on that order.
 
----
+- Receive a later payment from the order’s payment list.
+- The balance after payment is shown before you confirm.
+- **Reverse** a payment that was recorded in error. It stays visible and is excluded from the paid sum.
+- Debt is per order and rolls into the client account so CRM and finance agree.
 
-## Recording an expense (Transactions tab)
+## Loans
 
-1. Open the **Transactions** tab.
-2. Click **New Expense**.
-3. **Expense account** — use the modern dropdown (see below).
-4. Enter **Amount**, **Paid to / Receiver**, and **Description**.
-5. Click **Save Expense**.
+Use the loan register for money the business borrows or tracks as a financing arrangement: principal, schedule, and each payment. Do not hide loan repayments inside a generic expense if you need the balance to remain visible. An expense category can still record the cash that left the till. The loan record is the balance.
 
-### Expense account dropdown
+## Close of period
 
-The expense account field is a searchable dropdown:
+1. Confirm sales documents for the dates you are closing (filter products orders).
+2. Confirm expense transactions for the same dates.
+3. Review open debt and open loans.
+4. Read the sales and stock reports before you treat the dashboard as final.
 
-**First row (toolbar):**
+## What finance does not replace
 
-| Control | Action |
-|---------|--------|
-| **Search** | Filter accounts by name or category |
-| **New account** | Create an account without leaving the form |
+- A quotation is not income.
+- A reversed payment is not deleted history.
+- Stock adjustments are inventory, not expenses, unless you also paid a supplier. Pay the supplier as an expense or a receive. Do not do both for the same invoice without a clear note.
 
-**Account list:** Click an account to select it. The chosen account shows on the closed dropdown.
-
-### If the account you need is not listed
-
-While **Record Expense** is open:
-
-1. Click the expense account field to open the dropdown.
-2. Optionally type in **Search** (e.g. `Fuel`) — the name can pre-fill the quick-create form.
-3. Click **New account** on the right of the first row.
-4. A quick form appears: choose **Category**, confirm **Account name**.
-5. Click **Create & select** — the account is saved and automatically selected for this expense.
-6. Complete amount and other fields, then **Save Expense**.
-
-If **New account** is disabled or shows an error, create a **category** first (Categories tab).
-
-### Alternative: full account modal
-
-- **Accounts** tab → **New Account** (full form with description), or
-- From **Record Expense**, use **New account** in the dropdown for a faster create.
-
----
-
-## Filtering transactions
-
-On the Transactions tab:
-
-- **Search** — reference, account, receiver, user, description
-- **Account filter** — one expense account
-- **Date** — single day
-
----
-
-## Deleting a transaction
-
-1. Transactions tab → **Delete** (trash) on the row.
-2. Confirm in the dialog.
-
-Deletion is permanent.
-
----
-
-## Monthly summary
-
-The **This Month** stat card totals expenses recorded in the current calendar month.
-
----
-
-## Roles and access
-
-Access to the Expenses module depends on user role and **Access control** page permissions. Finance and administration roles typically maintain categories and accounts; departmental staff may only record transactions for allowed accounts.
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Cannot save expense | Select an expense account; enter amount &gt; 0 |
-| New account needs category | Create category on Categories tab first |
-| Account not in list after create | Click **Refresh** or reopen the dropdown |
-| Dropdown closes when clicking | Click inside the menu; use Search / New account on the top row |
-
----
-
-*Document 07 — Expense management — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

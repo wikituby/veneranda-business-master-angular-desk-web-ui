@@ -65,7 +65,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isCollapsedTaxDiscount = true;
 
-  isCollapsedNewPatient = true;
+  isCollapsedNewClient = true;
 
   isCollapsedNewLabTest = true;
 
@@ -200,7 +200,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
 
   actionButton: string = "Action Button"
 
-  currentPatientGroup: string = "Chose Group Name";
+  currentClientGroup: string = "Chose Group Name";
 
 
   title = "Angular Server Post Data Test"
@@ -230,7 +230,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
 
   procedureName: any;
 
-  currentPatientGroupId = null;
+  currentClientGroupId = null;
 
   visitReason: string = "";
   visitType: string = "";
@@ -409,7 +409,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
 
   storedFilter: any;
 
-  patientGroupList: any[] = [];
+  clientGroupList: any[] = [];
 
   labTestList: any[] = [];
 
@@ -419,15 +419,15 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
 
   procedureList: any[] = [];
 
-  patientGroup: any[] = [];
+  clientGroup: any[] = [];
 
   InvoicePdf: any;
 
 
-  patientFirstName: any;
-  patientProfilePic: any;
-  patientFileNo: any;
-  patientSecondName: any;
+  clientFirstName: any;
+  clientProfilePic: any;
+  clientFileNo: any;
+  clientSecondName: any;
 
 
 
@@ -441,7 +441,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
   timeTakenInitialVital: any;
   dateTakenInitialVital: any;
   diagnosis: any;
-  patientId: any;
+  clientId: any;
   procedureId: any;
 
   itemId: any;
@@ -466,10 +466,10 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
   visitId: any;
   searchText: string = '';
 
-  currentPatientVisit: string = 'Choose Patient Visit'
+  currentClientVisit: string = 'Choose Client Order'
 
 
-  patientVisitList: any[] = []; // Initialize to hold patient visits
+  clientVisitList: any[] = []; // Initialize to hold client orders
 
 
   initialTriageVitals: any[] = []; // Store filtered vitals
@@ -609,7 +609,7 @@ export class StockReceiveComponent implements OnInit, AfterViewInit, OnDestroy {
     this.api.getDrugList().subscribe((res) => {
       this.itemList = res;
       console.log('item list', this.itemList);
-      //console.log(patientId);
+      //console.log(clientId);
 
     });
   }
@@ -1112,9 +1112,9 @@ onSearchChange(): void {
       image: "",
     })
 
-    this.modelTitle = "Add New Item"
+    this.modelTitle = "Add New Product"
     this.imgSrc = '/assets/imgplaceholder.jpg';
-    this.actionButton = "Add New Item"
+    this.actionButton = "Add New Product"
     this.closeModalAdd = true;
     this.closeModalUpdate = false;
 
@@ -1186,7 +1186,7 @@ if (data.unitSellingPrice <= this.unitCost) {
 
 
 
-    // ✅ Convert patientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
+    // ✅ Convert clientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
     if (data.receiveDate && typeof data.receiveDate === 'object') {
       const { year, month, day } = data.receiveDate;
       data.receiveDate = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
@@ -1194,7 +1194,7 @@ if (data.unitSellingPrice <= this.unitCost) {
       data.receiveDate = null; // Handle empty date
     }
 
-    // ✅ Convert patientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
+    // ✅ Convert clientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
     if (data.expiryDate && typeof data.expiryDate === 'object') {
       const { year, month, day } = data.expiryDate;
       data.expiryDate = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
@@ -1330,8 +1330,8 @@ if (data.unitSellingPrice <= this.unitCost) {
   editProduct(id: number) {
     console.log("modelTitle before " + this.modelTitle);
 
-    this.modelTitle = "Update Item"
-    this.actionButton = "Update Item"
+    this.modelTitle = "Update Product"
+    this.actionButton = "Update Product"
 
     console.log("modelTitle after " + this.modelTitle);
 

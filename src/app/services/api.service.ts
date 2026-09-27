@@ -1,9 +1,9 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpEventType } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiConfigService, SKIP_CONNECTION_HEADER } from './api-config.service';
 import { API_CLOUD_BASE, API_VENERANDA_PUBLIC_BASE, getDevProxyBase, isAngularDevServer } from '../config/api-server.config';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, filter } from 'rxjs/operators';
 import { HttpParams } from '@angular/common/http';
 import { throwError, of } from 'rxjs';
 
@@ -88,18 +88,18 @@ export interface AdjustmentTypeRequestPayload {
   active?: boolean;
 }
 
-/** Query params for {@code Patient-management/filter-visits} (VisitParametersRequest). */
+/** Query params for {@code Client-management/filter-visits} (VisitParametersRequest). */
 export interface FilterVisitsQuery {
   visitGroup?: string;
-  patientGroupId?: number;
+  clientGroupId?: number;
   datefrom?: string;
   dateto?: string;
-  patientName?: string;
+  clientName?: string;
   diagnosis?: string;
   procedureId?: number;
   ageFrom?: number;
   ageTo?: number;
-  patientGender?: string;
+  clientGender?: string;
   weightFrom?: number;
   weightTo?: number;
   treatmentItemId?: number;
@@ -115,10 +115,10 @@ export class ApiService {
   private get apiBaseUrl(): string {
     return this.apiConfig.getBaseUrl();
   }
-  private get baseUrl20(): string { return this.apiBaseUrl + '/Hospital-item'; }
+  private get baseUrl20(): string { return this.apiBaseUrl + '/Business-item'; }
   private get baseUrl3(): string { return this.apiBaseUrl + '/shop-item'; }
   private get baseUrl4(): string { return this.apiBaseUrl + '/shop-cart'; }
-  private get baseUrl5(): string { return this.apiBaseUrl + '/Patient-management'; }
+  private get baseUrl5(): string { return this.apiBaseUrl + '/Client-management'; }
   private get baseUrl6(): string { return this.apiBaseUrl + '/financial-management'; }
   private get baseUrl7(): string { return this.apiBaseUrl + '/diagnostics-management'; }
   private get baseUrl12(): string { return this.apiBaseUrl + '/stock-records'; }
@@ -205,7 +205,7 @@ export class ApiService {
     );
   }
 
-  getAllSuppliersHospitalItem() {
+  getAllSuppliersBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-stock-suppliers`).pipe(
       map((res: any) => {
         console.log("Suppliers API response:", res);
@@ -230,6 +230,36 @@ export class ApiService {
     );
   }
 
+  createPurchaseOrder(data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getSessionToken()}`,
+    });
+    return this.http.post(`${this.baseUrl20}/purchase-orders`, data, { headers }).pipe(
+      map((res: any) => res?.data ?? res)
+    );
+  }
+
+  getPurchaseOrders() {
+    return this.http.get(`${this.baseUrl20}/purchase-orders`).pipe(
+      map((res: any) => (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []))
+    );
+  }
+
+  getPurchaseOrder(id: number) {
+    return this.http.get(`${this.baseUrl20}/purchase-orders/${id}`).pipe(
+      map((res: any) => res?.data ?? res)
+    );
+  }
+
+  updatePurchaseOrder(id: number, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getSessionToken()}`,
+    });
+    return this.http.put(`${this.baseUrl20}/purchase-orders/${id}`, data, { headers }).pipe(
+      map((res: any) => res?.data ?? res)
+    );
+  }
+
   saveSupplier(data: any) {
     const jwt = this.getSessionToken();
     console.log("JWT in header: " + jwt);
@@ -243,7 +273,7 @@ export class ApiService {
     }))
   }
 
-  saveSupplierHospitalItem(data: any) {
+  saveSupplierBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     console.log("JWT in header: " + jwt);
 
@@ -256,7 +286,7 @@ export class ApiService {
     }))
   }
 
-  // Stock Items (Consumable Items) API methods
+  // Stock Products (Consumable Products) API methods
   getAllStockItems() {
     return this.http.get(`${this.baseUrl8}/get-all-stock-items`).pipe(map((res: any) => {
       console.log("Stock items loaded:", res.data);
@@ -607,7 +637,7 @@ export class ApiService {
       );
   }
 
-  // Stock Transfer API methods (JAX-RS: StockTransferController @Path /Hospital-item)
+  // Stock Transfer API methods (JAX-RS: StockTransferController @Path /Business-item)
   getStockTransfers() {
     return this.http.get(`${this.baseUrl3}/stock-transfers`).pipe(
       map((res: any) => {
@@ -627,7 +657,7 @@ export class ApiService {
     );
   }
 
-  getStockTransfersHospitalItem() {
+  getStockTransfersBusinessItem() {
     return this.http.get(`${this.baseUrl20}/stock-transfers`).pipe(
       map((res: any) => {
         if (Array.isArray(res)) {
@@ -716,7 +746,7 @@ export class ApiService {
     }))
   }
 
-  transferStockHospitalItem(data: StockTransferRequestPayload) {
+  transferStockBusinessItem(data: StockTransferRequestPayload) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1158,7 +1188,7 @@ export class ApiService {
     }))
   }
 
-  getAllBrandsHospitalItem() {
+  getAllBrandsBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-brands`).pipe(map((res: any) => {
       console.log("Brands API response:", res);
       if (res && res.data) {
@@ -1185,7 +1215,7 @@ export class ApiService {
     }))
   }
 
-  addBrandHospitalItem(data: any) {
+  addBrandBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1207,7 +1237,7 @@ export class ApiService {
     }))
   }
 
-  updateBrandHospitalItem(id: number, data: any) {
+  updateBrandBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1229,7 +1259,7 @@ export class ApiService {
     }))
   }
 
-  deleteBrandHospitalItem(id: number) {
+  deleteBrandBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1259,7 +1289,7 @@ export class ApiService {
     );
   }
 
-  getAllManufacturersHospitalItem() {
+  getAllManufacturersBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-manufacturers`).pipe(
       map((res: any) => {
         console.log('Manufacturers API response:', res);
@@ -1288,7 +1318,7 @@ export class ApiService {
     );
   }
 
-  addManufacturerHospitalItem(data: any) {
+  addManufacturerBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1310,7 +1340,7 @@ export class ApiService {
     );
   }
 
-  updateManufacturerHospitalItem(id: number, data: any) {
+  updateManufacturerBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1332,7 +1362,7 @@ export class ApiService {
     );
   }
 
-  deleteManufacturerHospitalItem(id: number) {
+  deleteManufacturerBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1360,7 +1390,7 @@ export class ApiService {
     }))
   }
 
-  getAllFormulationsHospitalItem() {
+  getAllFormulationsBusinessItem() {
     return this.http.get(`${this.baseUrl20}/all-formulations`).pipe(map((res: any) => {
       console.log("Formulations API response:", res);
       if (res && res.data) {
@@ -1390,7 +1420,7 @@ export class ApiService {
     );
   }
 
-  addFormulationHospitalItem(data: any) {
+  addFormulationBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1417,7 +1447,7 @@ export class ApiService {
     );
   }
 
-  updateFormulationHospitalItem(id: number, data: any) {
+  updateFormulationBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1443,7 +1473,7 @@ export class ApiService {
     );
   }
 
-  deleteFormulationHospitalItem(id: number) {
+  deleteFormulationBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1473,7 +1503,7 @@ export class ApiService {
     }))
   }
 
-  getAllLowestPackagesHospitalItem() {
+  getAllLowestPackagesBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-lowest-packages`).pipe(map((res: any) => {
       console.log("Lowest packages API response:", res);
       if (res && res.data) {
@@ -1503,7 +1533,7 @@ export class ApiService {
     );
   }
 
-  addLowestPackageHospitalItem(data: any) {
+  addLowestPackageBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1530,7 +1560,7 @@ export class ApiService {
     );
   }
 
-  updateLowestPackageHospitalItem(id: number, data: any) {
+  updateLowestPackageBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1556,7 +1586,7 @@ export class ApiService {
     );
   }
 
-  deleteLowestPackageHospitalItem(id: number) {
+  deleteLowestPackageBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1588,7 +1618,7 @@ export class ApiService {
 
 
   // Item Category API methods
-  getAllItemCategoriesHospitalItem() {
+  getAllItemCategoriesBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-item-categories`).pipe(map((res: any) => {
       console.log("Item categories API response:", res);
       if (res && res.data) {
@@ -1619,7 +1649,7 @@ export class ApiService {
     );
   }
 
-  getHighestParentItemCategoryHospitalItem(id: number) {
+  getHighestParentItemCategoryBusinessItem(id: number) {
     return this.http.get(`${this.baseUrl20}/get-highest-parent-item-category/${id}`).pipe(
       map((res: any) => {
         if (res?.data) {
@@ -1647,7 +1677,7 @@ export class ApiService {
     );
   }
 
-  addItemCategoryHospitalItem(data: any) {
+  addItemCategoryBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1674,7 +1704,7 @@ export class ApiService {
     );
   }
 
-  updateItemCategoryHospitalItem(id: number, data: any) {
+  updateItemCategoryBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1700,7 +1730,7 @@ export class ApiService {
     );
   }
 
-  deleteItemCategoryHospitalItem(id: number) {
+  deleteItemCategoryBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1730,7 +1760,7 @@ export class ApiService {
     }))
   }
 
-  getAllRoutesOfAdminHospitalItem() {
+  getAllRoutesOfAdminBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-route-of-admin`).pipe(map((res: any) => {
       console.log("Routes of admin API response:", res);
       if (res && res.data) {
@@ -1760,7 +1790,7 @@ export class ApiService {
     );
   }
 
-  addRouteOfAdminHospitalItem(data: any) {
+  addRouteOfAdminBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1787,7 +1817,7 @@ export class ApiService {
     );
   }
 
-  updateRouteOfAdminHospitalItem(id: number, data: any) {
+  updateRouteOfAdminBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1813,7 +1843,7 @@ export class ApiService {
     );
   }
 
-  deleteRouteOfAdminHospitalItem(id: number) {
+  deleteRouteOfAdminBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1843,7 +1873,7 @@ export class ApiService {
     }))
   }
 
-  getAllStrengthUnitsHospitalItem() {
+  getAllStrengthUnitsBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-strength-units`).pipe(map((res: any) => {
       console.log("Strength units API response:", res);
       if (res && res.data) {
@@ -1873,7 +1903,7 @@ export class ApiService {
     );
   }
 
-  addStrengthUnitHospitalItem(data: any) {
+  addStrengthUnitBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1900,7 +1930,7 @@ export class ApiService {
     );
   }
 
-  updateStrengthUnitHospitalItem(id: number, data: any) {
+  updateStrengthUnitBusinessItem(id: number, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1926,7 +1956,7 @@ export class ApiService {
     );
   }
 
-  deleteStrengthUnitHospitalItem(id: number) {
+  deleteStrengthUnitBusinessItem(id: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -1970,7 +2000,7 @@ export class ApiService {
     }));
   }
 
-  getAllActiveIngredientsHospitalItem() {
+  getAllActiveIngredientsBusinessItem() {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwt}` });
     return this.http.get(`${this.baseUrl20}/get-all-active-ingredients`, { headers }).pipe(map((res: any) => {
@@ -1990,7 +2020,7 @@ export class ApiService {
     return this.http.post(`${this.baseUrl3}/add-new-active-ingredients`, data, { headers });
   }
 
-  addActiveIngredientHospitalItem(data: any) {
+  addActiveIngredientBusinessItem(data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwt}` });
     return this.http.post(`${this.baseUrl20}/add-new-active-ingredients`, data, { headers });
@@ -2002,7 +2032,7 @@ export class ApiService {
     return this.http.put(`${this.baseUrl3}/update-active-ingredient/` + id, data, { headers });
   }
 
-  updateActiveIngredientByIdHospitalItem(id: any, data: any) {
+  updateActiveIngredientByIdBusinessItem(id: any, data: any) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwt}` });
     return this.http.put(`${this.baseUrl20}/update-active-ingredient/` + id, data, { headers });
@@ -2014,7 +2044,7 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl3}/delete-active-ingredient/` + id, { headers });
   }
 
-  deleteActiveIngredientByIdHospitalItem(id: number): Observable<any> {
+  deleteActiveIngredientByIdBusinessItem(id: number): Observable<any> {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwt}` });
     return this.http.delete(`${this.baseUrl20}/delete-active-ingredient/` + id, { headers });
@@ -2037,7 +2067,7 @@ export class ApiService {
     }))
   }
 
-  getAllStrengthsHospitalItem() {
+  getAllStrengthsBusinessItem() {
     return this.http.get(`${this.baseUrl20}/get-all-strengths`).pipe(map((res: any) => {
       console.log("Strengths API response:", res);
       if (res && res.data) {
@@ -2071,7 +2101,7 @@ export class ApiService {
     }))
   }
 
-  getCompositionsByStockItemIdHospitalItem(stockItemId: number) {
+  getCompositionsByStockItemIdBusinessItem(stockItemId: number) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -2099,8 +2129,15 @@ export class ApiService {
     );
   }
 
-  getDashboardSummary(): Observable<any> {
-    return this.http.get(`${this.baseUrl5}/dashboard-summary`).pipe(
+  getDashboardSummary(from?: string, to?: string): Observable<any> {
+    let params = new HttpParams();
+    if (from) {
+      params = params.set('from', from);
+    }
+    if (to) {
+      params = params.set('to', to);
+    }
+    return this.http.get(`${this.baseUrl5}/dashboard-summary`, { params }).pipe(
       map((res: any) => this.unwrapApiData(res))
     );
   }
@@ -2158,7 +2195,7 @@ export class ApiService {
 
 
     
-  getAllPatientGroups() {
+  getAllClientGroups() {
 
     return this.http.get(`${this.baseUrl5}/get-all-patient-groups`).pipe(map((res: any) => {
 
@@ -2169,14 +2206,14 @@ export class ApiService {
     }))
   }
 
-  /** Hospital modules / departments for patient queue routing. */
-  getAllHospitalModules() {
-    return this.http.get(`${this.baseUrl5}/get-all-hospital-modules`).pipe(
+  /** Business modules / departments for client queue routing. */
+  getAllBusinessModules() {
+    return this.http.get(`${this.baseUrl5}/get-all-business-modules`).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  createHospitalModule(payload: {
+  createBusinessModule(payload: {
     code?: string;
     name: string;
     description?: string;
@@ -2185,12 +2222,12 @@ export class ApiService {
     routeKey?: string;
     allowedRoles?: string | null;
   }) {
-    return this.http.post(`${this.baseUrl5}/create-hospital-module`, payload).pipe(
+    return this.http.post(`${this.baseUrl5}/create-business-module`, payload).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  updateHospitalModule(id: number, payload: {
+  updateBusinessModule(id: number, payload: {
     code?: string;
     name?: string;
     description?: string;
@@ -2199,51 +2236,51 @@ export class ApiService {
     routeKey?: string;
     allowedRoles?: string | null;
   }) {
-    return this.http.put(`${this.baseUrl5}/update-hospital-module/${id}`, payload).pipe(
+    return this.http.put(`${this.baseUrl5}/update-business-module/${id}`, payload).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  deleteHospitalModule(id: number) {
-    return this.http.delete(`${this.baseUrl5}/delete-hospital-module/${id}`).pipe(
+  deleteBusinessModule(id: number) {
+    return this.http.delete(`${this.baseUrl5}/delete-business-module/${id}`).pipe(
       map((res: any) => res)
     );
   }
 
-  getHospitalClinics(moduleId?: number) {
+  getBusinessClinics(moduleId?: number) {
     const params = moduleId != null ? `?moduleId=${moduleId}` : '';
-    return this.http.get(`${this.baseUrl5}/get-hospital-clinics${params}`).pipe(
+    return this.http.get(`${this.baseUrl5}/get-business-clinics${params}`).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  createHospitalClinic(payload: { hospitalModuleId: number; name: string; active?: boolean; allowedRoles?: string | null }) {
-    return this.http.post(`${this.baseUrl5}/create-hospital-clinic`, payload).pipe(
+  createBusinessClinic(payload: { hospitalModuleId: number; name: string; active?: boolean; allowedRoles?: string | null }) {
+    return this.http.post(`${this.baseUrl5}/create-business-clinic`, payload).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  updateHospitalClinic(id: number, payload: { hospitalModuleId?: number; name?: string; active?: boolean; allowedRoles?: string | null }) {
-    return this.http.put(`${this.baseUrl5}/update-hospital-clinic/${id}`, payload).pipe(
+  updateBusinessClinic(id: number, payload: { hospitalModuleId?: number; name?: string; active?: boolean; allowedRoles?: string | null }) {
+    return this.http.put(`${this.baseUrl5}/update-business-clinic/${id}`, payload).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  deleteHospitalClinic(id: number) {
-    return this.http.delete(`${this.baseUrl5}/delete-hospital-clinic/${id}`).pipe(
+  deleteBusinessClinic(id: number) {
+    return this.http.delete(`${this.baseUrl5}/delete-business-clinic/${id}`).pipe(
       map((res: any) => res)
     );
   }
 
-  queuePatient(payload: {
-    patientId: number;
-    patientVisitId?: number;
+  queueClient(payload: {
+    clientId: number;
+    clientVisitId?: number;
     fromModuleId: number;
     toModuleId: number;
     clinicId?: number;
     note?: string;
     visitDefaultScheme?: string;
-    patientGroupId?: number;
+    clientGroupId?: number;
     emergency?: boolean;
     revisit?: boolean;
     queuedBy?: string;
@@ -2253,9 +2290,9 @@ export class ApiService {
     );
   }
 
-  dischargePatientFromQueue(payload: {
-    patientId: number;
-    patientVisitId?: number;
+  dischargeClientFromQueue(payload: {
+    clientId: number;
+    clientVisitId?: number;
     fromModuleId?: number;
     note?: string;
     dischargedBy?: string;
@@ -2265,13 +2302,13 @@ export class ApiService {
     );
   }
 
-  dischargePatientQueueEntry(id: number) {
+  dischargeClientQueueEntry(id: number) {
     return this.http.patch(`${this.baseUrl5}/discharge-patient-queue-entry/${id}`, {}).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  getPatientQueueEntries(toModuleId?: number, status?: string) {
+  getClientQueueEntries(toModuleId?: number, status?: string) {
     const params = this.buildQueueScopeParams();
     if (toModuleId != null) {
       params.set('toModuleId', String(toModuleId));
@@ -2284,10 +2321,10 @@ export class ApiService {
     );
   }
 
-  getLatestPatientQueueEntries(
+  getLatestClientQueueEntries(
     limit: number = 100,
     view: 'current' | 'discharged' | 'referred' = 'current',
-    /** When set, only patients queued to this department (current page). */
+    /** When set, only clients queued to this department (current page). */
     pageModuleId?: number | null
   ) {
     const params = this.buildQueueScopeParams(pageModuleId);
@@ -2372,12 +2409,12 @@ export class ApiService {
     ).pipe(map((res: any) => res?.data ?? res));
   }
 
-  updatePatientQueueEntry(id: number, payload: {
+  updateClientQueueEntry(id: number, payload: {
     emergency?: boolean;
     revisit?: boolean;
     note?: string;
     visitDefaultScheme?: string;
-    patientGroupId?: number;
+    clientGroupId?: number;
     fromModuleId?: number;
     toModuleId?: number;
     clinicId?: number;
@@ -2390,31 +2427,31 @@ export class ApiService {
     );
   }
 
-  getHospitalDirectory() {
-    return this.http.get(`${this.baseUrl5}/get-hospital-directory`).pipe(
+  getBusinessDirectory() {
+    return this.http.get(`${this.baseUrl5}/get-business-directory`).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  callPatientQueueEntry(id: number) {
+  callClientQueueEntry(id: number) {
     return this.http.patch(`${this.baseUrl5}/call-patient-queue-entry/${id}`, {}).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  servePatientQueueEntry(id: number) {
+  serveClientQueueEntry(id: number) {
     return this.http.patch(`${this.baseUrl5}/serve-patient-queue-entry/${id}`, {}).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  completePatientQueueEntry(id: number) {
+  completeClientQueueEntry(id: number) {
     return this.http.patch(`${this.baseUrl5}/complete-patient-queue-entry/${id}`, {}).pipe(
       map((res: any) => res?.data ?? res)
     );
   }
 
-  cancelPatientQueueEntry(id: number) {
+  cancelClientQueueEntry(id: number) {
     return this.http.patch(`${this.baseUrl5}/cancel-patient-queue-entry/${id}`, {}).pipe(
       map((res: any) => res?.data ?? res)
     );
@@ -2472,7 +2509,7 @@ export class ApiService {
   }
 
 
-  getAllStockReceivedHospitalItem() {
+  getAllStockReceivedBusinessItem() {
 
     return this.http.get(`${this.baseUrl20}/get-all-stock-receives`).pipe(map((res: any) => {
       console.log(res.data);
@@ -2576,12 +2613,12 @@ return this.http.post(`${this.baseUrl5}/create-new-payment/` + id, data, { heade
 
 }
 
-payAllPatientDebt(patientId: any, data: any) {
+payAllClientDebt(clientId: any, data: any) {
   const jwt = this.getSessionToken();
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${jwt}`,
   });
-  return this.http.post(`${this.baseUrl5}/pay-all-patient-debt/${patientId}`, data, { headers }).pipe(
+  return this.http.post(`${this.baseUrl5}/pay-all-patient-debt/${clientId}`, data, { headers }).pipe(
     map((res: any) => res)
   );
 }
@@ -2998,7 +3035,7 @@ return this.http.post(receiveUrl, data, { headers }).pipe(
 
 }
 
-receiveNewStockHospitalItem(data: any) {
+receiveNewStockBusinessItem(data: any) {
 
   const jwt = this.getSessionToken()
 
@@ -3226,7 +3263,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
 
 
 
-  addPatient(data: any): Observable<any>  {
+  addClient(data: any): Observable<any>  {
 
     const jwt = this.getSessionToken()
 
@@ -3246,8 +3283,8 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
     }))
   }
 
-  // Update patient by id
-  updatePatientById(id: number, data: any): Observable<any> {
+  // Update client by id
+  updateClientById(id: number, data: any): Observable<any> {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -3255,7 +3292,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
 
     return this.http.put(`${this.baseUrl5}/update-patient/${id}`, data, { headers }).pipe(
       map((res: any) => {
-        console.log("Patient update response", res);
+        console.log("Client update response", res);
         return res;
       })
     );
@@ -3263,7 +3300,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
 
 
 
-   createPatientGroup(data: any): Observable<any>  {
+   createClientGroup(data: any): Observable<any>  {
 
     const jwt = this.getSessionToken()
 
@@ -3283,7 +3320,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
     }))
   }
 
-  updatePatientGroup(id: number | string, data: any): Observable<any> {
+  updateClientGroup(id: number | string, data: any): Observable<any> {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       Authorization: `Bearer ${jwt}`,
@@ -3361,7 +3398,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
       
   }
 
-  deletePatientVisit(id: number, userRole?: string) {
+  deleteClientVisit(id: number, userRole?: string) {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       Authorization: `Bearer ${jwt}`,
@@ -3412,14 +3449,14 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
     );
   }
 
-  /** Alias: patient list for newer components. */
-  getAllPatients() {
+  /** Alias: client list for newer components. */
+  getAllClients() {
     return this.getItems();
   }
 
-  getPatientById(id: number | string) {
+  getClientById(id: number | string) {
     return this.http.get(`${this.baseUrl5}/get-patient/${id}`).pipe(map((res: any) => {
-      const payload = res?.data ?? res?.patient ?? res;
+      const payload = res?.data ?? res?.client ?? res;
       if (payload && typeof payload === 'object' && payload.data) {
         return payload.data;
       }
@@ -3454,7 +3491,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
 
 
 
-  getPatientsWithDebt() {
+  getClientsWithDebt() {
 
     return this.http.get(`${this.baseUrl5}/get-all-patients-with-debts`).pipe(map((res: any) => {
       console.log(res.data);
@@ -3465,7 +3502,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
   }
 
   
-  getPatientsInGroup(id: any) {
+  getClientsInGroup(id: any) {
 
     return this.http.get(`${this.baseUrl5}/get-all-patients-in-group/${id}`).pipe(map((res: any) => {
       console.log(res.data);
@@ -3505,6 +3542,13 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
     );
   }
 
+  /** Lightweight visits/orders for pickers (no nested vitals/invoices). */
+  listPatientVisitSummaries(patientId: number | string) {
+    return this.http.get(`${this.baseUrl5}/get-patient-visit-summaries-by-id/${patientId}`).pipe(
+      map((res: any) => (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : []))
+    );
+  }
+
   getConsultationForVisitId(id:any){
     return this.http.get(`${this.baseUrl5}/get-patient-Visit-List-by-id/${id}`).pipe(
       map((res: any) => {
@@ -3514,7 +3558,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
     );
   }
 
-  getInitialVisitForPatientId(id: any) {
+  getInitialVisitForClientId(id: any) {
     return this.http.get(`${this.baseUrl5}/get-latest-patient-visit-by-patient-id/${id}`).pipe(
       map((res: any) => {
         console.log(res?.data);
@@ -3524,7 +3568,7 @@ return this.http.put(`${this.baseUrl7}/update-malaria-report/` + id, data, { hea
   }
 
   /** Full visit row for editing (per-visit demographics and metadata). */
-  getPatientVisitByVisitId(visitId: number | string) {
+  getClientVisitByVisitId(visitId: number | string) {
     return this.http.get(`${this.baseUrl5}/get-patient-visit-by-visit-id/${visitId}`).pipe(
       map((res: any) => res?.data ?? res)
     );
@@ -3557,7 +3601,7 @@ addBulkServices(items: any[]) {
 
 
 
-addBulkPatients(items: any[]) {
+addBulkClients(items: any[]) {
   const jwt = this.getSessionToken();
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${jwt}`,
@@ -3747,7 +3791,7 @@ addBulkPatients(items: any[]) {
 
 
 
-  getPatientGroupList() {
+  getClientGroupList() {
     return this.http.get(`${this.baseUrl5}/get-all-patient-groups`).pipe(
       map((res: any) => {
         console.log(res.data);
@@ -3756,7 +3800,7 @@ addBulkPatients(items: any[]) {
     );
   }
 
-  getPatientGroupByGroupName(id: any) {
+  getClientGroupByGroupName(id: any) {
     return this.http.get(`${this.baseUrl5}/get-patient-group-by-id/${id}`).pipe(
       map((res: any) => {
         //console.log("this is the group",res.data);
@@ -4369,7 +4413,7 @@ deleteComplaintOption(id: number | string) {
   );
 }
 
-getAllPatientVisits(options?: { fromDate?: string; toDate?: string }): Observable<any[]> {
+getAllClientVisits(options?: { fromDate?: string; toDate?: string }): Observable<any[]> {
   const jwt = this.getSessionToken();
   const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwt}` });
   let params = new HttpParams();
@@ -4387,8 +4431,8 @@ filterVisits(query: FilterVisitsQuery): Observable<any[]> {
   if (query.visitGroup != null && String(query.visitGroup).trim() !== '') {
     params = params.set('visitGroup', String(query.visitGroup).trim());
   }
-  if (query.patientGroupId != null && !Number.isNaN(Number(query.patientGroupId))) {
-    params = params.set('patientGroupId', String(query.patientGroupId));
+  if (query.clientGroupId != null && !Number.isNaN(Number(query.clientGroupId))) {
+    params = params.set('clientGroupId', String(query.clientGroupId));
   }
   if (query.datefrom != null && String(query.datefrom).trim() !== '') {
     params = params.set('datefrom', String(query.datefrom).trim());
@@ -4396,8 +4440,8 @@ filterVisits(query: FilterVisitsQuery): Observable<any[]> {
   if (query.dateto != null && String(query.dateto).trim() !== '') {
     params = params.set('dateto', String(query.dateto).trim());
   }
-  if (query.patientName != null && String(query.patientName).trim() !== '') {
-    params = params.set('patientName', String(query.patientName).trim());
+  if (query.clientName != null && String(query.clientName).trim() !== '') {
+    params = params.set('clientName', String(query.clientName).trim());
   }
   if (query.diagnosis != null && String(query.diagnosis).trim() !== '') {
     params = params.set('diagnosis', String(query.diagnosis).trim());
@@ -4411,8 +4455,8 @@ filterVisits(query: FilterVisitsQuery): Observable<any[]> {
   if (query.ageTo != null && !Number.isNaN(Number(query.ageTo))) {
     params = params.set('ageTo', String(query.ageTo));
   }
-  if (query.patientGender != null && String(query.patientGender).trim() !== '') {
-    params = params.set('patientGender', String(query.patientGender).trim());
+  if (query.clientGender != null && String(query.clientGender).trim() !== '') {
+    params = params.set('clientGender', String(query.clientGender).trim());
   }
   if (query.weightFrom != null && !Number.isNaN(Number(query.weightFrom))) {
     params = params.set('weightFrom', String(query.weightFrom));
@@ -4509,8 +4553,8 @@ exportGroupInvoicePeriodPdf(query: FilterVisitsQuery): Observable<Blob> {
   if (query.visitGroup != null && String(query.visitGroup).trim() !== '') {
     params = params.set('visitGroup', String(query.visitGroup).trim());
   }
-  if (query.patientGroupId != null && !Number.isNaN(Number(query.patientGroupId))) {
-    params = params.set('patientGroupId', String(query.patientGroupId));
+  if (query.clientGroupId != null && !Number.isNaN(Number(query.clientGroupId))) {
+    params = params.set('clientGroupId', String(query.clientGroupId));
   }
   if (query.datefrom != null && String(query.datefrom).trim() !== '') {
     params = params.set('datefrom', String(query.datefrom).trim());
@@ -4518,8 +4562,8 @@ exportGroupInvoicePeriodPdf(query: FilterVisitsQuery): Observable<Blob> {
   if (query.dateto != null && String(query.dateto).trim() !== '') {
     params = params.set('dateto', String(query.dateto).trim());
   }
-  if (query.patientName != null && String(query.patientName).trim() !== '') {
-    params = params.set('patientName', String(query.patientName).trim());
+  if (query.clientName != null && String(query.clientName).trim() !== '') {
+    params = params.set('clientName', String(query.clientName).trim());
   }
   if (query.diagnosis != null && String(query.diagnosis).trim() !== '') {
     params = params.set('diagnosis', String(query.diagnosis).trim());
@@ -4533,8 +4577,8 @@ exportGroupInvoicePeriodPdf(query: FilterVisitsQuery): Observable<Blob> {
   if (query.ageTo != null && !Number.isNaN(Number(query.ageTo))) {
     params = params.set('ageTo', String(query.ageTo));
   }
-  if (query.patientGender != null && String(query.patientGender).trim() !== '') {
-    params = params.set('patientGender', String(query.patientGender).trim());
+  if (query.clientGender != null && String(query.clientGender).trim() !== '') {
+    params = params.set('clientGender', String(query.clientGender).trim());
   }
   if (query.weightFrom != null && !Number.isNaN(Number(query.weightFrom))) {
     params = params.set('weightFrom', String(query.weightFrom));
@@ -4568,8 +4612,8 @@ exportGroupInvoicePeriodDocx(query: FilterVisitsQuery): Observable<Blob> {
   if (query.visitGroup != null && String(query.visitGroup).trim() !== '') {
     params = params.set('visitGroup', String(query.visitGroup).trim());
   }
-  if (query.patientGroupId != null && !Number.isNaN(Number(query.patientGroupId))) {
-    params = params.set('patientGroupId', String(query.patientGroupId));
+  if (query.clientGroupId != null && !Number.isNaN(Number(query.clientGroupId))) {
+    params = params.set('clientGroupId', String(query.clientGroupId));
   }
   if (query.datefrom != null && String(query.datefrom).trim() !== '') {
     params = params.set('datefrom', String(query.datefrom).trim());
@@ -4577,8 +4621,8 @@ exportGroupInvoicePeriodDocx(query: FilterVisitsQuery): Observable<Blob> {
   if (query.dateto != null && String(query.dateto).trim() !== '') {
     params = params.set('dateto', String(query.dateto).trim());
   }
-  if (query.patientName != null && String(query.patientName).trim() !== '') {
-    params = params.set('patientName', String(query.patientName).trim());
+  if (query.clientName != null && String(query.clientName).trim() !== '') {
+    params = params.set('clientName', String(query.clientName).trim());
   }
   if (query.diagnosis != null && String(query.diagnosis).trim() !== '') {
     params = params.set('diagnosis', String(query.diagnosis).trim());
@@ -4592,8 +4636,8 @@ exportGroupInvoicePeriodDocx(query: FilterVisitsQuery): Observable<Blob> {
   if (query.ageTo != null && !Number.isNaN(Number(query.ageTo))) {
     params = params.set('ageTo', String(query.ageTo));
   }
-  if (query.patientGender != null && String(query.patientGender).trim() !== '') {
-    params = params.set('patientGender', String(query.patientGender).trim());
+  if (query.clientGender != null && String(query.clientGender).trim() !== '') {
+    params = params.set('clientGender', String(query.clientGender).trim());
   }
   if (query.weightFrom != null && !Number.isNaN(Number(query.weightFrom))) {
     params = params.set('weightFrom', String(query.weightFrom));
@@ -4613,8 +4657,8 @@ exportGroupInvoicePeriodDocx(query: FilterVisitsQuery): Observable<Blob> {
     params = params.set('hasDebt', 'false');
   }
   const primaryUrl = `${this.baseUrl5}/group/invoice-period/generate-docx`;
-  const docxRequest = (basePatientManagement: string) =>
-    this.http.get(`${basePatientManagement}/group/invoice-period/generate-docx`, {
+  const docxRequest = (baseClientManagement: string) =>
+    this.http.get(`${baseClientManagement}/group/invoice-period/generate-docx`, {
       headers,
       params,
       responseType: 'blob',
@@ -4624,7 +4668,7 @@ exportGroupInvoicePeriodDocx(query: FilterVisitsQuery): Observable<Blob> {
     return docxRequest(this.baseUrl5);
   }
 
-  const devBase = `${getDevProxyBase()}/Patient-management`;
+  const devBase = `${getDevProxyBase()}/Client-management`;
   const normalizedActive = this.baseUrl5.replace(/\/+$/, '');
   if (devBase.replace(/\/+$/, '') === normalizedActive) {
     return docxRequest(this.baseUrl5);
@@ -5088,6 +5132,157 @@ updateRoleEndpointAccess(role: string, endpointKeys: string[]): Observable<any> 
     return this.uploadFileToCloudinary(file, 'image', 'profile-pictures');
   }
 
+  /** Product catalog images — same Cloudinary unsigned preset as profile pictures. */
+  uploadProductImageToCloudinary(file: File): Observable<string> {
+    return this.uploadFileToCloudinary(file, 'image', 'product-images');
+  }
+
+  /**
+   * Product image upload with progress (0–100).
+   * Emits progress updates, then a final event with `done: true` and `url`.
+   */
+  uploadProductImageToCloudinaryWithProgress(
+    file: File
+  ): Observable<{ progress: number; done?: boolean; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.cloudinaryUploadPreset);
+    formData.append('folder', 'product-images');
+
+    return this.http
+      .post<any>(
+        `https://api.cloudinary.com/v1_1/${this.cloudinaryCloudName}/image/upload`,
+        formData,
+        { reportProgress: true, observe: 'events' }
+      )
+      .pipe(
+        map((event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const total = event.total || file.size || 1;
+            const progress = Math.min(99, Math.round((100 * (event.loaded || 0)) / total));
+            return { progress };
+          }
+          if (event.type === HttpEventType.Response) {
+            const url = event.body?.secure_url;
+            if (!url) {
+              throw new Error('Cloudinary upload succeeded but secure_url was missing.');
+            }
+            return { progress: 100, done: true, url: String(url) };
+          }
+          return { progress: 0 };
+        }),
+        filter((e) => e.progress > 0 || !!e.done),
+        catchError((err: any) => {
+          const cloudinaryMessage =
+            err?.error?.error?.message ||
+            err?.error?.message ||
+            (typeof err?.error === 'string' ? err.error : null);
+          const message = cloudinaryMessage || err?.message || 'Cloudinary upload failed.';
+          return throwError(() => new Error(message));
+        })
+      );
+  }
+
+  /** Absolute URL for a saved local product-image path (/stock-item/local-images/...). */
+  resolveLocalProductImageUrl(localUrl: string | null | undefined): string | null {
+    const value = String(localUrl || '').trim();
+    if (!value) {
+      return null;
+    }
+    // Never treat base64 data URLs as local folder images.
+    if (value.toLowerCase().startsWith('data:') || value.toLowerCase().includes(';base64,')) {
+      return null;
+    }
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('blob:')) {
+      return value;
+    }
+    const path = value.startsWith('/') ? value : `/${value}`;
+    return `${this.apiBaseUrl}${path}`;
+  }
+
+  /**
+   * Copy an image file into the PC product-images folder on disk.
+   * Returns relative localUrl only — never stores base64/image bytes in the DB.
+   */
+  saveProductImageLocally(file: File): Observable<{ localUrl: string; fileName?: string; localPath?: string }> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http
+      .post<any>(`${this.baseUrl8}/local-images/upload`, formData, { headers })
+      .pipe(
+        map((res: any) => {
+          const data = res?.data || res || {};
+          const localUrl = String(data.localUrl || '').trim();
+          if (!localUrl) {
+            throw new Error('Local image save did not return a localUrl.');
+          }
+          if (localUrl.toLowerCase().startsWith('data:')) {
+            throw new Error('Server returned an invalid local image URL.');
+          }
+          return {
+            localUrl,
+            fileName: data.fileName ? String(data.fileName) : undefined,
+            localPath: data.localPath ? String(data.localPath) : undefined,
+          };
+        })
+      );
+  }
+
+  /** Reject base64/data URLs — DB may only store http(s) or /stock-item/local-images/... */
+  sanitizeProductImageUrlForDb(value: string | null | undefined): string | null {
+    const text = String(value || '').trim();
+    if (!text) {
+      return null;
+    }
+    const lower = text.toLowerCase();
+    if (lower.startsWith('data:') || lower.includes(';base64,')) {
+      return null;
+    }
+    return text;
+  }
+
+  /**
+   * Download a web image into the PC product-images folder.
+   * Optionally updates StockItem.imageLocal / imageLocal2 / imageLocal3.
+   */
+  cacheProductImageFromWebUrl(
+    webUrl: string,
+    options?: { stockItemId?: number | null; slot?: 1 | 2 | 3 }
+  ): Observable<{ localUrl: string; fileName?: string; localPath?: string }> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http
+      .post<any>(
+        `${this.baseUrl8}/local-images/cache-from-url`,
+        {
+          webUrl,
+          stockItemId: options?.stockItemId ?? null,
+          slot: options?.slot ?? 1,
+        },
+        { headers }
+      )
+      .pipe(
+        map((res: any) => {
+          const data = res?.data || res || {};
+          const localUrl = String(data.localUrl || '').trim();
+          if (!localUrl) {
+            throw new Error('Local image cache did not return a localUrl.');
+          }
+          return {
+            localUrl,
+            fileName: data.fileName ? String(data.fileName) : undefined,
+            localPath: data.localPath ? String(data.localPath) : undefined,
+          };
+        })
+      );
+  }
+
   /** Consultation tab documents — same unsigned preset as profile pictures; images use image API, other files use raw. */
   uploadConsultationDocumentToCloudinary(visitId: number | string, file: File): Observable<string> {
     const folder = `consultation-documents/visit-${visitId}`;
@@ -5479,7 +5674,7 @@ markConversationAsRead(conversationId: number | string): Observable<any> {
     
   }
 
-  getTotalPatientBalanceDue(id: any){
+  getTotalClientBalanceDue(id: any){
     return this.http.get(`${this.baseUrl5}/get-total-cost-of-every-service-by-patient-id/${id}`).pipe(
       map((res: any) => {
         console.log("register res data first",res.data);
@@ -5510,11 +5705,11 @@ markConversationAsRead(conversationId: number | string): Observable<any> {
       includeAmountColumns?: boolean;
       includeFooter?: boolean;
       documentType?: 'MEDICAL_REPORT' | 'DISCHARGE_FORM' | 'MEDICAL_FORM';
-      includePatientName?: boolean;
-      includePatientAddress?: boolean;
-      includePatientGender?: boolean;
-      includePatientAge?: boolean;
-      includePatientContact?: boolean;
+      includeClientName?: boolean;
+      includeClientAddress?: boolean;
+      includeClientGender?: boolean;
+      includeClientAge?: boolean;
+      includeClientContact?: boolean;
       includeVisitDate?: boolean;
       includeBalanceDue?: boolean;
     }
@@ -5535,11 +5730,11 @@ markConversationAsRead(conversationId: number | string): Observable<any> {
         includeAmountColumns: options.includeAmountColumns !== false,
         includeFooter: options.includeFooter !== false,
         documentType,
-        includePatientName: options.includePatientName !== false,
-        includePatientAddress: options.includePatientAddress !== false,
-        includePatientGender: options.includePatientGender !== false,
-        includePatientAge: options.includePatientAge !== false,
-        includePatientContact: options.includePatientContact !== false,
+        includeClientName: options.includeClientName !== false,
+        includeClientAddress: options.includeClientAddress !== false,
+        includeClientGender: options.includeClientGender !== false,
+        includeClientAge: options.includeClientAge !== false,
+        includeClientContact: options.includeClientContact !== false,
         includeVisitDate: options.includeVisitDate !== false,
         includeBalanceDue: options.includeBalanceDue !== false,
       },
@@ -5709,7 +5904,7 @@ exportScanResults(id: number): Observable<Blob> {
 
 
 
-  deletePatientById(id: number): Observable<any> {
+  deleteClientById(id: number): Observable<any> {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${jwt}`,
@@ -5888,7 +6083,7 @@ deleteGroupById(id: number): Observable<any>{
   }
 
 
-  deleteStockReceivedByIdHospitalItem(id: number): Observable<any>{
+  deleteStockReceivedByIdBusinessItem(id: number): Observable<any>{
 
     const jwt = this.getSessionToken()
 
@@ -6121,16 +6316,159 @@ getItemsAdvancedSearchDteEmptyPdfUndefined(){
     receivedBy: string;
     notes?: string;
     visitId?: number;
+    /** Preferred: tag sale to a registered client. */
+    patientId?: number;
     patientName?: string;
+    /** @deprecated use patientName */
+    clientName?: string;
     /** When false, dispense stock without recording a visit payment. */
     recordPayment?: boolean;
+    /** quotation | sales_order | proforma | sales_invoice | receipt */
+    documentType?: string;
+    /** When false, save document without reducing stock. */
+    deductStock?: boolean;
+    /** Revise this existing sale (one document per type per order). */
+    saleId?: number | null;
+    /** Overall order discount (absolute). */
+    discount?: number;
+    /** Tax amount included in payable total. */
+    tax?: number;
+    /** Final payable = subtotal − discount + tax (stored as sale total). */
+    payableTotal?: number;
     lines: unknown[];
   }): Observable<any> {
     const jwt = this.getSessionToken();
     const headers = new HttpHeaders({
       Authorization: `Bearer ${jwt}`,
     });
-    return this.http.post(`${this.apiBaseUrl}/pharmacy-otc/complete-sale`, payload, { headers });
+    const body: Record<string, unknown> = {
+      amountReceived: payload.amountReceived,
+      paymentForm: payload.paymentForm,
+      receivedBy: payload.receivedBy,
+      notes: payload.notes,
+      visitId: payload.visitId,
+      patientId: payload.patientId,
+      patientName: payload.patientName ?? payload.clientName,
+      recordPayment: payload.recordPayment,
+      documentType: payload.documentType,
+      deductStock: payload.deductStock,
+      saleId: payload.saleId != null && payload.saleId > 0 ? payload.saleId : undefined,
+      discount:
+        payload.discount != null && Number(payload.discount) > 0
+          ? Number(payload.discount)
+          : undefined,
+      tax: payload.tax != null && Number(payload.tax) > 0 ? Number(payload.tax) : undefined,
+      payableTotal:
+        payload.payableTotal != null && Number(payload.payableTotal) > 0
+          ? Number(payload.payableTotal)
+          : undefined,
+      lines: payload.lines,
+    };
+    return this.http.post(`${this.apiBaseUrl}/pharmacy-otc/complete-sale`, body, { headers });
+  }
+
+  /** Record payment on an OTC/order visit and apply it to unpaid sale totals. */
+  payOtcOrderDebt(
+    visitId: number,
+    data: {
+      amountToPay: number;
+      paymentForm: string;
+      status?: string;
+      notes?: string;
+      receivedBy?: string;
+      paidBy?: string;
+      dateOfPayment?: string;
+      timeOfPayment?: string;
+    }
+  ): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http
+      .post(`${this.apiBaseUrl}/pharmacy-otc/pay-order-debt/${visitId}`, data, { headers })
+      .pipe(map((res: any) => res));
+  }
+
+  /** Apply payment across a client's unpaid OTC sales (oldest first). */
+  payOtcClientDebt(
+    patientId: number,
+    data: {
+      amountToPay: number;
+      paymentForm: string;
+      status?: string;
+      notes?: string;
+      receivedBy?: string;
+    }
+  ): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http
+      .post(`${this.apiBaseUrl}/pharmacy-otc/pay-client-debt/${patientId}`, data, { headers })
+      .pipe(map((res: any) => res));
+  }
+
+  /** Confirm goods delivered for an OTC/visit order; deducts deferred stock and requires a delivery note. */
+  confirmOtcGoodsDelivery(visitId: number, deliveryNote: string): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http.post(
+      `${this.apiBaseUrl}/pharmacy-otc/confirm-delivery/${visitId}`,
+      { deliveryNote },
+      { headers }
+    );
+  }
+
+  /**
+   * Create a missing commercial document on an order (visit) by cloning products
+   * from previous pipeline documents. Also fills any missing stages up to documentType.
+   */
+  ensureOtcOrderDocument(visitId: number, documentType: string): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    const params = new HttpParams().set('documentType', documentType);
+    return this.http
+      .post(`${this.apiBaseUrl}/pharmacy-otc/ensure-document/${visitId}`, {}, { headers, params })
+      .pipe(map((res: any) => res));
+  }
+
+  /** Realign OTC sale paid figures with active (non-reversed) visit payments. */
+  reconcileOtcOrderPaid(visitId: number): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http
+      .post(`${this.apiBaseUrl}/pharmacy-otc/reconcile-paid/${visitId}`, {}, { headers })
+      .pipe(map((res: any) => res));
+  }
+
+  /** Activate or deactivate an OTC order (all sales on the visit, or one sale). */
+  setOtcOrderActive(opts: {
+    visitId?: number | null;
+    saleId?: number | null;
+    active: boolean;
+  }): Observable<any> {
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    let params = new HttpParams().set('active', opts.active ? 'true' : 'false');
+    if (opts.visitId != null && opts.visitId > 0) {
+      params = params.set('visitId', String(opts.visitId));
+    }
+    if (opts.saleId != null && opts.saleId > 0) {
+      params = params.set('saleId', String(opts.saleId));
+    }
+    return this.http
+      .post(`${this.apiBaseUrl}/pharmacy-otc/set-order-active`, {}, { headers, params })
+      .pipe(map((res: any) => res));
   }
 
   deletePharmacySoldLine(lineId: number, source: 'OTC' | 'RX'): Observable<any> {
@@ -6156,6 +6494,34 @@ getItemsAdvancedSearchDteEmptyPdfUndefined(){
     });
     return this.http.get(`${this.apiBaseUrl}/pharmacy-otc/sales`, { params, headers }).pipe(
       map((res: any) => res?.data ?? res ?? [])
+    );
+  }
+
+  /** Sale-level commercial documents (quotation / proforma / invoice / receipt) for a visit or client. */
+  listOtcSaleDocuments(opts: {
+    visitId?: number | null;
+    patientId?: number | null;
+    documentType?: string;
+  }): Observable<any[]> {
+    let params = new HttpParams();
+    if (opts.visitId != null && opts.visitId > 0) {
+      params = params.set('visitId', String(opts.visitId));
+    }
+    if (opts.patientId != null && opts.patientId > 0) {
+      params = params.set('patientId', String(opts.patientId));
+    }
+    if (opts.documentType) {
+      params = params.set('documentType', opts.documentType);
+    }
+    const jwt = this.getSessionToken();
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${jwt}`,
+    });
+    return this.http.get(`${this.apiBaseUrl}/pharmacy-otc/sales/documents`, { params, headers }).pipe(
+      map((res: any) => {
+        const data = res?.data ?? res ?? [];
+        return Array.isArray(data) ? data : [];
+      })
     );
   }
 

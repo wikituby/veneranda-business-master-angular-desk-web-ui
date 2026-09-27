@@ -7,41 +7,27 @@ import { Component } from '@angular/core';
 })
 export class AboutPageComponent {
   readonly defaultPersonImage = 'assets/images/default-person.svg';
+  readonly aboutHeroImage = 'assets/images/hero/business/business_shop_floor.png';
 
   leadership = [
     {
-      name: 'Dr. Kabugo Nicholas',
-      role: 'Medical Director & Supervising Doctor',
-      description: 'Leads clinical care and oversees medical standards at Veneranda Hospital.'
+      name: 'Product & support team',
+      role: 'Customer success',
+      description: 'Helps shops go live with inventory, sales, and day-to-day operations.'
     },
     {
-      name: 'Mr. Colin Bwambale',
-      role: 'Human Resources',
-      description: 'Supports our people and day-to-day staff coordination.'
+      name: 'Engineering',
+      role: 'Platform',
+      description: 'Builds the desktop console, mobile app, and shared business backend.'
     },
     {
-      name: 'Mr. Clyton Tumwesigye',
-      role: 'Administrator',
-      description: 'Manages facility administration and hospital operations.',
-      image: 'assets/images/dr-kabugo.jpg'
-    },
-    {
-      name: 'Aiden Tumwesigye',
-      role: 'Director',
-      description: 'Board leadership guiding growth and community service.'
-    },
-    {
-      name: 'Benjamin Tumwesigye',
-      role: 'Director',
-      description: 'Board leadership supporting hospital development.'
+      name: 'Partnerships',
+      role: 'Growth',
+      description: 'Works with retailers and distributors adopting Veneranda Business Master.'
     }
   ];
 
-  boardOfAdvisors = [
-    { name: 'Dr. Festo', role: 'Board Advisor' },
-    { name: 'Dr. Gyavira', role: 'Board Advisor' },
-    { name: 'Dr. Apulr Gerald Humble', role: 'Board Advisor' }
-  ];
+  boardOfAdvisors: Array<{ name: string; role: string }> = [];
 
   personImage(person: { image?: string }): string {
     return person.image || this.defaultPersonImage;

@@ -1,0 +1,44 @@
+<div class="client-info-card" *ngIf="client; else noClient">
+  <div class="client-header">
+    <div class="client-avatar">
+      <img [src]="client.profilePic || 'assets/images/vector.jpeg'" 
+           [alt]="client.firstName + ' ' + client.lastName"
+           class="avatar-img">
+    </div>
+    <div class="client-details">
+      <h3 class="client-name">
+        {{ client.firstName | uppercase }} {{ client.lastName | uppercase }}
+      </h3>
+      <p class="client-email">{{ client.email }}</p>
+      <p class="client-phone">{{ client.phone }}</p>
+      <p class="client-group" *ngIf="client.clientGroup">
+        Group: {{ client.clientGroup }}
+      </p>
+    </div>
+  </div>
+  
+  <div class="client-actions">
+    <button class="btn btn-primary btn-sm" (click)="onEditClient(client)">
+      <i class="fas fa-edit"></i> Edit
+    </button>
+    <button class="btn btn-danger btn-sm" (click)="onDeleteClient(client.id!)">
+      <i class="fas fa-trash"></i> Delete
+    </button>
+  </div>
+</div>
+
+<ng-template #noClient>
+  <div class="no-client-card">
+    <div class="text-center">
+      <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+      <h4>No Client Selected</h4>
+      <p class="text-muted">Please select a client to view their information</p>
+    </div>
+  </div>
+</ng-template>
+
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="spinner-border text-primary" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>

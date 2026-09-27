@@ -10,14 +10,6 @@ import { FilterPipeModule } from 'ngx-filter-pipe';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { DEFAULT_DRUG_CATEGORY_TREE } from '../../../../config/default-drug-categories.config';
-import {
-  countMissingDrugCategories,
-  DrugCategorySyncMode,
-  hasDrugParentCategory,
-  isDrugCategoryTreeIncomplete,
-  syncDefaultDrugCategories
-} from '../../../../utils/seed-drug-categories.util';
 import { findCreatedInList } from '../../../../utils/inventory-dropdown.util';
 import {
   PRESCRIBING_DOSAGE_PROFILE_LABELS,
@@ -83,6 +75,10 @@ export class ConsumableItemsComponent implements OnInit {
   showDivAddToDataBaseNewStockItem: boolean = false;
   showDivUpdatedLoaderNewStockItem: boolean = false;
   isCollapsedNewStockItem: boolean = true;
+
+  /** Flutter-aligned sale / business category defaults for consumable products. */
+  saleCategoryOptions: string[] = ['Retail', 'Wholesale', 'Service'];
+  businessCategoryOptions: string[] = ['Supermarket', 'Hardware'];
   
   // Editing properties
   isEditingStockItem: boolean = false;
@@ -195,9 +191,6 @@ export class ConsumableItemsComponent implements OnInit {
   expandedCategoryIds: Set<number> = new Set<number>();
   expandedItemModalCategoryIds: Set<number> = new Set<number>();
   expandedCategoryParentIds: Set<number> = new Set<number>();
-  isSeedingDrugCategories = false;
-  drugCategorySyncMode: DrugCategorySyncMode = 'incremental';
-  drugCategorySeedProgress = { current: 0, total: 0, name: '' };
   
   // Add category modal properties
   isCollapsedNewCategory: boolean = true;
@@ -326,7 +319,7 @@ export class ConsumableItemsComponent implements OnInit {
   ingredientUnitList: any[] = [];
   filteredIngredientUnitList: any[] = [];
   
-  // Add Item modal properties
+  // Add Product modal properties
   isCollapsedNewItem: boolean = true;
   currentItem: any = {};
   showDivAddToDataBaseNewItem: boolean = false;
@@ -554,7 +547,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.loadBrands(),
       this.loadFormulations(),
       this.loadLowestPackages(),
-      this.loadCategories({ skipDrugSync: true }),
+      this.loadCategories(),
       this.loadRoutesOfAdmin(),
       this.loadStrengthUnits(),
       this.loadItems(),
@@ -996,7 +989,7 @@ export class ConsumableItemsComponent implements OnInit {
 
   loadBrands(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllBrandsHospitalItem().subscribe({
+      this.api.getAllBrandsBusinessItem().subscribe({
         next: (res) => {
           this.brandList = res || [];
           this.filteredBrandList = this.brandList;
@@ -1018,7 +1011,7 @@ export class ConsumableItemsComponent implements OnInit {
     });
   }
 
-  // Load brand by ID and set it as selected (like loadPatientGroupByGroupName)
+  // Load brand by ID and set it as selected (like loadClientGroupByGroupName)
   loadBrandById(id: any) {
     if (!id) {
       this.clearBrandSelection();
@@ -1027,7 +1020,7 @@ export class ConsumableItemsComponent implements OnInit {
     
     // First ensure brands are loaded
     if (this.brandList.length === 0) {
-      this.api.getAllBrandsHospitalItem().subscribe({
+      this.api.getAllBrandsBusinessItem().subscribe({
         next: (res) => {
           this.brandList = res || [];
           this.filteredBrandList = this.brandList;
@@ -1083,7 +1076,7 @@ export class ConsumableItemsComponent implements OnInit {
     this.closeAllStockItemModalDropdowns();
     this.isBrandDropdownOpen = !wasOpen;
     // Brands will be loaded on click via HTML (click)="toggleBrandDropdown(); loadBrands()"
-    // This matches the patient component pattern where loadPatientGroups() is called on click
+    // This matches the client component pattern where loadClientGroups() is called on click
     if (this.isBrandDropdownOpen) {
       this.brandSearchQuery = '';
       this.filterBrands();
@@ -1096,7 +1089,7 @@ export class ConsumableItemsComponent implements OnInit {
     }, 200);
   }
 
-  // Filter brands list (like filteredPatientGroupList)
+  // Filter brands list (like filteredClientGroupList)
   filteredBrandListMethod() {
     let filteredList = this.brandList ?? [];
     
@@ -1161,7 +1154,7 @@ export class ConsumableItemsComponent implements OnInit {
   // Manufacturer methods
   loadManufacturers(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllManufacturersHospitalItem().subscribe({
+      this.api.getAllManufacturersBusinessItem().subscribe({
         next: (res) => {
           this.manufacturerList = res || [];
           this.filteredManufacturerList = this.manufacturerList;
@@ -1190,7 +1183,7 @@ export class ConsumableItemsComponent implements OnInit {
     }
     
     if (this.manufacturerList.length === 0) {
-      this.api.getAllManufacturersHospitalItem().subscribe({
+      this.api.getAllManufacturersBusinessItem().subscribe({
         next: (res) => {
           this.manufacturerList = res || [];
           this.filteredManufacturerList = this.manufacturerList;
@@ -1346,7 +1339,7 @@ export class ConsumableItemsComponent implements OnInit {
     }
     
     if (this.manufacturerList.length === 0) {
-      this.api.getAllManufacturersHospitalItem().subscribe({
+      this.api.getAllManufacturersBusinessItem().subscribe({
         next: (res) => {
           this.manufacturerList = res || [];
           const manufacturer = this.manufacturerList.find(m => 
@@ -1475,8 +1468,8 @@ export class ConsumableItemsComponent implements OnInit {
     }
 
     const apiCall = this.isEditingBrand && this.editingBrandId
-      ? this.api.updateBrandHospitalItem(this.editingBrandId, brandData)
-      : this.api.addBrandHospitalItem(brandData);
+      ? this.api.updateBrandBusinessItem(this.editingBrandId, brandData)
+      : this.api.addBrandBusinessItem(brandData);
 
     const requestedBrandName = (brandData.name || '').toString().trim().toLowerCase();
 
@@ -1565,8 +1558,8 @@ export class ConsumableItemsComponent implements OnInit {
     const openedFromBrandForm = this.manufacturerModalOpenedFromBrand;
 
     const apiCall = this.isEditingManufacturer && this.editingManufacturerId
-      ? this.api.updateManufacturerHospitalItem(this.editingManufacturerId, manufacturerData)
-      : this.api.addManufacturerHospitalItem(manufacturerData);
+      ? this.api.updateManufacturerBusinessItem(this.editingManufacturerId, manufacturerData)
+      : this.api.addManufacturerBusinessItem(manufacturerData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -1641,7 +1634,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewManufacturer = true;
       this.isButtonDisabledManufacturer = true;
 
-      this.api.deleteManufacturerHospitalItem(manufacturer.id).subscribe({
+      this.api.deleteManufacturerBusinessItem(manufacturer.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewManufacturer = false;
           this.isButtonDisabledManufacturer = false;
@@ -1675,42 +1668,29 @@ export class ConsumableItemsComponent implements OnInit {
     this.resetPrescribingProfileFields();
     this.currentStockItem = {
       stockItemName: '',
+      barcode: '',
+      sku: '',
+      shelfNumber: '',
+      businessCategory: null,
+      saleCategory: null,
+      unit: '',
+      unitShort: '',
+      costPrice: null,
+      sellingPrice: null,
+      unitSellingModelId: null,
+      useUnitSellingModel: true,
+      stockQty: null,
+      reorderLevel: null,
+      restockTo: null,
+      image: null,
+      image2: null,
+      image3: null,
+      imageUrl: null,
+      itemCategoryId: null,
       brandId: null,
       formulationId: null,
       lowestPackageId: null,
-      totalCompositionValue: null,
-      totalCompositionUnitId: null,
-      reconstitutionValue: null,
-      reconstitutionUnitId: null,
-      itemCategoryId: null,
       routeOfAdminId: null,
-      imageUrl: null,
-      image: null,
-      description: null,
-      // Last Unit of Sell Measure fields
-      lastUnitOfSellMeasure: null,
-      lastUnitOfSellMeasureStrength: null,
-      lastUnitOfSellMeasureStrengthUnit: null,
-      lastUnitOfSellMeasureStrengthUnitTitle: null,
-      // Prescribing units
-      lastUnitOfPrescribingMeasureStrengthUnit: null,
-      lastUnitOfPrescribingMeasureStrengthUnitTitle: null,
-      // Medical information fields
-      indication: null,
-      contraIndication: null,
-      drugIteractions: null,
-      pharmacodynamics: null,
-      pharmacokinetics: null,
-      adverseEffects: null,
-      dosage: null,
-      notes: null,
-      // Reconstitution fields
-      methodOfReconstitution: null,
-      descriptionBeforeReconstitution: null,
-      descriptionAfterReconstitution: null,
-      // Storage and antidote
-      storage: null,
-      antiDote: null
     };
     this.clearBrandSelection();
     this.clearFormulationSelection();
@@ -1810,12 +1790,12 @@ export class ConsumableItemsComponent implements OnInit {
       return;
     }
 
-    // Set editing state and button status (like patient component)
+    // Set editing state and button status (like client component)
     this.isEditingStockItem = true;
     this.editingStockItemId = stockItem.id;
     this.saveButtonStatus = "Update Consumable Item";
     
-    // Open the modal first (like patient component)
+    // Open the modal first (like client component)
     this.isCollapsedNewStockItem = false;
     document.body.style.overflow = 'hidden';
 
@@ -1830,220 +1810,46 @@ export class ConsumableItemsComponent implements OnInit {
         console.log("Processed data:", data);
         
         const immediateCategoryId = this.extractImmediateCategoryId(data);
-        // Populate form fields with proper type conversion (like patient component sets currentPatient)
+        // Populate form fields with Flutter-aligned product fields
         this.currentStockItem = {
           id: data?.id != null ? Number(data.id) : stockItem.id,
-          brandId: data?.brandId != null ? Number(data.brandId) : null,
-          formulationId: data?.formulationId != null ? Number(data.formulationId) : null,
-          lowestPackageId: data?.lowestPackageId != null ? Number(data.lowestPackageId) : null,
-          totalCompositionValue: data?.totalCompositionValue != null ? Number(data.totalCompositionValue) : null,
-          totalCompositionUnitId: data?.totalCompositionUnitId != null ? Number(data.totalCompositionUnitId) : null,
-          reconstitutionValue: data?.reconstitutionValue != null ? Number(data.reconstitutionValue) : null,
-          reconstitutionUnitId: data?.reconstitutionUnitId != null ? Number(data.reconstitutionUnitId) : null,
-          itemCategoryId: immediateCategoryId,
-          routeOfAdminId: data?.routeOfAdminId != null ? Number(data.routeOfAdminId) : null,
+          stockItemName: data?.stockItemName || '',
+          barcode: data?.barcode || '',
+          sku: data?.sku || '',
+          shelfNumber: data?.shelfNumber || '',
+          businessCategory: data?.businessCategory || null,
+          saleCategory: data?.saleCategory || null,
+          unit: data?.unit || '',
+          unitShort: data?.unitShort || '',
+          costPrice: data?.costPrice != null ? Number(data.costPrice) : null,
+          sellingPrice: data?.sellingPrice != null ? Number(data.sellingPrice) : null,
+          unitSellingModelId:
+            data?.unitSellingModelId != null && Number(data.unitSellingModelId) > 0
+              ? Number(data.unitSellingModelId)
+              : null,
+          useUnitSellingModel: data?.useUnitSellingModel !== false,
+          stockQty: data?.stockQty != null ? Number(data.stockQty) : null,
+          reorderLevel: data?.reorderLevel != null ? Number(data.reorderLevel) : null,
+          restockTo: data?.restockTo != null ? Number(data.restockTo) : null,
           imageUrl: data?.imageUrl || data?.image || null,
           image: data?.image || data?.imageUrl || null,
-          description: data?.description || null,
-          // Last Unit of Sell Measure fields
-          lastUnitOfSellMeasure: data?.lastUnitOfSellMeasure || null,
-          lastUnitOfSellMeasureStrength: data?.lastUnitOfSellMeasureStrength || null,
-          lastUnitOfSellMeasureStrengthUnit: data?.lastUnitOfSellMeasureStrengthUnit != null ? Number(data.lastUnitOfSellMeasureStrengthUnit) : null,
-          lastUnitOfSellMeasureStrengthUnitTitle: data?.lastUnitOfSellMeasureStrengthUnitTitle || null,
-          // Prescribing units
-          lastUnitOfPrescribingMeasureStrengthUnit: data?.lastUnitOfPrescribingMeasureStrengthUnit != null ? Number(data.lastUnitOfPrescribingMeasureStrengthUnit) : null,
-          lastUnitOfPrescribingMeasureStrengthUnitTitle: data?.lastUnitOfPrescribingMeasureStrengthUnitTitle || null,
-          // Medical information fields
-          indication: data?.indication || null,
-          contraIndication: data?.contraIndication || null,
-          drugIteractions: data?.drugIteractions || null,
-          pharmacodynamics: data?.pharmacodynamics || null,
-          pharmacokinetics: data?.pharmacokinetics || null,
-          adverseEffects: data?.adverseEffects || null,
-          dosage: data?.dosage || null,
-          notes: data?.notes || null,
-          // Reconstitution fields
-          methodOfReconstitution: data?.methodOfReconstitution || null,
-          descriptionBeforeReconstitution: data?.descriptionBeforeReconstitution || null,
-          descriptionAfterReconstitution: data?.descriptionAfterReconstitution || null,
-          // Storage and antidote
-          storage: data?.storage || null,
-          antiDote: data?.antiDote || null
+          image2: data?.image2 || null,
+          image3: data?.image3 || null,
+          itemCategoryId: immediateCategoryId,
+          brandId: data?.brandId != null ? Number(data.brandId) : null,
         };
 
-        this.hydratePrescribingProfileFromData(data);
-        this.setIndicationRowsFromData(data);
-        this.loadStockItemDosageRules(stockItem.id);
+        this.ensureCategoryOption(this.businessCategoryOptions, this.currentStockItem.businessCategory);
+        this.ensureCategoryOption(this.saleCategoryOptions, this.currentStockItem.saleCategory);
         
         console.log("=== FORM FIELDS POPULATED ===");
         console.log("currentStockItem:", this.currentStockItem);
 
-        // Load all dropdowns first, then set selections
-        // This ensures lists are populated before we try to find items
-        this.loadBrands();
-        this.loadFormulations();
-        this.loadLowestPackages();
+        // Load categories for any remaining reference (non-blocking)
         this.loadCategories().then(() => {
           this.applyEditCategorySelection(data, immediateCategoryId);
         });
-        this.loadRoutesOfAdmin();
-        this.loadStrengthUnits();
-        this.loadReconstitutionUnits();
-        this.loadItems();
-        this.loadIngredientUnits();
-
-        // Wait for all dropdowns to load, then populate selections
-        const populateDropdowns = () => {
-          // Check if all lists are loaded
-          const allLoaded = 
-            this.formulationList.length > 0 &&
-            this.lowestPackageList.length > 0 &&
-            this.categoryList.length > 0 &&
-            this.routeOfAdminList.length > 0 &&
-            this.strengthUnitList.length > 0 &&
-            this.reconstitutionUnitList.length > 0;
-
-          if (!allLoaded) {
-            setTimeout(populateDropdowns, 100);
-            return;
-          }
-
-          // Set brand selection
-          if (data.brandId != null) {
-            this.loadBrandById(data.brandId);
-          } else {
-            this.clearBrandSelection();
-          }
-
-          // Set formulation selection
-          if (data.formulationId != null) {
-            const formulation = this.formulationList.find(f => 
-              Number(f.id) === Number(data.formulationId) || f.id === data.formulationId
-            );
-            if (formulation) {
-              this.selectFormulation(formulation);
-              console.log("Formulation selected:", this.selectedFormulationName);
-            } else {
-              this.clearFormulationSelection();
-            }
-          } else {
-            this.clearFormulationSelection();
-          }
-
-          // Set lowest package selection
-          if (data.lowestPackageId != null) {
-            const pkg = this.lowestPackageList.find(p => 
-              Number(p.id) === Number(data.lowestPackageId) || p.id === data.lowestPackageId
-            );
-            if (pkg) {
-              this.selectLowestPackage(pkg);
-              console.log("Lowest package selected:", this.selectedLowestPackageName);
-            } else {
-              this.clearLowestPackageSelection();
-            }
-          } else {
-            this.clearLowestPackageSelection();
-          }
-
-          // Set sell measure selection (same source as lowest package)
-          if (data.lastUnitOfSellMeasure != null && data.lastUnitOfSellMeasure !== '') {
-            const sellMeasurePkg = this.lowestPackageList.find((p: any) =>
-              Number(p.id) === Number(data.lastUnitOfSellMeasure) ||
-              p.id === data.lastUnitOfSellMeasure ||
-              (p.title || '').toLowerCase() === String(data.lastUnitOfSellMeasure).toLowerCase()
-            );
-            if (sellMeasurePkg) {
-              this.selectSellMeasureLowestPackage(sellMeasurePkg);
-            } else {
-              this.selectedSellMeasureLowestPackageName = String(data.lastUnitOfSellMeasure);
-            }
-          } else {
-            this.clearSellMeasureLowestPackageSelection();
-          }
-
-          // Set route of admin selection
-          if (data.routeOfAdminId != null) {
-            const route = this.routeOfAdminList.find(r => 
-              Number(r.id) === Number(data.routeOfAdminId) || r.id === data.routeOfAdminId
-            );
-            if (route) {
-              this.selectRouteOfAdmin(route);
-              console.log("Route of admin selected:", this.selectedRouteOfAdminName);
-            } else {
-              this.clearRouteOfAdminSelection();
-            }
-          } else {
-            this.clearRouteOfAdminSelection();
-          }
-
-          // Set strength unit selection (composition unit)
-          if (data.totalCompositionUnitId != null) {
-            const unit = this.strengthUnitList.find(u => 
-              Number(u.id) === Number(data.totalCompositionUnitId) || u.id === data.totalCompositionUnitId
-            );
-            if (unit) {
-              this.selectStrengthUnit(unit);
-              console.log("Composition unit selected:", this.selectedStrengthUnitName);
-            } else {
-              this.clearStrengthUnitSelection();
-            }
-          } else {
-            this.clearStrengthUnitSelection();
-          }
-
-          // Set sell measure strength unit selection
-          if (data.lastUnitOfSellMeasureStrengthUnit != null) {
-            const sellUnit = this.strengthUnitList.find(u => 
-              Number(u.id) === Number(data.lastUnitOfSellMeasureStrengthUnit) || u.id === data.lastUnitOfSellMeasureStrengthUnit
-            );
-            if (sellUnit) {
-              this.selectedSellMeasureStrengthUnitName = sellUnit.title;
-            } else {
-              this.clearSellMeasureStrengthUnitSelection();
-            }
-          } else {
-            this.clearSellMeasureStrengthUnitSelection();
-          }
-
-          // Set prescribing strength unit selection
-          if (data.lastUnitOfPrescribingMeasureStrengthUnit != null) {
-            const prescribingUnit = this.strengthUnitList.find(u => 
-              Number(u.id) === Number(data.lastUnitOfPrescribingMeasureStrengthUnit) || u.id === data.lastUnitOfPrescribingMeasureStrengthUnit
-            );
-            if (prescribingUnit) {
-              this.selectedPrescribingStrengthUnitName = prescribingUnit.title;
-            } else {
-              this.clearPrescribingStrengthUnitSelection();
-            }
-          } else {
-            this.clearPrescribingStrengthUnitSelection();
-          }
-
-          // Set reconstitution unit selection
-          if (data.reconstitutionUnitId != null) {
-            const unit = this.reconstitutionUnitList.find(u => 
-              Number(u.id) === Number(data.reconstitutionUnitId) || u.id === data.reconstitutionUnitId
-            );
-            if (unit) {
-              this.selectReconstitutionUnit(unit);
-              console.log("Reconstitution unit selected:", this.selectedReconstitutionUnitName);
-            } else {
-              this.clearReconstitutionUnitSelection();
-            }
-          } else {
-            this.clearReconstitutionUnitSelection();
-          }
-
-          this.showReconstitutionFields =
-            data.reconstitutionValue != null ||
-            data.reconstitutionUnitId != null;
-
-          // Load compositions/ingredients after all dropdowns are ready
-          this.loadCompositions(stockItem.id);
-        };
-
-        // Start checking after initial load delay
-        setTimeout(populateDropdowns, 500);
+        this.loadBrands();
 
       },
       error: (err) => {
@@ -2060,7 +1866,7 @@ export class ConsumableItemsComponent implements OnInit {
 
   // Helper method to load compositions/ingredients
   loadCompositions(stockItemId: number) {
-    this.api.getCompositionsByStockItemIdHospitalItem(stockItemId).subscribe({
+    this.api.getCompositionsByStockItemIdBusinessItem(stockItemId).subscribe({
       next: (compositions: any[]) => {
         console.log("Compositions loaded:", compositions);
         
@@ -2073,7 +1879,7 @@ export class ConsumableItemsComponent implements OnInit {
 
           // Fetch strength details for each composition
           if (compositions && compositions.length > 0) {
-            this.api.getAllStrengthsHospitalItem().subscribe({
+            this.api.getAllStrengthsBusinessItem().subscribe({
               next: (strengths: any[]) => {
                 this.ingredients = [];
                 const seenIngredientRows = new Set<string>();
@@ -2193,61 +1999,39 @@ export class ConsumableItemsComponent implements OnInit {
     this.showDivUpdatedLoaderNewStockItem = true;
     this.showDivAddToDataBaseNewStockItem = false;
 
-    // Prepare the data - convert empty strings to null for numeric fields
-    // Note: stockItemName is auto-generated by the backend
-    const stockItemData: any = {
-      brandId: data.brandId ? Number(data.brandId) : null,
-      formulationId: data.formulationId ? Number(data.formulationId) : null,
-      lowestPackageId: data.lowestPackageId ? Number(data.lowestPackageId) : null,
-      totalCompositionValue: data.totalCompositionValue ? Number(data.totalCompositionValue) : null,
-      totalCompositionUnitId: data.totalCompositionUnitId ? Number(data.totalCompositionUnitId) : null,
-      reconstitutionValue: data.reconstitutionValue ? Number(data.reconstitutionValue) : null,
-      reconstitutionUnitId: data.reconstitutionUnitId ? Number(data.reconstitutionUnitId) : null,
-      itemCategoryId: data.itemCategoryId ? Number(data.itemCategoryId) : null,
-      routeOfAdminId: data.routeOfAdminId ? Number(data.routeOfAdminId) : null,
-      imageUrl: this.currentStockItem?.imageUrl || this.currentStockItem?.image || null,
-      image: this.currentStockItem?.image || this.currentStockItem?.imageUrl || null,
-      description: data.description || null,
-      // Last Unit of Sell Measure fields
-      lastUnitOfSellMeasure: data.lastUnitOfSellMeasure || null,
-      lastUnitOfSellMeasureStrength: data.lastUnitOfSellMeasureStrength || null,
-      lastUnitOfSellMeasureStrengthUnit: data.lastUnitOfSellMeasureStrengthUnit ? Number(data.lastUnitOfSellMeasureStrengthUnit) : null,
-      lastUnitOfSellMeasureStrengthUnitTitle: data.lastUnitOfSellMeasureStrengthUnitTitle || null,
-      // Prescribing units
-      lastUnitOfPrescribingMeasureStrengthUnit: data.lastUnitOfPrescribingMeasureStrengthUnit ? Number(data.lastUnitOfPrescribingMeasureStrengthUnit) : null,
-      lastUnitOfPrescribingMeasureStrengthUnitTitle: data.lastUnitOfPrescribingMeasureStrengthUnitTitle || null,
-      ...this.buildPrescribingProfilePayload(),
-      // Medical information fields
-      indication: this.buildIndicationSummary() || data.indication || null,
-      indications: this.buildIndicationsPayload(),
-      contraIndication: data.contraIndication || null,
-      drugIteractions: data.drugIteractions || null,
-      pharmacodynamics: data.pharmacodynamics || null,
-      pharmacokinetics: data.pharmacokinetics || null,
-      adverseEffects: data.adverseEffects || null,
-      dosage: data.dosage || null,
-      notes: data.notes || null,
-      // Reconstitution fields
-      methodOfReconstitution: data.methodOfReconstitution || null,
-      descriptionBeforeReconstitution: data.descriptionBeforeReconstitution || null,
-      descriptionAfterReconstitution: data.descriptionAfterReconstitution || null,
-      // Storage and antidote
-      storage: data.storage || null,
-      antiDote: data.antiDote || null
-    };
-    
-    // Prepare ingredients/compositions data
-    if (this.ingredients && this.ingredients.length > 0) {
-      stockItemData.ingredients = this.ingredients
-        .filter(ing => ing.itemId && ing.strength && ing.unitId) // Only include valid ingredients
-        .map(ing => ({
-          activeIngredientId: Number(ing.itemId),
-          strength: Number(ing.strength),
-          unitId: Number(ing.unitId)
-        }));
-    } else {
-      stockItemData.ingredients = [];
+    const name = (this.currentStockItem?.stockItemName || data?.stockItemName || '').trim();
+    if (!name) {
+      this.isButtonDisabled = false;
+      this.showDivUpdatedLoaderNewStockItem = false;
+      this.responseColor = 'rgb(238, 16, 16)';
+      this.responseMessage = 'Name is required.';
+      this.showDivAddToDataBaseNewStockItem = true;
+      return;
     }
+
+    const isService = this.isServiceSaleCategory;
+    const stockItemData: any = {
+      stockItemName: name,
+      barcode: this.currentStockItem?.barcode || null,
+      sku: this.currentStockItem?.sku || null,
+      shelfNumber: this.currentStockItem?.shelfNumber || null,
+      businessCategory: this.currentStockItem?.businessCategory || null,
+      saleCategory: this.currentStockItem?.saleCategory || null,
+      unit: this.currentStockItem?.unit || null,
+      unitShort: this.currentStockItem?.unitShort || null,
+      costPrice: this.toNumberOrZero(this.currentStockItem?.costPrice),
+      sellingPrice: this.toNumberOrZero(this.currentStockItem?.sellingPrice),
+      useUnitSellingModel: this.currentStockItem?.useUnitSellingModel !== false,
+      stockQty: isService
+        ? (this.isEditingStockItem ? this.toNumberOrZero(this.currentStockItem?.stockQty) : 1)
+        : this.toNumberOrZero(this.currentStockItem?.stockQty),
+      reorderLevel: isService ? 0 : this.toNumberOrZero(this.currentStockItem?.reorderLevel),
+      restockTo: isService ? 0 : this.toNumberOrZero(this.currentStockItem?.restockTo),
+      image: this.currentStockItem?.image || this.currentStockItem?.imageUrl || null,
+      image2: this.currentStockItem?.image2 || null,
+      image3: this.currentStockItem?.image3 || null,
+      ingredients: [],
+    };
 
     // Use update endpoint if editing, otherwise use create-or-update
     const apiCall = this.isEditingStockItem && this.editingStockItemId
@@ -2259,40 +2043,23 @@ export class ConsumableItemsComponent implements OnInit {
         this.showDivUpdatedLoaderNewStockItem = false;
         this.isButtonDisabled = false;
 
-        try {
-          const savedStockItemId = this.extractSavedStockItemId(res);
-          if (savedStockItemId) {
-            await this.saveStockItemDosageRules(savedStockItemId);
-          } else if (this.stockDosageRuleRows.length) {
-            throw new Error('Stock item saved, but the saved item ID was not returned for dosage-rule saving.');
-          }
-
-          if (res && res.message) {
-            this.responseColor = res.message.includes('successfully') ? 'rgb(11, 155, 112)' : 'rgb(238, 16, 16)';
-            this.responseMessage = res.message;
-          } else {
-            this.responseColor = 'rgb(11, 155, 112)';
-            this.responseMessage = this.isEditingStockItem ? "Consumable item updated successfully!" : "Consumable item saved successfully!";
-          }
-          if (this.stockDosageRuleRows.length || this.deletedStockDosageRuleIds.length) {
-            this.responseMessage += ' Dosage rules saved.';
-          }
-
-          this.showDivAddToDataBaseNewStockItem = true;
-
-          // Reload the table data after a short delay
-          setTimeout(() => {
-            this.initializeTableData();
-            setTimeout(() => {
-              this.closeStockItemModal();
-            }, 1500);
-          }, 1000);
-        } catch (err: any) {
-          this.responseColor = 'rgb(238, 16, 16)';
-          this.responseMessage = err?.error?.message || err?.message || 'Consumable item saved, but dosage rules could not be saved.';
-          this.showDivAddToDataBaseNewStockItem = true;
-          console.error('Error saving dosage rules:', err);
+        if (res && res.message) {
+          this.responseColor = res.message.includes('successfully') ? 'rgb(11, 155, 112)' : 'rgb(238, 16, 16)';
+          this.responseMessage = res.message;
+        } else {
+          this.responseColor = 'rgb(11, 155, 112)';
+          this.responseMessage = this.isEditingStockItem ? "Consumable item updated successfully!" : "Consumable item saved successfully!";
         }
+
+        this.showDivAddToDataBaseNewStockItem = true;
+
+        // Reload the table data after a short delay
+        setTimeout(() => {
+          this.initializeTableData();
+          setTimeout(() => {
+            this.closeStockItemModal();
+          }, 1500);
+        }, 1000);
       },
       error: (err) => {
         this.showDivUpdatedLoaderNewStockItem = false;
@@ -2305,10 +2072,40 @@ export class ConsumableItemsComponent implements OnInit {
     });
   }
 
+  get isServiceSaleCategory(): boolean {
+    return String(this.currentStockItem?.saleCategory || '').trim().toLowerCase() === 'service';
+  }
+
+  onSaleCategoryChange(_value: string | null): void {
+    if (this.isServiceSaleCategory && !this.isEditingStockItem) {
+      this.currentStockItem.stockQty = 1;
+      this.currentStockItem.reorderLevel = 0;
+      this.currentStockItem.restockTo = 0;
+    }
+  }
+
+  private ensureCategoryOption(list: string[], value: string | null | undefined): void {
+    const trimmed = (value || '').trim();
+    if (!trimmed) {
+      return;
+    }
+    if (!list.some((item) => item.toLowerCase() === trimmed.toLowerCase())) {
+      list.push(trimmed);
+    }
+  }
+
+  private toNumberOrZero(value: any): number {
+    if (value === null || value === undefined || value === '') {
+      return 0;
+    }
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+
   // Formulation methods
   loadFormulations(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllFormulationsHospitalItem().subscribe({
+      this.api.getAllFormulationsBusinessItem().subscribe({
         next: (res) => {
           this.formulationList = res || [];
           this.filteredFormulationList = this.formulationList;
@@ -2404,8 +2201,8 @@ export class ConsumableItemsComponent implements OnInit {
     const requestedFormulationName = (formulationData.name || '').trim();
 
     const apiCall = this.isEditingFormulation && this.editingFormulationId
-      ? this.api.updateFormulationHospitalItem(this.editingFormulationId, formulationData)
-      : this.api.addFormulationHospitalItem(formulationData);
+      ? this.api.updateFormulationBusinessItem(this.editingFormulationId, formulationData)
+      : this.api.addFormulationBusinessItem(formulationData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -2450,7 +2247,7 @@ export class ConsumableItemsComponent implements OnInit {
   // Lowest Package methods
   loadLowestPackages(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllLowestPackagesHospitalItem().subscribe({
+      this.api.getAllLowestPackagesBusinessItem().subscribe({
         next: (res) => {
           this.lowestPackageList = res || [];
           this.filteredLowestPackageList = this.lowestPackageList;
@@ -2608,8 +2405,8 @@ export class ConsumableItemsComponent implements OnInit {
     const fromSellMeasure = this.openLowestPackageFromSellMeasure;
 
     const apiCall = this.isEditingLowestPackage && this.editingLowestPackageId
-      ? this.api.updateLowestPackageHospitalItem(this.editingLowestPackageId, packageData)
-      : this.api.addLowestPackageHospitalItem(packageData);
+      ? this.api.updateLowestPackageBusinessItem(this.editingLowestPackageId, packageData)
+      : this.api.addLowestPackageBusinessItem(packageData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -2689,7 +2486,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewLowestPackage = true;
       this.showDivAddToDataBaseNewLowestPackage = false;
 
-      this.api.deleteLowestPackageHospitalItem(pkg.id).subscribe({
+      this.api.deleteLowestPackageBusinessItem(pkg.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewLowestPackage = false;
           this.isButtonDisabledLowestPackage = false;
@@ -2725,24 +2522,14 @@ export class ConsumableItemsComponent implements OnInit {
 
   // Category methods
   loadCategories(options?: {
-    skipDrugSync?: boolean;
     preserveExpandState?: boolean;
     removeDeletedIds?: Set<number>;
     focusParentId?: number | null;
   }): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllItemCategoriesHospitalItem().subscribe({
+      this.api.getAllItemCategoriesBusinessItem().subscribe({
         next: (res) => {
           const categories = res || [];
-          if (
-            !options?.skipDrugSync &&
-            this.shouldSyncDefaultDrugCategories(categories) &&
-            !this.isSeedingDrugCategories
-          ) {
-            this.syncDefaultDrugCategoriesTree();
-            resolve();
-            return;
-          }
           this.applyLoadedCategories(categories, options);
           resolve();
         },
@@ -2841,13 +2628,6 @@ export class ConsumableItemsComponent implements OnInit {
     this.expandRootCategories(targetSet);
   }
 
-  private shouldSyncDefaultDrugCategories(categories: any[]): boolean {
-    if (!categories?.length) {
-      return true;
-    }
-    return isDrugCategoryTreeIncomplete(categories, DEFAULT_DRUG_CATEGORY_TREE);
-  }
-
   private getCategoryParentId(cat: any): number | null {
     const raw = cat?.parentId ?? cat?.parentCategoryId ?? cat?.parent?.id ?? null;
     if (raw == null || raw === '') {
@@ -2890,7 +2670,7 @@ export class ConsumableItemsComponent implements OnInit {
   }
 
   private async refreshCategoriesForDelete(): Promise<void> {
-    const list = await firstValueFrom(this.api.getAllItemCategoriesHospitalItem());
+    const list = await firstValueFrom(this.api.getAllItemCategoriesBusinessItem());
     this.applyLoadedCategories(Array.isArray(list) ? list : [], { preserveExpandState: true });
   }
 
@@ -2922,7 +2702,6 @@ export class ConsumableItemsComponent implements OnInit {
     removeDeletedIds?: Set<number>
   ): Promise<void> {
     await this.loadCategories({
-      skipDrugSync: true,
       preserveExpandState: true,
       removeDeletedIds,
       focusParentId,
@@ -2984,80 +2763,6 @@ export class ConsumableItemsComponent implements OnInit {
       return;
     }
     this.selectCategory(resolved);
-  }
-
-  syncMissingDrugCategories(manual = false): void {
-    if (this.isSeedingDrugCategories) {
-      return;
-    }
-
-    const isFreshCatalogue = !this.categoryList.length || !hasDrugParentCategory(this.categoryList);
-    const workCount = countMissingDrugCategories(
-      this.categoryList,
-      DEFAULT_DRUG_CATEGORY_TREE
-    );
-
-    if (!manual && workCount === 0) {
-      return;
-    }
-
-    this.drugCategorySyncMode = isFreshCatalogue ? 'fresh' : 'incremental';
-    this.isSeedingDrugCategories = true;
-    this.drugCategorySeedProgress = { current: 0, total: workCount, name: '' };
-
-    syncDefaultDrugCategories(this.api, DEFAULT_DRUG_CATEGORY_TREE, (progress) => {
-      this.drugCategorySeedProgress = progress;
-    })
-      .then((result) => {
-        this.isSeedingDrugCategories = false;
-        this.drugCategorySyncMode = result.mode;
-        this.drugCategorySeedProgress = { current: 0, total: 0, name: '' };
-
-        if (result.failed > 0) {
-          this.responseColor = 'rgb(238, 16, 16)';
-          this.responseMessage = result.added > 0
-            ? `Added ${result.added} DRUG categories, but ${result.failed} could not be created.`
-            : `Could not add DRUG categories (${result.failed} failed).`;
-          this.showDivAddToDataBaseNewCategory = true;
-          setTimeout(() => {
-            this.showDivAddToDataBaseNewCategory = false;
-          }, 5000);
-        } else if (result.added > 0) {
-          this.responseColor = 'rgb(11, 155, 112)';
-          this.responseMessage = result.mode === 'fresh'
-            ? `Created DRUG category catalogue (${result.added} categories).`
-            : `Added ${result.added} missing DRUG categories.`;
-          this.showDivAddToDataBaseNewCategory = true;
-          setTimeout(() => {
-            this.showDivAddToDataBaseNewCategory = false;
-          }, 3000);
-        } else if (manual) {
-          this.responseColor = 'rgb(11, 155, 112)';
-          this.responseMessage = 'DRUG category tree is already complete.';
-          this.showDivAddToDataBaseNewCategory = true;
-          setTimeout(() => {
-            this.showDivAddToDataBaseNewCategory = false;
-          }, 2500);
-        }
-
-        return this.loadCategories({ skipDrugSync: true });
-      })
-      .catch((err) => {
-        console.error('Error syncing default drug categories:', err);
-        this.isSeedingDrugCategories = false;
-        this.drugCategorySeedProgress = { current: 0, total: 0, name: '' };
-        this.responseColor = 'rgb(238, 16, 16)';
-        this.responseMessage = err?.error?.message || err?.message || 'Error syncing DRUG categories.';
-        this.showDivAddToDataBaseNewCategory = true;
-        this.loadCategories({ skipDrugSync: true });
-        setTimeout(() => {
-          this.showDivAddToDataBaseNewCategory = false;
-        }, 4000);
-      });
-  }
-
-  private syncDefaultDrugCategoriesTree(): void {
-    this.syncMissingDrugCategories(false);
   }
 
   // Get category name by ID
@@ -3624,7 +3329,7 @@ export class ConsumableItemsComponent implements OnInit {
     this.selectedCategoryName = resolved.name || '';
     this.currentStockItem.itemCategoryId = resolved.id;
 
-    this.api.getHighestParentItemCategoryHospitalItem(Number(resolved.id)).subscribe({
+    this.api.getHighestParentItemCategoryBusinessItem(Number(resolved.id)).subscribe({
       next: (highestParent: any) => {
         const topCategory = highestParent || this.resolveTopParentCategoryById(resolved.id) || resolved;
         this.selectedCategoryTopParentName = (topCategory?.name || resolved.name || '').toString();
@@ -3683,7 +3388,7 @@ export class ConsumableItemsComponent implements OnInit {
       return;
     }
 
-    this.api.getHighestParentItemCategoryHospitalItem(Number(category.id)).subscribe({
+    this.api.getHighestParentItemCategoryBusinessItem(Number(category.id)).subscribe({
       next: (highestParent: any) => {
         const resolvedCategory = highestParent || this.resolveTopParentCategoryById(category.id) || category;
         this.selectedCategoryTopParentName = (resolvedCategory?.name || category.name || '').toString();
@@ -3905,8 +3610,8 @@ export class ConsumableItemsComponent implements OnInit {
     }
 
     const apiCall = this.isEditingCategory && this.editingCategoryId
-      ? this.api.updateItemCategoryHospitalItem(this.editingCategoryId, categoryData)
-      : this.api.addItemCategoryHospitalItem(categoryData);
+      ? this.api.updateItemCategoryBusinessItem(this.editingCategoryId, categoryData)
+      : this.api.addItemCategoryBusinessItem(categoryData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -3973,7 +3678,7 @@ export class ConsumableItemsComponent implements OnInit {
 
   loadRoutesOfAdmin(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllRoutesOfAdminHospitalItem().subscribe({
+      this.api.getAllRoutesOfAdminBusinessItem().subscribe({
         next: (res) => {
           this.routeOfAdminList = res || [];
           this.filteredRouteOfAdminList = this.routeOfAdminList;
@@ -4074,8 +3779,8 @@ export class ConsumableItemsComponent implements OnInit {
     const requestedRouteTitle = (routeData.title || '').trim();
 
     const apiCall = this.isEditingRouteOfAdmin && this.editingRouteOfAdminId
-      ? this.api.updateRouteOfAdminHospitalItem(this.editingRouteOfAdminId, routeData)
-      : this.api.addRouteOfAdminHospitalItem(routeData);
+      ? this.api.updateRouteOfAdminBusinessItem(this.editingRouteOfAdminId, routeData)
+      : this.api.addRouteOfAdminBusinessItem(routeData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -4120,7 +3825,7 @@ export class ConsumableItemsComponent implements OnInit {
   // Strength Unit (Composition Unit) methods
   loadStrengthUnits(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllStrengthUnitsHospitalItem().subscribe({
+      this.api.getAllStrengthUnitsBusinessItem().subscribe({
         next: (res) => {
           this.strengthUnitList = res || [];
           this.filteredStrengthUnitList = this.strengthUnitList;
@@ -4671,7 +4376,7 @@ export class ConsumableItemsComponent implements OnInit {
   // Reconstitution Unit methods (reuses StrengthUnit API)
   loadReconstitutionUnits(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllStrengthUnitsHospitalItem().subscribe({
+      this.api.getAllStrengthUnitsBusinessItem().subscribe({
         next: (res) => {
           this.reconstitutionUnitList = res || [];
           this.filteredReconstitutionUnitList = this.reconstitutionUnitList;
@@ -4850,8 +4555,8 @@ export class ConsumableItemsComponent implements OnInit {
     const requestedUnitTitle = (unitData.title || '').trim();
 
     const apiCall = this.isEditingStrengthUnit && this.editingStrengthUnitId
-      ? this.api.updateStrengthUnitHospitalItem(this.editingStrengthUnitId, unitData)
-      : this.api.addStrengthUnitHospitalItem(unitData);
+      ? this.api.updateStrengthUnitBusinessItem(this.editingStrengthUnitId, unitData)
+      : this.api.addStrengthUnitBusinessItem(unitData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -4926,7 +4631,7 @@ export class ConsumableItemsComponent implements OnInit {
   // Active Ingredients & Strengths methods
   loadItems(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllActiveIngredientsHospitalItem().subscribe({
+      this.api.getAllActiveIngredientsBusinessItem().subscribe({
         next: (res) => {
           this.itemList = this.normalizeActiveIngredients(res || []);
           this.filteredItemList = this.itemList;
@@ -4981,7 +4686,7 @@ export class ConsumableItemsComponent implements OnInit {
 
   loadIngredientUnits(): Promise<void> {
     return new Promise((resolve) => {
-      this.api.getAllStrengthUnitsHospitalItem().subscribe({
+      this.api.getAllStrengthUnitsBusinessItem().subscribe({
         next: (res) => {
           this.ingredientUnitList = res || [];
           this.filteredIngredientUnitList = this.ingredientUnitList;
@@ -5271,8 +4976,8 @@ export class ConsumableItemsComponent implements OnInit {
     console.log('Is editing:', this.isEditingItem, 'Editing ID:', this.editingItemId);
 
     const apiCall = this.isEditingItem && this.editingItemId
-      ? this.api.updateActiveIngredientByIdHospitalItem(this.editingItemId, itemData)
-      : this.api.addActiveIngredientHospitalItem(itemData);
+      ? this.api.updateActiveIngredientByIdBusinessItem(this.editingItemId, itemData)
+      : this.api.addActiveIngredientBusinessItem(itemData);
 
     apiCall.subscribe({
       next: (res: any) => {
@@ -5387,7 +5092,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewBrand = true;
       this.showDivAddToDataBaseNewBrand = false;
 
-      this.api.deleteBrandHospitalItem(brand.id).subscribe({
+      this.api.deleteBrandBusinessItem(brand.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewBrand = false;
           this.isButtonDisabledBrand = false;
@@ -5454,7 +5159,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewFormulation = true;
       this.showDivAddToDataBaseNewFormulation = false;
 
-      this.api.deleteFormulationHospitalItem(formulation.id).subscribe({
+      this.api.deleteFormulationBusinessItem(formulation.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewFormulation = false;
           this.isButtonDisabledFormulation = false;
@@ -5624,7 +5329,7 @@ export class ConsumableItemsComponent implements OnInit {
           name: previewById.get(id) || 'category'
         };
 
-        const res: any = await firstValueFrom(this.api.deleteItemCategoryHospitalItem(id));
+        const res: any = await firstValueFrom(this.api.deleteItemCategoryBusinessItem(id));
         if (res?.message && !res?.error) {
           lastMessage = res.message;
         }
@@ -5632,7 +5337,7 @@ export class ConsumableItemsComponent implements OnInit {
         deletedCount++;
       }
 
-      const remainingList = await firstValueFrom(this.api.getAllItemCategoriesHospitalItem());
+      const remainingList = await firstValueFrom(this.api.getAllItemCategoriesBusinessItem());
       const remainingCategories = Array.isArray(remainingList) ? remainingList : [];
       const stillPresent = this.categoryDeleteOrder.filter((id) =>
         remainingCategories.some((cat) => Number(cat.id) === Number(id))
@@ -5760,7 +5465,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewRouteOfAdmin = true;
       this.showDivAddToDataBaseNewRouteOfAdmin = false;
 
-      this.api.deleteRouteOfAdminHospitalItem(route.id).subscribe({
+      this.api.deleteRouteOfAdminBusinessItem(route.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewRouteOfAdmin = false;
           this.isButtonDisabledRouteOfAdmin = false;
@@ -5826,7 +5531,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewStrengthUnit = true;
       this.showDivAddToDataBaseNewStrengthUnit = false;
 
-      this.api.deleteStrengthUnitHospitalItem(unit.id).subscribe({
+      this.api.deleteStrengthUnitBusinessItem(unit.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewStrengthUnit = false;
           this.isButtonDisabledStrengthUnit = false;
@@ -5931,7 +5636,7 @@ export class ConsumableItemsComponent implements OnInit {
       this.showDivUpdatedLoaderNewItem = true;
       this.showDivAddToDataBaseNewItem = false;
 
-      this.api.deleteActiveIngredientByIdHospitalItem(item.id).subscribe({
+      this.api.deleteActiveIngredientByIdBusinessItem(item.id).subscribe({
         next: (res: any) => {
           this.showDivUpdatedLoaderNewItem = false;
           this.isButtonDisabledItem = false;

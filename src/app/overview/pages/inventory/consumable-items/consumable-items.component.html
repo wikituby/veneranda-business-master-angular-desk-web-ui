@@ -1,15 +1,3 @@
-<!-- DRUG category sync loader -->
-<div class="drug-category-seed-overlay" *ngIf="isSeedingDrugCategories">
-  <div class="drug-category-seed-content">
-    <div class="category-loader"></div>
-    <p>{{ drugCategorySyncMode === 'fresh' ? 'Creating DRUG catalogue...' : 'Syncing missing DRUG categories...' }}</p>
-    <p class="drug-category-seed-detail" *ngIf="drugCategorySeedProgress.total > 0">
-      {{ drugCategorySyncMode === 'fresh' ? 'Creating' : 'Adding' }} {{ drugCategorySeedProgress.current }} of {{ drugCategorySeedProgress.total }}
-      <span *ngIf="drugCategorySeedProgress.name"> — {{ drugCategorySeedProgress.name }}</span>
-    </p>
-  </div>
-</div>
-
 <!-- Delete Confirmation Modal -->
 <div class="delete-confirm-modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
   <div class="delete-confirm-modal-container" (click)="$event.stopPropagation()">
@@ -137,7 +125,7 @@
       <div class="import-modal-header">
         <h2 class="import-modal-title">
           <i class="bi bi-upload"></i>
-          Import Consumable Items
+          Import Consumable Products
         </h2>
         <button type="button" class="import-modal-close" (click)="closeImportModal()" aria-label="Close" [disabled]="importUploading">
           <i class="bi bi-x-lg"></i>
@@ -935,1175 +923,175 @@
       <div class="stock-item-modal-body">
         <form #stockItemForm="ngForm" (ngSubmit)="saveStockItem(stockItemForm.value)">
           <div class="stock-item-form-grid">
-            <!-- Stock Item Name is auto-generated, no input field needed -->
-
-            <!-- Category Field - Moved to First Position -->
             <div class="stock-item-form-field full-width">
-              <label for="itemCategoryId" class="stock-item-form-label">Category</label>
-              <div class="category-dropdown-wrapper">
-                <div class="category-dropdown-input" 
-                     (click)="toggleCategoryDropdown()"
-                     [class.open]="isCategoryDropdownOpen">
-                  <span class="category-selected-text" *ngIf="selectedCategoryName; else categoryPlaceholder">
-                    {{ selectedCategoryName }}
-                  </span>
-                  <ng-template #categoryPlaceholder>
-                    <span class="category-placeholder">Select category</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isCategoryDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="category-dropdown-menu" *ngIf="isCategoryDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="category-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="category-search-input" 
-                           placeholder="Search categories..." 
-                           [(ngModel)]="categorySearchQuery"
-                           (input)="filterCategories()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="category-add-button" (click)="openCategoryModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                    <button type="button"
-                            class="category-sync-drug-button"
-                            (click)="syncMissingDrugCategories(true)"
-                            [disabled]="isSeedingDrugCategories"
-                            title="Add any missing DRUG sub-categories from the default catalogue">
-                      <i class="bi bi-arrow-repeat"></i>
-                      Sync DRUG List
-                    </button>
-                  </div>
-                  
-                  <div class="category-list-container">
-                    <ng-container *ngIf="filteredCategoryTree.length > 0; else noCategoryResults">
-                      <ng-container *ngTemplateOutlet="categoryTreeRows; context: { $implicit: filteredCategoryTree, level: 0 }"></ng-container>
-                    </ng-container>
-                    <ng-template #noCategoryResults>
-                      <div class="category-no-results">
-                        <i class="bi bi-inbox"></i>
-                        <p>No categories found</p>
-                      </div>
-                    </ng-template>
-                  </div>
-                  
-                </div>
+              <label class="stock-item-form-label">Product images (up to 3)</label>
+              <div class="product-images-row">
+                <input type="text" class="stock-item-form-input" [(ngModel)]="currentStockItem.image" name="image" placeholder="Image 1 URL (optional)">
+                <input type="text" class="stock-item-form-input" [(ngModel)]="currentStockItem.image2" name="image2" placeholder="Image 2 URL (optional)">
+                <input type="text" class="stock-item-form-input" [(ngModel)]="currentStockItem.image3" name="image3" placeholder="Image 3 URL (optional)">
               </div>
-              <input type="hidden" 
-                     [(ngModel)]="currentStockItem.itemCategoryId" 
-                     name="itemCategoryId">
+            </div>
+
+            <div class="stock-item-form-field full-width">
+              <label for="stockItemName" class="stock-item-form-label">Name <span class="required">*</span></label>
+              <input type="text"
+                     id="stockItemName"
+                     name="stockItemName"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.stockItemName"
+                     placeholder="Product name"
+                     required>
+            </div>
+
+            <div class="stock-item-form-field full-width">
+              <label for="barcode" class="stock-item-form-label">Accepted barcodes (optional)</label>
+              <input type="text"
+                     id="barcode"
+                     name="barcode"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.barcode"
+                     placeholder="Comma-separated barcodes">
+            </div>
+
+            <div class="stock-item-form-field" *ngIf="!isEditingStockItem">
+              <label for="sku" class="stock-item-form-label">Primary code (auto-generated)</label>
+              <input type="text"
+                     id="sku"
+                     name="sku"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.sku"
+                     placeholder="Leave blank to auto-assign on save"
+                     readonly>
+              <small class="stock-item-form-hint">Leave blank for a new item: the next ITM code is assigned on first save only.</small>
+            </div>
+
+            <div class="stock-item-form-field" *ngIf="isEditingStockItem">
+              <label for="skuEdit" class="stock-item-form-label">Primary code</label>
+              <input type="text"
+                     id="skuEdit"
+                     name="skuDisplay"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.sku"
+                     readonly>
             </div>
 
             <div class="stock-item-form-field">
-              <label for="brandId" class="stock-item-form-label">Brand</label>
-              <div class="brand-dropdown-wrapper">
-                <div class="brand-dropdown-input" 
-                     (click)="toggleBrandDropdown(); loadBrands()"
-                     [class.open]="isBrandDropdownOpen">
-                  <span class="brand-selected-text" *ngIf="currentBrandName && currentBrandName !== 'Select brand'; else brandPlaceholder">
-                    {{ currentBrandName }}
-                  </span>
-                  <ng-template #brandPlaceholder>
-                    <span class="brand-placeholder">Select brand</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isBrandDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="brand-dropdown-menu" *ngIf="isBrandDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="brand-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="brand-search-input" 
-                           placeholder="Search brands..." 
-                           [ngModel]="brandSearchQuery"
-                           (ngModelChange)="brandSearchQuery = $event"
-                           (input)="filterBrands()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="brand-add-button" (click)="openBrandModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                  </div>
-                  
-                  <div class="brand-list-container">
-                    <div class="brand-item" 
-                         *ngFor="let brand of filteredBrandListMethod()">
-                      <div class="brand-item-content" (click)="changeCurrentBrand(brand)">
-                        <div class="brand-name">{{ brand.name }}</div>
-                        <div class="brand-manufacturer" *ngIf="brand.manufacturer">{{ brand.manufacturer }}</div>
-                      </div>
-                      <div class="brand-item-actions">
-                        <button type="button" class="brand-action-btn brand-edit-btn" (click)="editBrand(brand); $event.stopPropagation()" title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="brand-action-btn brand-delete-btn" (click)="deleteBrand(brand); $event.stopPropagation()" title="Delete">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="brand-no-results" *ngIf="filteredBrandListMethod().length === 0">
-                      <i class="bi bi-inbox"></i>
-                      <p>No brands found</p>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              <input type="hidden" 
-                     [ngModel]="currentBrandId" 
-                     (ngModelChange)="currentBrandId = $event"
-                     name="brandId">
-            </div>
-
-            <div class="stock-item-form-field" *ngIf="isDrugCategory()">
-              <label for="formulationId" class="stock-item-form-label">Formulation</label>
-              <div class="formulation-dropdown-wrapper">
-                <div class="formulation-dropdown-input" 
-                     (click)="toggleFormulationDropdown()"
-                     [class.open]="isFormulationDropdownOpen">
-                  <span class="formulation-selected-text" *ngIf="selectedFormulationName; else formulationPlaceholder">
-                    {{ selectedFormulationName }}
-                  </span>
-                  <ng-template #formulationPlaceholder>
-                    <span class="formulation-placeholder">Select formulation</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isFormulationDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="formulation-dropdown-menu" *ngIf="isFormulationDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="formulation-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="formulation-search-input" 
-                           placeholder="Search formulations..." 
-                           [(ngModel)]="formulationSearchQuery"
-                           (input)="filterFormulations()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="formulation-add-button" (click)="openFormulationModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                  </div>
-                  
-                  <div class="formulation-list-container">
-                    <div class="formulation-item" 
-                         *ngFor="let formulation of filteredFormulationList">
-                      <div class="formulation-item-content" (click)="selectFormulation(formulation)">
-                        <div class="formulation-name">{{ formulation.name }}</div>
-                      </div>
-                      <div class="formulation-item-actions">
-                        <button type="button" class="formulation-action-btn formulation-edit-btn" (click)="editFormulation(formulation); $event.stopPropagation()" title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="formulation-action-btn formulation-delete-btn" (click)="deleteFormulation(formulation); $event.stopPropagation()" title="Delete">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="formulation-no-results" *ngIf="filteredFormulationList.length === 0">
-                      <i class="bi bi-inbox"></i>
-                      <p>No formulations found</p>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              <input type="hidden" 
-                     [(ngModel)]="currentStockItem.formulationId" 
-                     name="formulationId">
+              <label for="shelfNumber" class="stock-item-form-label">Shelf number (optional)</label>
+              <input type="text"
+                     id="shelfNumber"
+                     name="shelfNumber"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.shelfNumber"
+                     placeholder="Example: A-03, R2-S1">
             </div>
 
             <div class="stock-item-form-field">
-              <label for="lowestPackageId" class="stock-item-form-label">Lowest Package</label>
-              <div class="lowest-package-dropdown-wrapper">
-                <div class="lowest-package-dropdown-input" 
-                     (click)="toggleLowestPackageDropdown()"
-                     [class.open]="isLowestPackageDropdownOpen">
-                  <span class="lowest-package-selected-text" *ngIf="selectedLowestPackageName; else lowestPackagePlaceholder">
-                    {{ selectedLowestPackageName }}
-                  </span>
-                  <ng-template #lowestPackagePlaceholder>
-                    <span class="lowest-package-placeholder">Select lowest package</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isLowestPackageDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="lowest-package-dropdown-menu" *ngIf="isLowestPackageDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="lowest-package-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="lowest-package-search-input" 
-                           placeholder="Search packages..." 
-                           [(ngModel)]="lowestPackageSearchQuery"
-                           (input)="filterLowestPackages()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="lowest-package-add-button" (click)="openLowestPackageModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                  </div>
-                  
-                  <div class="lowest-package-list-container">
-                    <div class="lowest-package-item" 
-                         *ngFor="let pkg of filteredLowestPackageList">
-                      <div class="lowest-package-item-content" (click)="selectLowestPackage(pkg)">
-                        <div class="lowest-package-name">{{ pkg.title }}</div>
-                        <div class="lowest-package-abbreviation" *ngIf="pkg.standardAbbreviation">{{ pkg.standardAbbreviation }}</div>
-                      </div>
-                      <div class="lowest-package-item-actions">
-                        <button type="button" class="lowest-package-action-btn lowest-package-edit-btn" (click)="editLowestPackage(pkg); $event.stopPropagation()" title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="lowest-package-action-btn lowest-package-delete-btn" (click)="deleteLowestPackage(pkg); $event.stopPropagation()" title="Delete">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="lowest-package-no-results" *ngIf="filteredLowestPackageList.length === 0">
-                      <i class="bi bi-inbox"></i>
-                      <p>No packages found</p>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              <input type="hidden" 
-                     [(ngModel)]="currentStockItem.lowestPackageId" 
-                     name="lowestPackageId">
+              <label for="businessCategory" class="stock-item-form-label">Business category (optional)</label>
+              <select id="businessCategory"
+                      name="businessCategory"
+                      class="stock-item-form-input"
+                      [(ngModel)]="currentStockItem.businessCategory">
+                <option [ngValue]="null">Select business category</option>
+                <option *ngFor="let cat of businessCategoryOptions" [ngValue]="cat">{{ cat }}</option>
+              </select>
             </div>
 
-            <div class="stock-item-form-field" *ngIf="isDrugCategory()">
-              <label for="routeOfAdminId" class="stock-item-form-label">Route of Admin</label>
-              <div class="route-of-admin-dropdown-wrapper">
-                <div class="route-of-admin-dropdown-input" 
-                     (click)="toggleRouteOfAdminDropdown()"
-                     [class.open]="isRouteOfAdminDropdownOpen">
-                  <span class="route-of-admin-selected-text" *ngIf="selectedRouteOfAdminName; else routeOfAdminPlaceholder">
-                    {{ selectedRouteOfAdminName }}
-                  </span>
-                  <ng-template #routeOfAdminPlaceholder>
-                    <span class="route-of-admin-placeholder">Select route of admin</span>
-                  </ng-template>
-                  <i class="bi" [ngClass]="isRouteOfAdminDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </div>
-                
-                <div class="route-of-admin-dropdown-menu" *ngIf="isRouteOfAdminDropdownOpen" (click)="$event.stopPropagation()">
-                  <div class="route-of-admin-search-container">
-                    <i class="bi bi-search"></i>
-                    <input type="text" 
-                           class="route-of-admin-search-input" 
-                           placeholder="Search routes..." 
-                           [(ngModel)]="routeOfAdminSearchQuery"
-                           (input)="filterRoutesOfAdmin()"
-                           (click)="$event.stopPropagation()">
-                    <button type="button" class="route-of-admin-add-button" (click)="openRouteOfAdminModal()">
-                      <i class="bi bi-plus-circle"></i>
-                      Add New
-                    </button>
-                  </div>
-                  
-                  <div class="route-of-admin-list-container">
-                    <div class="route-of-admin-item" 
-                         *ngFor="let route of filteredRouteOfAdminList">
-                      <div class="route-of-admin-item-content" (click)="selectRouteOfAdmin(route)">
-                        <div class="route-of-admin-name">{{ formatRouteOfAdminDisplay(route) }}</div>
-                      </div>
-                      <div class="route-of-admin-item-actions">
-                        <button type="button" class="route-of-admin-action-btn route-of-admin-edit-btn" (click)="editRouteOfAdmin(route); $event.stopPropagation()" title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="route-of-admin-action-btn route-of-admin-delete-btn" (click)="deleteRouteOfAdmin(route); $event.stopPropagation()" title="Delete">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="route-of-admin-no-results" *ngIf="filteredRouteOfAdminList.length === 0">
-                      <i class="bi bi-inbox"></i>
-                      <p>No routes found</p>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              <input type="hidden" 
-                     [(ngModel)]="currentStockItem.routeOfAdminId" 
-                     name="routeOfAdminId">
+            <div class="stock-item-form-field">
+              <label for="unit" class="stock-item-form-label">Unit (optional)</label>
+              <input type="text"
+                     id="unit"
+                     name="unit"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.unit"
+                     placeholder="e.g. Piece, Box, Kg">
             </div>
 
-            <!-- Composition and Reconstitution Groups Wrapper -->
-            <div class="stock-item-form-field-group-wrapper" *ngIf="isDrugCategory()">
-              <!-- Composition Value and Unit Group -->
-              <div class="stock-item-form-field-group">
-                <div class="stock-item-form-field-group-label composition-section-label">
-                  <span>Composition</span>
-                  <div class="form-check form-switch composition-reconstitution-switch mb-0">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           role="switch"
-                           id="showReconstitutionSwitch"
-                           name="showReconstitutionFields"
-                           [(ngModel)]="showReconstitutionFields"
-                           (ngModelChange)="onReconstitutionSectionToggle($event)" />
-                  </div>
-                </div>
-                <div class="stock-item-form-field-group-fields">
-                  <div class="stock-item-form-field">
-                    <label for="totalCompositionValue" class="stock-item-form-label">Total Composition Value</label>
-                    <input type="number" 
-                           step="0.01"
-                           [(ngModel)]="currentStockItem.totalCompositionValue" 
-                           name="totalCompositionValue" 
-                           class="stock-item-form-input" 
-                           id="totalCompositionValue" 
-                           placeholder="0.00">
-                  </div>
+            <div class="stock-item-form-field">
+              <label for="unitShort" class="stock-item-form-label">Unit short (optional)</label>
+              <input type="text"
+                     id="unitShort"
+                     name="unitShort"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.unitShort"
+                     placeholder="e.g. pc, bx">
+            </div>
 
-                  <div class="stock-item-form-field">
-                    <label for="totalCompositionUnitId" class="stock-item-form-label">Composition Unit</label>
-                    <div class="strength-unit-dropdown-wrapper">
-                      <div class="strength-unit-dropdown-input" 
-                           (click)="toggleStrengthUnitDropdown()"
-                           [class.open]="isStrengthUnitDropdownOpen">
-                        <span class="strength-unit-selected-text" *ngIf="selectedStrengthUnitName; else strengthUnitPlaceholder">
-                          {{ selectedStrengthUnitName }}
-                        </span>
-                        <ng-template #strengthUnitPlaceholder>
-                          <span class="strength-unit-placeholder">Select composition unit</span>
-                        </ng-template>
-                        <i class="bi" [ngClass]="isStrengthUnitDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                      </div>
-                      
-                      <div class="strength-unit-dropdown-menu" *ngIf="isStrengthUnitDropdownOpen" (click)="$event.stopPropagation()">
-                        <div class="strength-unit-search-container">
-                          <i class="bi bi-search"></i>
-                          <input type="text" 
-                                 class="strength-unit-search-input" 
-                                 placeholder="Search units..." 
-                                 [(ngModel)]="strengthUnitSearchQuery"
-                                 (input)="filterStrengthUnits()"
-                                 (click)="$event.stopPropagation()">
-                          <button type="button" class="strength-unit-add-button" (click)="openStrengthUnitModal()">
-                            <i class="bi bi-plus-circle"></i>
-                            Add New
-                          </button>
-                        </div>
-                        
-                        <div class="strength-unit-list-container">
-                          <div class="strength-unit-item" 
-                               *ngFor="let unit of filteredStrengthUnitList">
-                            <div class="strength-unit-item-content" (click)="selectStrengthUnit(unit)">
-                              <div class="strength-unit-name">{{ unit.title }}</div>
-                              <div class="strength-unit-abbreviation" *ngIf="unit.standardAbbreviation">{{ unit.standardAbbreviation }}</div>
-                            </div>
-                            <div class="strength-unit-item-actions">
-                              <button type="button" class="strength-unit-action-btn strength-unit-edit-btn" (click)="editStrengthUnit(unit); $event.stopPropagation()" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                              </button>
-                              <button type="button" class="strength-unit-action-btn strength-unit-delete-btn" (click)="deleteStrengthUnit(unit); $event.stopPropagation()" title="Delete">
-                                <i class="bi bi-trash"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <div class="strength-unit-no-results" *ngIf="filteredStrengthUnitList.length === 0">
-                            <i class="bi bi-inbox"></i>
-                            <p>No units found</p>
-                          </div>
-                        </div>
-                        
-                      </div>
-                    </div>
-                    <input type="hidden" 
-                           [(ngModel)]="currentStockItem.totalCompositionUnitId" 
-                           name="totalCompositionUnitId">
-                  </div>
-                </div>
+            <div class="stock-item-form-field">
+              <label for="saleCategory" class="stock-item-form-label">Sale category (optional)</label>
+              <select id="saleCategory"
+                      name="saleCategory"
+                      class="stock-item-form-input"
+                      [(ngModel)]="currentStockItem.saleCategory"
+                      (ngModelChange)="onSaleCategoryChange($event)">
+                <option [ngValue]="null">Select sale category</option>
+                <option *ngFor="let cat of saleCategoryOptions" [ngValue]="cat">{{ cat }}</option>
+              </select>
+            </div>
+
+            <div class="stock-item-form-field">
+              <label for="costPrice" class="stock-item-form-label">Cost price</label>
+              <input type="number"
+                     id="costPrice"
+                     name="costPrice"
+                     class="stock-item-form-input"
+                     [(ngModel)]="currentStockItem.costPrice"
+                     min="0"
+                     step="0.01"
+                     placeholder="0">
+            </div>
+
+            <div class="stock-item-form-field">
+              <app-unit-selling-model-picker
+                [stockItemId]="isEditingStockItem && currentStockItem?.id ? currentStockItem.id : null"
+                [allowDraft]="!(isEditingStockItem && currentStockItem?.id)"
+                [unitCostPrice]="currentStockItem.costPrice"
+                [(selectedModelId)]="currentStockItem.unitSellingModelId"
+                [showPriceModeSwitch]="true"
+                [(useUnitSellingModel)]="currentStockItem.useUnitSellingModel"
+                [(freeSellingPrice)]="currentStockItem.sellingPrice"
+                (unitSellingPriceChange)="currentStockItem.sellingPrice = $event"
+                label="Selling price">
+              </app-unit-selling-model-picker>
+            </div>
+
+            <ng-container *ngIf="!isServiceSaleCategory">
+              <div class="stock-item-form-field">
+                <label for="stockQty" class="stock-item-form-label">Stock quantity</label>
+                <input type="number"
+                       id="stockQty"
+                       name="stockQty"
+                       class="stock-item-form-input"
+                       [(ngModel)]="currentStockItem.stockQty"
+                       min="0"
+                       step="1"
+                       placeholder="0">
               </div>
 
-              <!-- Reconstitution Value and Unit Group -->
-              <div class="stock-item-form-field-group" *ngIf="showReconstitutionFields">
-                <div class="stock-item-form-field-group-label">Reconstitution</div>
-                <div class="stock-item-form-field-group-fields">
-                  <div class="stock-item-form-field">
-                    <label for="reconstitutionValue" class="stock-item-form-label">Reconstitution Value</label>
-                    <input type="number" 
-                           step="0.01"
-                           [(ngModel)]="currentStockItem.reconstitutionValue" 
-                           name="reconstitutionValue" 
-                           class="stock-item-form-input" 
-                           id="reconstitutionValue" 
-                           placeholder="0.00">
-                  </div>
-
-                  <div class="stock-item-form-field">
-                    <label for="reconstitutionUnitId" class="stock-item-form-label">Reconstitution Unit</label>
-                    <div class="strength-unit-dropdown-wrapper">
-                      <div class="strength-unit-dropdown-input" 
-                           (click)="toggleReconstitutionUnitDropdown()"
-                           [class.open]="isReconstitutionUnitDropdownOpen">
-                        <span class="strength-unit-selected-text" *ngIf="selectedReconstitutionUnitName; else reconstitutionUnitPlaceholder">
-                          {{ selectedReconstitutionUnitName }}
-                        </span>
-                        <ng-template #reconstitutionUnitPlaceholder>
-                          <span class="strength-unit-placeholder">Select reconstitution unit</span>
-                        </ng-template>
-                        <i class="bi" [ngClass]="isReconstitutionUnitDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                      </div>
-                      
-                      <div class="strength-unit-dropdown-menu" *ngIf="isReconstitutionUnitDropdownOpen" (click)="$event.stopPropagation()">
-                        <div class="strength-unit-search-container">
-                          <i class="bi bi-search"></i>
-                          <input type="text" 
-                                 class="strength-unit-search-input" 
-                                 placeholder="Search units..." 
-                                 [(ngModel)]="reconstitutionUnitSearchQuery"
-                                 (input)="filterReconstitutionUnits()"
-                                 (click)="$event.stopPropagation()">
-                          <button type="button" class="strength-unit-add-button" (click)="openReconstitutionStrengthUnitModal()">
-                            <i class="bi bi-plus-circle"></i>
-                            Add New
-                          </button>
-                        </div>
-                        
-                        <div class="strength-unit-list-container">
-                          <div class="strength-unit-item" 
-                               *ngFor="let unit of filteredReconstitutionUnitList">
-                            <div class="strength-unit-item-content" (click)="selectReconstitutionUnit(unit)">
-                              <div class="strength-unit-name">{{ unit.title }}</div>
-                              <div class="strength-unit-abbreviation" *ngIf="unit.standardAbbreviation">{{ unit.standardAbbreviation }}</div>
-                            </div>
-                            <div class="strength-unit-item-actions">
-                              <button type="button" class="strength-unit-action-btn strength-unit-edit-btn" (click)="editReconstitutionUnit(unit); $event.stopPropagation()" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                              </button>
-                              <button type="button" class="strength-unit-action-btn strength-unit-delete-btn" (click)="deleteReconstitutionUnit(unit); $event.stopPropagation()" title="Delete">
-                                <i class="bi bi-trash"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <div class="strength-unit-no-results" *ngIf="filteredReconstitutionUnitList.length === 0">
-                            <i class="bi bi-inbox"></i>
-                            <p>No units found</p>
-                          </div>
-                        </div>
-                        
-                      </div>
-                    </div>
-                    <input type="hidden" 
-                           [(ngModel)]="currentStockItem.reconstitutionUnitId" 
-                           name="reconstitutionUnitId">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Ingredients & Strengths Section -->
-          <div class="ingredients-section" *ngIf="isDrugCategory()">
-            <div class="ingredients-header">
-              <h3 class="ingredients-title">Active Ingredients & Strengths</h3>
-              <button type="button" class="ingredients-add-btn" (click)="addIngredient()">
-                <i class="bi bi-plus-circle"></i>
-                Add Ingredient
-              </button>
-            </div>
-
-            <div class="ingredients-list">
-              <div class="ingredient-row" *ngFor="let ingredient of ingredients; let i = index; trackBy: trackIngredientRow">
-                <div class="ingredient-field">
-                  <label class="ingredient-label">Active Ingredient</label>
-                  <div class="ingredient-item-dropdown-wrapper">
-                    <div class="ingredient-item-dropdown-input" 
-                         (click)="toggleIngredientItemDropdown(i)"
-                         [class.open]="ingredient.isItemDropdownOpen">
-                      <span class="ingredient-item-selected-text" *ngIf="ingredient.itemName; else ingredientItemPlaceholder">
-                        {{ ingredient.itemName }}
-                      </span>
-                      <ng-template #ingredientItemPlaceholder>
-                        <span class="ingredient-item-placeholder">Select active ingredient</span>
-                      </ng-template>
-                      <i class="bi" [ngClass]="ingredient.isItemDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                    </div>
-                    
-                    <div class="ingredient-item-dropdown-menu" *ngIf="ingredient.isItemDropdownOpen" (click)="$event.stopPropagation()">
-                      <div class="ingredient-item-search-container">
-                        <i class="bi bi-search"></i>
-                        <input type="text" 
-                               class="ingredient-item-search-input" 
-                               placeholder="Search ingredients..." 
-                               [(ngModel)]="ingredient.itemSearchQuery"
-                               [ngModelOptions]="{standalone: true}"
-                               (input)="filterIngredientItems(i)"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="ingredient-item-add-button" (click)="openItemModal(i)">
-                          <i class="bi bi-plus-circle"></i>
-                          Add New
-                        </button>
-                      </div>
-                      
-                      <div class="ingredient-item-list-container">
-                        <div class="ingredient-item-item" 
-                             *ngFor="let item of ingredient.filteredItemList">
-                          <div class="ingredient-item-item-content" (click)="selectIngredientItem(i, item)">
-                            <div class="ingredient-item-name">{{ item.title || item.name || item.genericName }}</div>
-                          </div>
-                          <div class="ingredient-item-item-actions">
-                            <button type="button" class="ingredient-item-action-btn ingredient-item-edit-btn" (click)="editIngredientItem(i, item); $event.stopPropagation()" title="Edit">
-                              <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="ingredient-item-action-btn ingredient-item-delete-btn" (click)="deleteIngredientItem(i, item); $event.stopPropagation()" title="Delete">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </div>
-                        <div class="ingredient-item-no-results" *ngIf="ingredient.filteredItemList.length === 0">
-                          <i class="bi bi-inbox"></i>
-                          <p>No ingredients found</p>
-                        </div>
-                      </div>
-                      
-                    </div>
-                  </div>
-                  <input type="hidden" 
-                         [value]="ingredient.itemId" 
-                         [name]="'ingredientItemId_' + ingredient.rowId">
-                </div>
-
-                <div class="ingredient-field">
-                  <label class="ingredient-label">Strength</label>
-                  <input type="number" 
-                         step="0.01"
-                         [(ngModel)]="ingredient.strength" 
-                         [name]="'ingredientStrength_' + ingredient.rowId"
-                         class="ingredient-input" 
-                         placeholder="0.00">
-                </div>
-
-                <div class="ingredient-field">
-                  <label class="ingredient-label">Unit</label>
-                  <div class="strength-unit-dropdown-wrapper">
-                    <div class="strength-unit-dropdown-input" 
-                         (click)="toggleIngredientUnitDropdown(i)"
-                         [class.open]="ingredient.isUnitDropdownOpen">
-                      <span class="strength-unit-selected-text" *ngIf="ingredient.unitName; else ingredientUnitPlaceholder">
-                        {{ ingredient.unitName }}
-                      </span>
-                      <ng-template #ingredientUnitPlaceholder>
-                        <span class="strength-unit-placeholder">Select unit</span>
-                      </ng-template>
-                      <i class="bi" [ngClass]="ingredient.isUnitDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                    </div>
-                    
-                    <div class="strength-unit-dropdown-menu" *ngIf="ingredient.isUnitDropdownOpen" (click)="$event.stopPropagation()">
-                      <div class="strength-unit-search-container">
-                        <i class="bi bi-search"></i>
-                        <input type="text" 
-                               class="strength-unit-search-input" 
-                               placeholder="Search units..." 
-                               [(ngModel)]="ingredient.unitSearchQuery"
-                               [ngModelOptions]="{standalone: true}"
-                               (input)="filterIngredientUnits(i)"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="strength-unit-add-button" (click)="openIngredientStrengthUnitModal(i)">
-                          <i class="bi bi-plus-circle"></i>
-                          Add New
-                        </button>
-                      </div>
-                      
-                      <div class="strength-unit-list-container">
-                        <div class="strength-unit-item" 
-                             *ngFor="let unit of ingredient.filteredUnitList">
-                          <div class="strength-unit-item-content" (click)="selectIngredientUnit(i, unit)">
-                            <div class="strength-unit-name">{{ unit.title }}</div>
-                            <div class="strength-unit-abbreviation" *ngIf="unit.standardAbbreviation">{{ unit.standardAbbreviation }}</div>
-                          </div>
-                          <div class="strength-unit-item-actions">
-                            <button type="button" class="strength-unit-action-btn strength-unit-edit-btn" (click)="editIngredientUnit(i, unit); $event.stopPropagation()" title="Edit">
-                              <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="strength-unit-action-btn strength-unit-delete-btn" (click)="deleteIngredientUnit(i, unit); $event.stopPropagation()" title="Delete">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </div>
-                        <div class="strength-unit-no-results" *ngIf="ingredient.filteredUnitList.length === 0">
-                          <i class="bi bi-inbox"></i>
-                          <p>No units found</p>
-                        </div>
-                      </div>
-                      
-                    </div>
-                  </div>
-                  <input type="hidden" 
-                         [value]="ingredient.unitId" 
-                         [name]="'ingredientUnitId_' + ingredient.rowId">
-                </div>
-
-                <div class="ingredient-remove">
-                  <button type="button" 
-                          class="ingredient-remove-btn" 
-                          (click)="removeIngredient(i)"
-                          *ngIf="ingredients.length > 1"
-                          title="Remove ingredient">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Last Unit of Sell Measure Section -->
-          <div class="stock-item-form-field-group-wrapper sell-measure-section">
-            <div class="stock-item-form-field-group">
-              <div class="stock-item-form-field-group-label">Last Unit of Sell Measure</div>
-              <div class="stock-item-form-field-group-fields sell-measure-fields">
-                <div class="stock-item-form-field">
-                  <label for="lastUnitOfSellMeasure" class="stock-item-form-label">Unit of Sell Measure</label>
-                  <div class="lowest-package-dropdown-wrapper">
-                    <div class="lowest-package-dropdown-input"
-                         (click)="toggleSellMeasureLowestPackageDropdown()"
-                         [class.open]="isSellMeasureLowestPackageDropdownOpen">
-                      <span class="lowest-package-selected-text" *ngIf="selectedSellMeasureLowestPackageName; else sellMeasureLowestPackagePlaceholder">
-                        {{ selectedSellMeasureLowestPackageName }}
-                      </span>
-                      <ng-template #sellMeasureLowestPackagePlaceholder>
-                        <span class="lowest-package-placeholder">Select unit of sell measure</span>
-                      </ng-template>
-                      <i class="bi" [ngClass]="isSellMeasureLowestPackageDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                    </div>
-
-                    <div class="lowest-package-dropdown-menu" *ngIf="isSellMeasureLowestPackageDropdownOpen" (click)="$event.stopPropagation()">
-                      <div class="lowest-package-search-container">
-                        <i class="bi bi-search"></i>
-                        <input type="text"
-                               class="lowest-package-search-input"
-                               placeholder="Search units..."
-                               [(ngModel)]="sellMeasureLowestPackageSearchQuery"
-                               (input)="filterSellMeasureLowestPackages()"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="lowest-package-add-button" (click)="openSellMeasureLowestPackageModal()">
-                          <i class="bi bi-plus-circle"></i>
-                          Add New
-                        </button>
-                      </div>
-
-                      <div class="lowest-package-list-container">
-                        <div class="lowest-package-item"
-                             *ngFor="let pkg of filteredSellMeasureLowestPackageList">
-                          <div class="lowest-package-item-content" (click)="selectSellMeasureLowestPackage(pkg)">
-                            <div class="lowest-package-name">{{ pkg.title }}</div>
-                            <div class="lowest-package-abbreviation" *ngIf="pkg.standardAbbreviation">{{ pkg.standardAbbreviation }}</div>
-                          </div>
-                        </div>
-                        <div class="lowest-package-no-results" *ngIf="filteredSellMeasureLowestPackageList.length === 0">
-                          <i class="bi bi-inbox"></i>
-                          <p>No units found</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <input type="hidden"
-                         [(ngModel)]="currentStockItem.lastUnitOfSellMeasure"
-                         name="lastUnitOfSellMeasure">
-                </div>
-                <div class="stock-item-form-field">
-                  <label for="lastUnitOfSellMeasureStrength" class="stock-item-form-label">Strength</label>
-                  <input type="text" 
-                         [(ngModel)]="currentStockItem.lastUnitOfSellMeasureStrength" 
-                         name="lastUnitOfSellMeasureStrength" 
-                         class="stock-item-form-input" 
-                         id="lastUnitOfSellMeasureStrength" 
-                         placeholder="e.g., 500">
-                </div>
-                <div class="stock-item-form-field">
-                  <label for="lastUnitOfSellMeasureStrengthUnit" class="stock-item-form-label">Strength Unit</label>
-                  <div class="strength-unit-dropdown-wrapper">
-                    <div class="strength-unit-dropdown-input" 
-                         (click)="toggleSellMeasureStrengthUnitDropdown()"
-                         [class.open]="isSellMeasureStrengthUnitDropdownOpen">
-                      <span class="strength-unit-selected-text" *ngIf="selectedSellMeasureStrengthUnitName; else sellMeasureUnitPlaceholder">
-                        {{ selectedSellMeasureStrengthUnitName }}
-                      </span>
-                      <ng-template #sellMeasureUnitPlaceholder>
-                        <span class="strength-unit-placeholder">Select strength unit</span>
-                      </ng-template>
-                      <i class="bi" [ngClass]="isSellMeasureStrengthUnitDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                    </div>
-                    <div class="strength-unit-dropdown-menu" *ngIf="isSellMeasureStrengthUnitDropdownOpen" (click)="$event.stopPropagation()">
-                      <div class="strength-unit-search-container">
-                        <i class="bi bi-search"></i>
-                        <input type="text" 
-                               class="strength-unit-search-input" 
-                               placeholder="Search units..." 
-                               [(ngModel)]="sellMeasureStrengthUnitSearchQuery"
-                               (input)="filterSellMeasureStrengthUnits()"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="strength-unit-add-button" (click)="openSellMeasureStrengthUnitModal()">
-                          <i class="bi bi-plus-circle"></i>
-                          Add New
-                        </button>
-                      </div>
-                      <div class="strength-unit-list-container">
-                        <div class="strength-unit-item" 
-                             *ngFor="let unit of filteredStrengthUnitList">
-                          <div class="strength-unit-item-content" (click)="selectSellMeasureStrengthUnit(unit)">
-                            <div class="strength-unit-name">{{ unit.title }}</div>
-                            <div class="strength-unit-abbreviation" *ngIf="unit.standardAbbreviation">{{ unit.standardAbbreviation }}</div>
-                          </div>
-                        </div>
-                        <div class="strength-unit-no-results" *ngIf="filteredStrengthUnitList.length === 0">
-                          <i class="bi bi-inbox"></i>
-                          <p>No units found</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <input type="hidden" 
-                         [(ngModel)]="currentStockItem.lastUnitOfSellMeasureStrengthUnit" 
-                         name="lastUnitOfSellMeasureStrengthUnit">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Prescribing Measure Section -->
-          <div class="stock-item-form-field-group-wrapper" *ngIf="isDrugCategory()">
-            <div class="stock-item-form-field-group">
-              <div class="stock-item-form-field-group-label">Prescribing Measure</div>
-              <div class="stock-item-form-field-group-fields">
-                <div class="stock-item-form-field">
-                  <label for="lastUnitOfPrescribingMeasureStrengthUnit" class="stock-item-form-label">Prescribing Strength Unit</label>
-                  <div class="strength-unit-dropdown-wrapper">
-                    <div class="strength-unit-dropdown-input" 
-                         (click)="togglePrescribingStrengthUnitDropdown()"
-                         [class.open]="isPrescribingStrengthUnitDropdownOpen">
-                      <span class="strength-unit-selected-text" *ngIf="selectedPrescribingStrengthUnitName; else prescribingUnitPlaceholder">
-                        {{ selectedPrescribingStrengthUnitName }}
-                      </span>
-                      <ng-template #prescribingUnitPlaceholder>
-                        <span class="strength-unit-placeholder">Select prescribing unit</span>
-                      </ng-template>
-                      <i class="bi" [ngClass]="isPrescribingStrengthUnitDropdownOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                    </div>
-                    <div class="strength-unit-dropdown-menu" *ngIf="isPrescribingStrengthUnitDropdownOpen" (click)="$event.stopPropagation()">
-                      <div class="strength-unit-search-container">
-                        <i class="bi bi-search"></i>
-                        <input type="text" 
-                               class="strength-unit-search-input" 
-                               placeholder="Search units..." 
-                               [(ngModel)]="prescribingStrengthUnitSearchQuery"
-                               (input)="filterPrescribingStrengthUnits()"
-                               (click)="$event.stopPropagation()">
-                        <button type="button" class="strength-unit-add-button" (click)="openPrescribingStrengthUnitModal()">
-                          <i class="bi bi-plus-circle"></i>
-                          Add New
-                        </button>
-                      </div>
-                      <div class="strength-unit-list-container">
-                        <div class="strength-unit-item" 
-                             *ngFor="let unit of filteredStrengthUnitList">
-                          <div class="strength-unit-item-content" (click)="selectPrescribingStrengthUnit(unit)">
-                            <div class="strength-unit-name">{{ unit.title }}</div>
-                            <div class="strength-unit-abbreviation" *ngIf="unit.standardAbbreviation">{{ unit.standardAbbreviation }}</div>
-                          </div>
-                        </div>
-                        <div class="strength-unit-no-results" *ngIf="filteredStrengthUnitList.length === 0">
-                          <i class="bi bi-inbox"></i>
-                          <p>No units found</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <input type="hidden" 
-                         [(ngModel)]="currentStockItem.lastUnitOfPrescribingMeasureStrengthUnit" 
-                         name="lastUnitOfPrescribingMeasureStrengthUnit">
-                </div>
+              <div class="stock-item-form-field">
+                <label for="reorderLevel" class="stock-item-form-label">Reorder level</label>
+                <input type="number"
+                       id="reorderLevel"
+                       name="reorderLevel"
+                       class="stock-item-form-input"
+                       [(ngModel)]="currentStockItem.reorderLevel"
+                       min="0"
+                       step="1"
+                       placeholder="0">
               </div>
 
-              <div class="stock-item-form-field-group-fields prescribing-rule-grid">
-                <div class="stock-item-form-field full-width prescribing-rule-header">
-                  <div>
-                    <div class="stock-item-form-label prescribing-profile-subtitle">Standard dosage rules</div>
-                  </div>
-                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="addStockDosageRuleRow()">
-                    <i class="bi bi-plus-lg"></i> Add Dosage Rule
-                  </button>
-                </div>
-
-                <div class="stock-item-form-field full-width" *ngIf="isLoadingStockDosageRules">
-                  <div class="stock-dosage-rule-loading">Loading dosage rules…</div>
-                </div>
-
-                <div class="stock-item-form-field full-width" *ngIf="!isLoadingStockDosageRules && stockDosageRuleRows.length === 0">
-                  <div class="stock-dosage-rule-empty">
-                    No dosage rules added yet. Add adult fixed doses, child weight-based doses, or special schedules like artesunate.
-                  </div>
-                </div>
-
-                <div class="stock-item-form-field full-width stock-dosage-rule-card" *ngFor="let rule of stockDosageRuleRows; let ri = index">
-                  <div class="stock-dosage-rule-card-header">
-                    <button type="button" class="stock-dosage-rule-toggle" (click)="toggleStockDosageRuleRow(ri)">
-                      <i class="bi" [ngClass]="rule.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-                      <span>
-                        <strong>{{ rule.title || ('Rule ' + (ri + 1)) }}</strong>
-                        <small>{{ stockDosageRuleSummary(rule) }}</small>
-                      </span>
-                    </button>
-                    <div class="stock-dosage-rule-actions">
-                      <label class="form-check form-check-inline stock-dosage-rule-active">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          [(ngModel)]="rule.active"
-                          [name]="'dosageRuleActive_' + ri" />
-                        Active
-                      </label>
-                      <button type="button" class="btn btn-link btn-sm text-danger p-0" (click)="removeStockDosageRuleRow(ri)">
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="stock-dosage-rule-fields" *ngIf="rule.expanded">
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Title</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.title"
-                        [name]="'dosageRuleTitle_' + ri"
-                        placeholder="e.g. Adult standard dose" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Calculation</label>
-                      <select
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.doseCalculationType"
-                        [name]="'dosageRuleCalculation_' + ri"
-                        (ngModelChange)="onStockDosageRuleCalculationTypeChange(rule)">
-                        <option *ngFor="let option of dosageRuleCalculationTypes" [ngValue]="option.value">{{ option.label }}</option>
-                      </select>
-                    </div>
-
-                    <div class="stock-item-form-field" *ngIf="rule.doseCalculationType === 'FIXED'">
-                      <label class="stock-item-form-label">Fixed Dose</label>
-                      <input
-                        type="number"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.fixedDoseValue"
-                        [name]="'dosageRuleFixedDose_' + ri"
-                        placeholder="500" />
-                    </div>
-
-                    <div class="stock-item-form-field" *ngIf="rule.doseCalculationType === 'FIXED'">
-                      <label class="stock-item-form-label">Dose Unit</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.fixedDoseUnit"
-                        [name]="'dosageRuleFixedDoseUnit_' + ri"
-                        placeholder="mg" />
-                    </div>
-
-                    <div class="stock-item-form-field" *ngIf="rule.doseCalculationType !== 'FIXED'">
-                      <label class="stock-item-form-label">Weight Dose</label>
-                      <input
-                        type="number"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.weightDoseValue"
-                        [name]="'dosageRuleWeightDose_' + ri"
-                        placeholder="2.4" />
-                    </div>
-
-                    <div class="stock-item-form-field" *ngIf="rule.doseCalculationType !== 'FIXED'">
-                      <label class="stock-item-form-label">Weight Unit</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.weightDoseUnit"
-                        [name]="'dosageRuleWeightDoseUnit_' + ri"
-                        placeholder="mg/kg" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Min Age</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.minAgeYears" [name]="'dosageRuleMinAge_' + ri" placeholder="years" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Max Age</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.maxAgeYears" [name]="'dosageRuleMaxAge_' + ri" placeholder="years" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Min Weight</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.minWeightKg" [name]="'dosageRuleMinWeight_' + ri" placeholder="kg" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Max Weight</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.maxWeightKg" [name]="'dosageRuleMaxWeight_' + ri" placeholder="kg" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Route</label>
-                      <input type="text" class="stock-item-form-input" [(ngModel)]="rule.route" [name]="'dosageRuleRoute_' + ri" placeholder="Oral, IV" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Frequency</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.frequencyValue" [name]="'dosageRuleFrequency_' + ri" placeholder="3" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Freq. Unit</label>
-                      <select class="stock-item-form-input" [(ngModel)]="rule.frequencyUnit" [name]="'dosageRuleFrequencyUnit_' + ri">
-                        <option *ngFor="let unit of dosageRulePeriodUnits" [ngValue]="unit.value">{{ unit.label }}</option>
-                      </select>
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Duration</label>
-                      <input type="number" class="stock-item-form-input" [(ngModel)]="rule.durationValue" [name]="'dosageRuleDuration_' + ri" placeholder="3" />
-                    </div>
-
-                    <div class="stock-item-form-field">
-                      <label class="stock-item-form-label">Duration Unit</label>
-                      <select class="stock-item-form-input" [(ngModel)]="rule.durationUnit" [name]="'dosageRuleDurationUnit_' + ri">
-                        <option *ngFor="let unit of dosageRulePeriodUnits" [ngValue]="unit.value">{{ unit.label }}</option>
-                      </select>
-                    </div>
-
-                    <div class="stock-item-form-field full-width">
-                      <label class="stock-item-form-label">Rule Label</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.ruleLabel"
-                        [name]="'dosageRuleLabel_' + ri"
-                        placeholder="e.g. Artesunate IV: 2.4 mg/kg at 0, 12 and 24 hours" />
-                    </div>
-
-                    <div class="stock-item-form-field full-width">
-                      <label class="stock-item-form-label">Instructions</label>
-                      <textarea
-                        class="stock-item-form-textarea"
-                        rows="2"
-                        [(ngModel)]="rule.instructions"
-                        [name]="'dosageRuleInstructions_' + ri"
-                        placeholder="Instructions loaded into treatment plan"></textarea>
-                    </div>
-
-                    <div class="stock-item-form-field full-width">
-                      <label class="stock-item-form-label">Special Schedule</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.specialScheduleText"
-                        [name]="'dosageRuleSchedule_' + ri"
-                        placeholder="e.g. 0h, 12h, 24h" />
-                    </div>
-
-                    <div class="stock-item-form-field full-width">
-                      <label class="stock-item-form-label">Warning</label>
-                      <input
-                        type="text"
-                        class="stock-item-form-input"
-                        [(ngModel)]="rule.warning"
-                        [name]="'dosageRuleWarning_' + ri"
-                        placeholder="Optional safety note" />
-                    </div>
-                  </div>
-                </div>
+              <div class="stock-item-form-field">
+                <label for="restockTo" class="stock-item-form-label">Restock to</label>
+                <input type="number"
+                       id="restockTo"
+                       name="restockTo"
+                       class="stock-item-form-input"
+                       [(ngModel)]="currentStockItem.restockTo"
+                       min="0"
+                       step="1"
+                       placeholder="0">
               </div>
-            </div>
+            </ng-container>
           </div>
-
-          <!-- Medical Information Section -->
-          <div class="stock-item-form-section-divider info-section-divider" *ngIf="isDrugCategory()">
-            <h3 class="section-title">Medical Information</h3>
-          </div>
-
-          <div class="info-section-grid indication-section-start">
-            <!-- Indication Field - multiple indication entities -->
-            <div class="stock-item-form-field info-section-field stock-item-indications-field">
-              <div class="indications-header">
-                <label class="stock-item-form-label">Indications</label>
-                <button type="button" class="ingredients-add-btn" (click)="addIndicationRow()">
-                  <i class="bi bi-plus-lg"></i> Add indication
-                </button>
-              </div>
-              <div class="indications-list" *ngIf="indicationRows.length; else noIndicationsYet">
-                <div class="indication-row" *ngFor="let row of indicationRows; let i = index; trackBy: trackIndicationRow">
-                  <span class="indication-sn">{{ i + 1 }}</span>
-                  <input
-                    type="text"
-                    class="stock-item-form-input indication-input"
-                    [(ngModel)]="row.text"
-                    [name]="'indicationRow' + row.rowId"
-                    placeholder="e.g. Community-acquired pneumonia"
-                    [ngModelOptions]="{standalone: true}" />
-                  <button type="button" class="ingredient-remove-btn" title="Remove" (click)="removeIndicationRow(i)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-              <ng-template #noIndicationsYet>
-                <p class="indications-empty">No indications yet. Click “Add indication” to create one.</p>
-              </ng-template>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="contraIndication" class="stock-item-form-label">Contraindication</label>
-              <textarea [(ngModel)]="currentStockItem.contraIndication" 
-                        name="contraIndication" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="contraIndication" 
-                        placeholder="Contraindications"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="drugIteractions" class="stock-item-form-label">Drug Interactions</label>
-              <textarea [(ngModel)]="currentStockItem.drugIteractions" 
-                        name="drugIteractions" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="drugIteractions" 
-                        placeholder="Known drug interactions"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="pharmacodynamics" class="stock-item-form-label">Pharmacodynamics</label>
-              <textarea [(ngModel)]="currentStockItem.pharmacodynamics" 
-                        name="pharmacodynamics" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="pharmacodynamics" 
-                        placeholder="Pharmacodynamic information"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="pharmacokinetics" class="stock-item-form-label">Pharmacokinetics</label>
-              <textarea [(ngModel)]="currentStockItem.pharmacokinetics" 
-                        name="pharmacokinetics" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="pharmacokinetics" 
-                        placeholder="Pharmacokinetic information"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="adverseEffects" class="stock-item-form-label">Adverse Effects</label>
-              <textarea [(ngModel)]="currentStockItem.adverseEffects" 
-                        name="adverseEffects" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="adverseEffects" 
-                        placeholder="Known adverse effects"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="dosage" class="stock-item-form-label">Dosage</label>
-              <textarea [(ngModel)]="currentStockItem.dosage" 
-                        name="dosage" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="dosage" 
-                        placeholder="Recommended dosage information"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field" *ngIf="isDrugCategory()">
-              <label for="antiDote" class="stock-item-form-label">Antidote</label>
-              <textarea [(ngModel)]="currentStockItem.antiDote" 
-                        name="antiDote" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="antiDote" 
-                        placeholder="Antidote information"
-                        rows="2"></textarea>
-            </div>
-          </div>
-
-          <!-- Reconstitution Information Section -->
-          <div class="stock-item-form-section-divider info-section-divider" *ngIf="isDrugCategory()">
-            <h3 class="section-title">Reconstitution Information</h3>
-          </div>
-
-          <div class="info-section-grid" *ngIf="isDrugCategory()">
-            <div class="stock-item-form-field info-section-field">
-              <label for="methodOfReconstitution" class="stock-item-form-label">Method of Reconstitution</label>
-              <textarea [(ngModel)]="currentStockItem.methodOfReconstitution" 
-                        name="methodOfReconstitution" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="methodOfReconstitution" 
-                        placeholder="Method of reconstitution"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field">
-              <label for="descriptionBeforeReconstitution" class="stock-item-form-label">Description Before Reconstitution</label>
-              <textarea [(ngModel)]="currentStockItem.descriptionBeforeReconstitution" 
-                        name="descriptionBeforeReconstitution" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="descriptionBeforeReconstitution" 
-                        placeholder="Description before reconstitution"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field">
-              <label for="descriptionAfterReconstitution" class="stock-item-form-label">Description After Reconstitution</label>
-              <textarea [(ngModel)]="currentStockItem.descriptionAfterReconstitution" 
-                        name="descriptionAfterReconstitution" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="descriptionAfterReconstitution" 
-                        placeholder="Description after reconstitution"
-                        rows="2"></textarea>
-            </div>
-          </div>
-
-          <!-- Storage Section -->
-          <div class="stock-item-form-section-divider" *ngIf="!isSundriesCategory()">
-            <h3 class="section-title">Storage</h3>
-          </div>
-
-          <div class="stock-item-form-field full-width" *ngIf="!isSundriesCategory()">
-            <label for="storage" class="stock-item-form-label">Storage</label>
-            <textarea [(ngModel)]="currentStockItem.storage" 
-                      name="storage" 
-                      class="stock-item-form-textarea" 
-                      id="storage" 
-                      placeholder="Storage conditions and requirements"
-                      rows="3"></textarea>
-          </div>
-
-          <!-- Description and Notes (Last) -->
-          <div class="stock-item-form-section-divider info-section-divider">
-            <h3 class="section-title">Additional Information</h3>
-          </div>
-
-          <div class="info-section-grid">
-            <div class="stock-item-form-field info-section-field">
-              <label for="description" class="stock-item-form-label">Description</label>
-              <textarea [(ngModel)]="currentStockItem.description" 
-                        name="description" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="description" 
-                        placeholder="Additional notes or description"
-                        rows="2"></textarea>
-            </div>
-
-            <div class="stock-item-form-field info-section-field">
-              <label for="notes" class="stock-item-form-label">Notes</label>
-              <textarea [(ngModel)]="currentStockItem.notes" 
-                        name="notes" 
-                        class="stock-item-form-textarea info-section-textarea" 
-                        id="notes" 
-                        placeholder="Additional notes"
-                        rows="2"></textarea>
-            </div>
-          </div>
-
           <div *ngIf="showDivAddToDataBaseNewStockItem" class="stock-item-form-message" [ngClass]="{'success': responseColor === 'rgb(11, 155, 112)', 'error': responseColor === 'rgb(238, 16, 16)'}">
             <i class="bi" [ngClass]="responseColor === 'rgb(11, 155, 112)' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'"></i>
             {{ responseMessage }}
@@ -2140,14 +1128,14 @@
   </div>
 </div>
 
-<!-- Add Item Modal -->
+<!-- Add Product Modal -->
 <div class="item-modal-overlay" *ngIf="!isCollapsedNewItem">
   <div class="item-modal-container">
     <div class="item-modal">
       <div class="item-modal-header">
         <h2 class="item-modal-title">
           <i class="bi" [ngClass]="isEditingItem ? 'bi-pencil-square' : 'bi-plus-circle'"></i>
-          {{ isEditingItem ? 'Edit Item' : 'Add New Item' }}
+          {{ isEditingItem ? 'Edit Item' : 'Add New Product' }}
         </h2>
         <button type="button" class="item-modal-close" (click)="closeItemModal()" aria-label="Close">
           <i class="bi bi-x-lg"></i>
@@ -2275,7 +1263,7 @@
                 [disabled]="isButtonDisabledItem">
           <span *ngIf="!showDivUpdatedLoaderNewItem">
             <i class="bi bi-save"></i>
-            {{ isEditingItem ? 'Update Item' : 'Add Item' }}
+            {{ isEditingItem ? 'Update Product' : 'Add Product' }}
           </span>
           <span *ngIf="showDivUpdatedLoaderNewItem" class="button-loading">
             <span class="spinner-small"></span>
@@ -2673,7 +1661,7 @@
     <div class="header-left">
       <h2 class="page-title">
         <i class="bi bi-cart-check"></i>
-        Consumable Items
+        Consumable Products
       </h2>
       <nav class="breadcrumb-nav" aria-label="breadcrumb">
         <ol class="breadcrumb-list">
@@ -2690,7 +1678,7 @@
             <i class="bi bi-chevron-right"></i>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
-            Consumable Items
+            Consumable Products
           </li>
         </ol>
       </nav>

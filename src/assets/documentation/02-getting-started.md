@@ -4,117 +4,75 @@
 
 You need:
 
-- A supported web browser (Chrome, Edge, or Firefox recommended)
-- Your **username** and **password** from your facility administrator
-- Network access to the **application server** and **API server** (often on the same LAN)
+- A current browser (Chrome, Edge, or Firefox)
+- A **username** and **password** from your administrator
+- A network path to the business application and its API
 
-If the app cannot reach the API, an administrator may need to configure the server connection on first launch.
+If the console cannot reach the API, an administrator sets the server connection before staff start work.
 
 ## Signing in
 
-1. Open the facility login URL (e.g. `/login` or `/login4` depending on deployment).
+1. Open the business login page.
 2. Enter username and password.
-3. After successful login, you are directed to the **Overview** hub or your role’s default screen.
+3. After login you land on the **Overview** hub, or on the screen your role uses first (often the dashboard or POS).
 
-**Note:** Branding on the login page (logo, clinic name) may show the facility’s configured name or a default template.
-
-## First-time server connection (IT)
-
-If prompted for API settings:
-
-- Default API path: `/health_care` on port **8080**
-- Example local URL: `http://localhost:8080/health_care`
-- The active server URL is stored in the browser for subsequent sessions
-
-Administrators should confirm the correct host with your technical team before staff widespread use.
+The login page shows the business name and logo configured in **Business settings**.
 
 ## Main navigation
 
-### Overview sidebar
+The header is the daily toolbar:
 
-After login, most modules live under **`/overview`**:
+| Control | What it opens |
+|---------|----------------|
+| Overview modules | Dashboard, clients, inventory, finance, reports, administration |
+| Inventory | Catalogue, stock, stores, and partners, grouped as submodules |
+| POS | Counter checkout |
+| Client | Client registry |
+| More | **Help** and **FAQ** |
+| Account | Profile, settings, customer care, and this documentation |
 
-- Collapsible sidebar groups: Dashboard, Patients, OPD, IPD, Lab, Radiology, Pharmacy, Inventory, Finance, HR, Reports, Administration, etc.
-- Click a menu item to open that module in the main content area.
-- Sidebar can run in **stacked** mode (sidebar shares space with content) or overlay mode — configured under **Business settings**.
+Inside **Overview**, a sidebar lists the modules your subscription and permissions allow. If a page is missing, your administrator has not granted that page.
 
-### Top header
+## A normal selling day
 
-Available on many screens:
+1. Open **POS**.
+2. Search or scan products into the cart. Mark lines as given when they should be billed.
+3. Attach a **client**. This is required before a document is saved.
+4. Create a **new order** (date and time). Each document gets its own order. Existing orders are not picked from a list.
+5. Choose the document: quotation, proforma, invoice, or receipt.
+6. Enter payment when the document takes money. Notes sit beside the payment method.
+7. Save. Stock is deducted on invoice and receipt sales, not on a quotation or proforma with no stock movement.
+8. View, print, or share the document from the products orders list.
 
-- **Queue** — view current patients in line; open a patient visit from the queue
-- **Department links** — quick jump to Lab, Scan, Dental, Patient visit, etc. (based on your access)
-- **Profile / account** — user details, logout
-- **Cart / notifications** — where enabled for your role
+To change a saved document, open it and choose **Edit**. The client search is cleared so every client is listed. You may change the client. The order number stays the same, and you are not asked to create a new order.
 
-### Patient visit (clinical workspace)
+## A normal stock day
 
-Route: **`/patient-visit`**
+1. Open **Inventory**.
+2. Confirm you are working in the correct **store**.
+3. Receive goods, or transfer them from another store.
+4. Check reorder lines before you buy again.
+5. Use stock take or verify when the shelf and the system disagree.
 
-Usually opened from:
+## A normal finance day
 
-- Queue (patient name or clipboard icon)
-- Patient list or search
-- Department workflows that pass patient context via session storage
+1. Open **Finance → Expenses**.
+2. Confirm categories and accounts exist before posting a transaction.
+3. Record client debt payments from the order when a balance remains after a sale.
+4. Review the dashboard or sales and stock reports before close of day.
 
-Tabs on the visit screen:
+## If something looks wrong
 
-| Tab | Typical use |
-|-----|-------------|
-| Patient bio | Demographics and visit identifiers |
-| Initial vitals | Temperature, BP, pulse, SpO₂, etc. |
-| Consultations | Clinical notes and consultation forms |
-| Procedures | Services and procedures for the visit |
-| Treatment | Pharmacy prescribing and treatment chart |
-| Finance | Charges and payments for this visit |
-| Printouts | Reports and printable documents |
+| Symptom | Check |
+|---------|--------|
+| Cannot see a menu | Page access and subscription module |
+| Cannot edit an order | The order may be turned off. View and print still work |
+| Paid total looks high | A reversed payment is listed but excluded from paid |
+| Client list shows one name | Clear the search. Edit does this automatically |
+| Stock did not fall | The document may be a quotation or proforma |
 
-## Queue — quick reference
+## Profile
 
-1. Open **Queue** from the header.
-2. Tabs: **Current**, **Discharged today**, **Referred today**.
-3. Click the **patient name** or the **clipboard icon** to open their visit.
-4. Use **Edit** (pencil) to change status, destination module, emergency flag, or notes.
+**Account → View profile** shows your identity, job description and responsibilities, policies, and contracts.
 
-The system loads the existing visit when possible; otherwise it starts from the patient’s initial visit context.
-
-## User profile
-
-- Route: **`/user-profile`** or profile modal from Overview
-- Update contact details and profile photo where permitted
-- Change password when the facility allows self-service password updates
-
-## Roles and what you see
-
-Your **role** in session storage controls:
-
-- Which Overview menu items appear
-- Whether you can open dashboards
-- Whether you can manage users and access control (typically **admin** or **MD**)
-
-If a menu item is missing, ask an administrator to grant **page access** under **Access control**.
-
-## Subscription
-
-Some routes require an active **subscription**. If modules are blocked, the subscription may be expired — contact administration (**Overview → Subscription**).
-
-## Logging out
-
-Use **Logout** from the account menu. Always log out on shared computers.
-
-## Tips for new users
-
-- Use the queue to avoid searching for patients already in the building.
-- Save work on each tab before switching tabs or navigating away.
-- Long drug names in pharmacy dropdowns show full text on hover (tooltip).
-- Use **Clear field** on prescribing rows before selecting a new item.
-
-## Getting help
-
-1. Read the module guide for your job: pharmacy, inventory, or patient care.
-2. Report issues to your facility superuser with: screen name, patient ID (if applicable), time, and what you clicked.
-3. IT staff should refer to **06-technical-guide.md**.
-
----
-
-*Document 02 — Getting started — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

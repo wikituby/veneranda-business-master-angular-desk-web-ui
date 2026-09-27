@@ -92,7 +92,7 @@ export class ManufacturersComponent implements OnInit {
 
   initializeTableData() {
     this.isLoadingService = true;
-    this.api.getAllManufacturersHospitalItem().subscribe({
+    this.api.getAllManufacturersBusinessItem().subscribe({
       next: (res) => {
         this.isLoadingService = false;
         console.log("Raw manufacturers response:", res);
@@ -342,7 +342,7 @@ export class ManufacturersComponent implements OnInit {
     this.showDivAddToDataBaseNewManufacturer = false;
     this.showDeleteConfirmModal = false;
 
-    this.api.deleteManufacturerHospitalItem(manufacturerId).subscribe({
+    this.api.deleteManufacturerBusinessItem(manufacturerId).subscribe({
       next: (res: any) => {
         this.showDivUpdatedLoaderNewManufacturer = false;
         this.isButtonDisabled = false;
@@ -399,7 +399,7 @@ export class ManufacturersComponent implements OnInit {
 
     if (this.isEditingManufacturer && this.editingManufacturerId) {
       // Update existing manufacturer
-      this.api.updateManufacturerHospitalItem(this.editingManufacturerId, manufacturerData).subscribe({
+      this.api.updateManufacturerBusinessItem(this.editingManufacturerId, manufacturerData).subscribe({
         next: (response) => {
           console.log("Manufacturer updated successfully:", response);
 
@@ -455,7 +455,7 @@ export class ManufacturersComponent implements OnInit {
       });
     } else {
       // Create new manufacturer
-      this.api.addManufacturerHospitalItem(manufacturerData).subscribe({
+      this.api.addManufacturerBusinessItem(manufacturerData).subscribe({
         next: (response) => {
           console.log("Manufacturer saved successfully:", response);
 

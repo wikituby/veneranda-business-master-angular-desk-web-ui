@@ -24,7 +24,7 @@ export class ScanRequestsComponent implements OnInit {
   requests = [
     {
       id: '001',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
       scanType: 'xray',
       bodyPart: 'Chest',
       doctor: 'Dr. Smith',
@@ -34,7 +34,7 @@ export class ScanRequestsComponent implements OnInit {
     },
     {
       id: '002',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
       scanType: 'ct',
       bodyPart: 'Head',
       doctor: 'Dr. Johnson',
@@ -44,7 +44,7 @@ export class ScanRequestsComponent implements OnInit {
     },
     {
       id: '003',
-      patient: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
+      client: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
       scanType: 'mri',
       bodyPart: 'Spine',
       doctor: 'Dr. Williams',
@@ -57,7 +57,7 @@ export class ScanRequestsComponent implements OnInit {
   get filteredRequests(): any[] {
     return this.requests.filter(request => {
       const matchesSearch = !this.searchQuery || 
-        request.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         request.id.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesType = !this.scanTypeFilter || request.scanType === this.scanTypeFilter;
       const matchesStatus = !this.statusFilter || request.status === this.statusFilter;

@@ -1277,13 +1277,28 @@
   overscroll-behavior: contain;
 }
 
+/* Pharmacy OTC: page owns vertical scroll so Products sold header can stay fixed */
+.content-body:has(> app-otc-dispensary) {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-body:has(> app-otc-dispensary) > app-otc-dispensary {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
 .overview-shell-header {
   flex-shrink: 0;
   display: block;
   width: 100%;
   z-index: 300;
   min-width: 0;
-  /* Must not clip toolbar-right (Patient / Services / bell / messages). */
+  /* Must not clip toolbar-right (Client / Services / bell / messages). */
   overflow: visible;
   position: relative;
 }
@@ -1705,7 +1720,7 @@
   margin-bottom: 8px;
 }
 
-.appointment-patient {
+.appointment-client {
   font-weight: 600;
   color: #0f172a;
   display: flex;
@@ -1714,7 +1729,7 @@
   margin-bottom: 4px;
 }
 
-.appointment-patient i {
+.appointment-client i {
   color: #2563eb;
   font-size: 18px;
 }
@@ -2248,7 +2263,7 @@
 .overview-layout.dark .placeholder { color: #64748b; }
 .overview-layout.dark .appointment-item { background: #1e293b; border-color: #334155; }
 .overview-layout.dark .appointment-item:hover { background: #0f172a; border-color: #3b82f6; }
-.overview-layout.dark .appointment-patient, .overview-layout.dark .activity-title { color: #e2e8f0; }
+.overview-layout.dark .appointment-client, .overview-layout.dark .activity-title { color: #e2e8f0; }
 .overview-layout.dark .appointment-service, .overview-layout.dark .activity-description { color: #94a3b8; }
 .overview-layout.dark .activity-item:hover { background: #1e293b; }
 .overview-layout.dark .banner-card { 

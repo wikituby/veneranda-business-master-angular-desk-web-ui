@@ -1,124 +1,109 @@
-# System Overview
+# Business Manager Overview
 
 ## Purpose
 
-The Hospital Management System (HMS) is a web-based platform for running day-to-day operations at a health facility: registering patients, managing visits, documenting clinical care, dispensing medicines, tracking inventory, billing, laboratory and imaging workflows, and administration.
+Veneranda Business Master is a **complete business manager**. It keeps the customer relationship (CRM) and the operating records (ERP) on one set of books so a shop, distributor, or service desk does not run sales in one notebook and stock in another.
 
-One installation can serve a single clinic or a larger hospital, depending on which modules are enabled and how user access is configured.
+One installation can run a single counter or several stores. Modules and user access decide what each person sees.
 
-## High-level architecture
+## CRM and ERP on one desk
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Web browser (staff workstations, tablets)                  │
-│  Angular frontend — patient visit, overview modules, lab…   │
-└───────────────────────────┬─────────────────────────────────┘
-                            │ HTTPS / HTTP (JWT authentication)
-┌───────────────────────────▼─────────────────────────────────┐
-│  Backend API (Java / Quarkus-style health_care service)     │
-│  Patients, visits, stock, billing, users, queue, lab, etc.  │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────────┐
-│  Database + file storage (reports, profile images, backup)  │
-└─────────────────────────────────────────────────────────────┘
+CRM  — who you do business with
+  Clients, contacts, groups, account balances, follow-up
+
+        │  every sale and document is tied to a client and an order
+        ▼
+
+ERP  — how the business runs
+  Catalogue → stock → quotation / invoice / receipt / delivery
+  Expenses, debt, loans
+  Reports across stores
 ```
 
-Staff use a **header bar** for quick actions (queue, department shortcuts) and an **Overview** area with a sidebar for full module navigation.
+| Layer | Typical question it answers |
+|-------|-----------------------------|
+| CRM | Who is this client, what do they owe, and what have they bought? |
+| Sales ERP | What was quoted, invoiced, paid, and delivered? |
+| Inventory ERP | What is on the shelf, in which store, and at what cost? |
+| Finance ERP | What left the till, and which debts or loans are still open? |
+| Reports | What sold, what is low, and how did stores move this period? |
 
-## Main functional areas
+## Commercial document chain
 
-### 1. Patient management
+A sale is an **order**. Documents on that order follow a normal trading sequence. Each new checkout creates its own order. Editing a document can change the client and keeps the same order.
 
-- Register and search patients
-- Patient groups, profiles, visit history
-- Appointments and referrals
-- **Queue management** — patients waiting between departments/rooms
+| Stage | Document | What it means |
+|-------|----------|----------------|
+| 1 | Quotation | Price offer. Stock is not deducted. |
+| 2 | Proforma | Formal offer before payment. Stock is not deducted. |
+| 3 | Sales invoice | Bill for the goods or services. |
+| 4 | Receipt | Proof of payment. Stock is deducted when the sale is completed as a receipt or invoice that takes stock. |
+| 5 | Delivery note | Goods handed over or dispatched. |
 
-### 2. Clinical care (OPD / visit)
+Staff can open a later stage from an earlier document. Missing earlier stages are filled from the products already on the order. A payment can be recorded and later reversed. Reversed payments stay on the list and are left out of the paid total.
 
-- **Patient visit** screen — central workspace per encounter
-- Tabs typically include: Patient bio, Initial vitals, Consultations, Procedures, Treatment (pharmacy), Finance, Printouts
-- Dedicated flows for **Lab**, **Scan (radiology)**, and **Dental** where configured
+## Main areas
 
-### 3. Inpatient (IPD) — where enabled
+### CRM — client management
 
-- Bed management, admissions, discharges
-- Nursing notes, doctor rounds, medication charts
-- Procedures and transfers
+- Client registry: name, contact, address, and related contacts
+- Client groups for pricing, credit rules, or how you segment customers
+- Account activity: balances, transactions, and sales history
+- The same client record is used at the POS and on every commercial document
 
-### 4. Pharmacy
+### ERP — product and inventory
 
-- Prescribing and dispensing during a patient visit
-- **OTC dispensary** for walk-in sales
-- Stock visibility: pharmacy, central store, and total distribution
-- Stock transfer from central store when pharmacy stock is zero
+- Product and service catalogue: names, barcodes, categories, units, cost, selling price, reorder level, shelf
+- Stock on hand by store
+- Receive, adjust, transfer, stock take, initialise, and verify
+- Movement history for audit
 
-### 5. Inventory & stores
+### ERP — sales and checkout
 
-- Consumable items / hospital items
-- Stock receive, batches, adjustments, stock taking
-- Stock transfer between stores
-- Reorder levels, suppliers, manufacturers
-- Expired and near-expiry reporting
+- POS cart with barcode lookup, discounts, tax, and payment
+- Attach a client, then create a **new order** for each document
+- Products orders list: search, date filter, view, print, share, and turn an order off
+- Turned-off orders can still be viewed and printed. They cannot be edited or extended with a new document
 
-### 6. Laboratory & radiology
+### ERP — finance
 
-- Test requests, sample collection, processing, results, reports
-- Scan requests, radiology reports, worklists
-- Mobile-friendly lab page for bench work
+- Expense categories, accounts, and transactions
+- Client debt and payments against an order
+- Loan registers and loan payments
+- Reports and the main dashboard for owners
 
-### 7. Finance
+### Multi-store
 
-- Service charges, patient billing, cashier
-- Insurance billing, refunds, expenses
-- Revenue and departmental reports
+- Shared catalogue
+- Stock and selling tied to a store
+- Transfers between stores or a back warehouse and the counter
 
-### 8. Human resources — where enabled
+### Administration
 
-- Employee registration, departments, attendance, leave, payroll
+- Users, roles, and page access
+- Business name, branding, and working options
+- Backup and audit of sensitive actions
 
-### 9. Administration
+## Where people work
 
-- User management
-- **Access control** — per-user pages and per-role API endpoints
-- Business settings (facility name, branding, sidebar layout, OTC options)
-- Department setup, subscription, backup, audit logs
+| Surface | Use it for |
+|---------|------------|
+| Web console | Catalogue depth, finance, permissions, and reports |
+| POS | Counter selling and commercial documents |
+| Mobile business app | Floor sales and stock checks on the same data |
+| Dashboard | A short picture of sales, stock, and money |
 
-### 10. Extended modules (roadmap / optional)
+## Roles (typical)
 
-The Overview menu also includes sections for telemedicine, insurance claims, theatre, dialysis, blood bank, mortuary, BI, and more. Availability depends on your facility’s subscription and implementation phase.
+| Role | Usual work |
+|------|------------|
+| Cashier / sales | POS, receipts, client attach |
+| Storekeeper | Receive, transfer, counts, reorder |
+| Accountant | Expenses, debt, loans, statements |
+| Supervisor | Orders, reversals, reports |
+| Administrator | Users, access, business settings |
 
-## Key concepts
+Access is permission-based. A role only opens the pages it is allowed to use.
 
-| Term | Meaning |
-|------|---------|
-| **Visit** | A single patient encounter (OPD or related) with vitals, notes, orders, and billing |
-| **Queue entry** | Patient placed in line to move from one module/room to another |
-| **Stock batch** | A received lot of an item with cost, sell price, and profit margins |
-| **Module / room** | Department destination in the queue (e.g. consultation, pharmacy, lab) |
-| **Role** | User type (e.g. admin, MD, clinical, pharmacy) controlling menus and API access |
-
-## Who uses what
-
-| Role (examples) | Typical screens |
-|-----------------|-----------------|
-| Reception / records | Patient registration, queue, visit list |
-| Nurse | Vitals, patient visit, queue |
-| Doctor / clinician | Consultations, procedures, investigations |
-| Pharmacist | Patient visit → Treatment tab, OTC dispensary, stock |
-| Store keeper | Stock receive, transfer, stock taking |
-| Cashier | Finance tab on visit, cashier module |
-| Administrator | User management, access control, business settings |
-| Medical director (MD) | Full administration, dashboards |
-
-## Data and security (summary)
-
-- Users sign in with username and password; the session stores role and access rights.
-- Sensitive API operations can require **role-based endpoint** permission (e.g. creating stock transfers).
-- Facility branding and settings are loaded from the server and cached for the session.
-- Regular backup and audit review are recommended (see **05-administration-and-security.md**).
-
----
-
-*Document 01 — System overview — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

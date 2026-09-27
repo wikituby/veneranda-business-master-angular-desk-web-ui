@@ -23,8 +23,8 @@ export interface StandardDosageContext {
   drugName: string;
   lastUnitValue: number;
   unitOfMeasure: string;
-  patientAgeYears: number | null;
-  patientWeightKg: number | null;
+  clientAgeYears: number | null;
+  clientWeightKg: number | null;
   currentDoseValue?: number | null;
   defaultRoute?: string;
   defaultDoseUnit?: string;
@@ -83,20 +83,20 @@ function createStandardDosageOption(
   };
 }
 
-export function formatStandardDosagePatientSummary(ctx: StandardDosageContext): string {
-  const age = ctx.patientAgeYears;
-  const weight = ctx.patientWeightKg;
+export function formatStandardDosageClientSummary(ctx: StandardDosageContext): string {
+  const age = ctx.clientAgeYears;
+  const weight = ctx.clientWeightKg;
   const ageLabel = age != null ? `${age} years` : 'Age not recorded';
   const weightLabel = weight != null ? `${weight} kg` : 'Weight not recorded';
   return `${ageLabel} | ${weightLabel}`;
 }
 
-export function isPatientWeightMissing(ctx: StandardDosageContext): boolean {
-  const weight = Number(ctx.patientWeightKg);
+export function isClientWeightMissing(ctx: StandardDosageContext): boolean {
+  const weight = Number(ctx.clientWeightKg);
   return !Number.isFinite(weight) || weight <= 0;
 }
 
-function patientMatchesDosageRule(
+function clientMatchesDosageRule(
   rule: StockDosageRule,
   age: number | null,
   weight: number | null
@@ -140,7 +140,7 @@ function buildRuleMatchLabel(
     labels.push(`Weight ${rule.minWeightKg ?? '0'}-${rule.maxWeightKg ?? '+'} kg`);
   }
   if (!labels.length) {
-    labels.push(formatStandardDosagePatientSummary(ctx));
+    labels.push(formatStandardDosageClientSummary(ctx));
   } else if (age == null || weight == null) {
     labels.push('confirm missing age/weight if relevant');
   }
@@ -173,7 +173,7 @@ function resolveRuleDose(
     if (weight == null) {
       return {
         value: fixedDose,
-        label: 'Record patient weight to calculate exact dose',
+        label: 'Record client weight to calculate exact dose',
         warning: rule.warning || 'Weight is missing, so this rule is only a manual placeholder.',
       };
     }
@@ -202,9 +202,9 @@ function createStandardDosageOptionFromRule(
   rule: StockDosageRule,
   ctx: StandardDosageContext
 ): StandardDosageOption | null {
-  const age = ctx.patientAgeYears;
-  const weight = ctx.patientWeightKg;
-  if (!patientMatchesDosageRule(rule, age, weight)) {
+  const age = ctx.clientAgeYears;
+  const weight = ctx.clientWeightKg;
+  if (!clientMatchesDosageRule(rule, age, weight)) {
     return null;
   }
 
@@ -247,8 +247,8 @@ function createStandardDosageOptionFromRule(
 }
 
 function buildPcmDosageOptions(ctx: StandardDosageContext): StandardDosageOption[] {
-  const age = ctx.patientAgeYears;
-  const weight = ctx.patientWeightKg;
+  const age = ctx.clientAgeYears;
+  const weight = ctx.clientWeightKg;
   const isChild = (age != null && age < 12) || (weight != null && weight < 40);
   const tabletStrength = selectedItemStrengthValue(ctx, 500);
   const options: StandardDosageOption[] = [];
@@ -289,7 +289,7 @@ function buildPcmDosageOptions(ctx: StandardDosageContext): StandardDosageOption
     options.push(
       createStandardDosageOption({
         title: 'Child dose needs weight',
-        matchLabel: 'Child patient',
+        matchLabel: 'Child client',
         ruleLabel: 'PCM: 10-15 mg/kg per dose',
         calculatedDoseLabel: 'Record weight to calculate dose',
         doseValue: tabletStrength,
@@ -298,7 +298,7 @@ function buildPcmDosageOptions(ctx: StandardDosageContext): StandardDosageOption
         durationValue: 3,
         route: 'Oral',
         quantity: 12,
-        instructions: 'Confirm patient weight before using a tablet dose.',
+        instructions: 'Confirm client weight before using a tablet dose.',
         warning: 'Weight is missing, so this is only a manual placeholder.',
       })
     );
@@ -330,7 +330,7 @@ function buildPcmDosageOptions(ctx: StandardDosageContext): StandardDosageOption
 }
 
 function buildArtesunateDosageOptions(ctx: StandardDosageContext): StandardDosageOption[] {
-  const weight = ctx.patientWeightKg;
+  const weight = ctx.clientWeightKg;
   const vialStrength = selectedItemStrengthValue(ctx, 60);
   if (weight == null) {
     return [
@@ -338,7 +338,7 @@ function buildArtesunateDosageOptions(ctx: StandardDosageContext): StandardDosag
         title: 'Weight required',
         matchLabel: 'Artesunate IV dosing',
         ruleLabel: '2.4 mg/kg per dose',
-        calculatedDoseLabel: 'Record patient weight to calculate exact dose',
+        calculatedDoseLabel: 'Record client weight to calculate exact dose',
         doseValue: vialStrength,
         doseUnit: 'mg(s)',
         frequencyValue: 3,
@@ -357,7 +357,7 @@ function buildArtesunateDosageOptions(ctx: StandardDosageContext): StandardDosag
   return [
     createStandardDosageOption({
       title: 'Initial severe malaria schedule',
-      matchLabel: `${weight} kg patient`,
+      matchLabel: `${weight} kg client`,
       ruleLabel: 'Artesunate IV: 2.4 mg/kg at 0, 12 and 24 hours',
       calculatedDoseLabel: `${dose} mg per dose; use ${vialsPerDose} vial(s) of ${vialStrength} mg per dose`,
       doseValue: dose,

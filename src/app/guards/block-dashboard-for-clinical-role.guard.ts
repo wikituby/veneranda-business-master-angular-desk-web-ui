@@ -6,7 +6,7 @@ export const blockDashboardForClinicalRoleGuard: CanActivateFn = () => {
   const router = inject(Router);
   const r = (sessionStorage.getItem('userrole') || '').toString().toLowerCase().trim();
   if (r === 'clinician' || r === 'doctor') {
-    router.navigate(['/patient-visits-list']);
+    router.navigate(['/overview/otc-dispensary']);
     return false;
   }
   return true;

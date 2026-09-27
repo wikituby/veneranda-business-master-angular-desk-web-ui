@@ -108,7 +108,7 @@ export class DashboardComponent {
 
   totalAmountPaidInPeriod:any = 0;
 
-  isCollapsedNewPatient = true;
+  isCollapsedNewClient = true;
 
   isCollapsedNewLabTest  = true;
 
@@ -149,7 +149,7 @@ export class DashboardComponent {
 
   showDivUpdatedLoaderPharmacy:boolean = false;
 
-  isLoadingPatientVisits: boolean = false;
+  isLoadingClientVisits: boolean = false;
 
 
   showDivUpdatedLoaderPharmacyOut:boolean = false;
@@ -161,21 +161,21 @@ export class DashboardComponent {
 
   showDivUpdatedLoaderVitals:boolean = false;
 
-  isLoadingNewPatientDeleteOut: boolean = true;
+  isLoadingNewClientDeleteOut: boolean = true;
 
   showDivUpdatedLoaderDeleteOut: boolean = false;
 
 
-  isLoadingNewPatient: boolean = true;
-  isLoadingNewPatientInvoice: boolean = true;
+  isLoadingNewClient: boolean = true;
+  isLoadingNewClientInvoice: boolean = true;
 
-  isLoadingNewPatientTaxDiscount: boolean = true;
+  isLoadingNewClientTaxDiscount: boolean = true;
 
-  isLoadingNewPatientPayment:boolean = true;
-  isLoadingNewPatientServices: boolean = true;
-  isLoadingNewPatientPharmacy: boolean = true;
-  isLoadingNewPatientVitals: boolean = true;
-  isLoadingNewPatientPharmacyOut: boolean = true;
+  isLoadingNewClientPayment:boolean = true;
+  isLoadingNewClientServices: boolean = true;
+  isLoadingNewClientPharmacy: boolean = true;
+  isLoadingNewClientVitals: boolean = true;
+  isLoadingNewClientPharmacyOut: boolean = true;
 
 
 
@@ -294,7 +294,7 @@ export class DashboardComponent {
 
   actionButton:string="Action Button"
 
-  currentPatientGroup: string = "Chose Group Name";
+  currentClientGroup: string = "Chose Group Name";
 
 
   title = "Angular Server Post Data Test"
@@ -331,7 +331,7 @@ export class DashboardComponent {
 
   procedureName: any;
 
-  currentPatientGroupId = null;
+  currentClientGroupId = null;
 
   visitReason: string = "";
   visitType: string = "";
@@ -448,7 +448,7 @@ export class DashboardComponent {
 
   showDivUpdatedScan: boolean = false;
 
-  isUpdatingPatientVisit: boolean = false;
+  isUpdatingClientVisit: boolean = false;
 
   showDivUpdatedLoaderNewVisit: boolean = false;
   isLoadingNewVisit: boolean = true;
@@ -528,7 +528,7 @@ export class DashboardComponent {
   proceduresFilterDateFrom = '';
   proceduresFilterDateTo = '';
 
-  patientGroupList:any[] = [];
+  clientGroupList:any[] = [];
 
   labTestList:any[] = [];
 
@@ -538,15 +538,15 @@ export class DashboardComponent {
 
   procedureList:any[] = [];
 
-  patientGroup:any[] = [];
+  clientGroup:any[] = [];
 
   InvoicePdf: any;
 
 
-  patientFirstName: any;
-  patientProfilePic:any = "assets/images/vector.jpg";
-  patientFileNo: any;
-  patientSecondName: any;
+  clientFirstName: any;
+  clientProfilePic:any = "assets/images/vector.jpg";
+  clientFileNo: any;
+  clientSecondName: any;
 
   expenseList: any[] = [];
 
@@ -562,7 +562,7 @@ export class DashboardComponent {
   timeTakenInitialVital:any;
   dateTakenInitialVital:any;
   diagnosis:any;
-  patientId:any;
+  clientId:any;
   procedureId:any;
 
   itemId:any;
@@ -591,16 +591,16 @@ export class DashboardComponent {
   @ViewChild('serviceSearchInput') serviceSearchInput!: ElementRef;
 
 
-  currentPatientVisit: string = 'Choose Patient Visit'
+  currentClientVisit: string = 'Choose Client Order'
 
 
-  patientVisitList: any[] = []; // Initialize to hold patient visits
+  clientVisitList: any[] = []; // Initialize to hold client orders
 
 
   initialTriageVitals: any[] = []; // Store filtered vitals
 
 
-  saveButtonStatus: string = "Save Patient Vitals"
+  saveButtonStatus: string = "Save Client Vitals"
 
   saveButtonStatusLabTest: string = "Save LabTest"
 
@@ -621,7 +621,7 @@ export class DashboardComponent {
 
 
 
-  visitAction:string = "Close Visit";
+  visitAction:string = "Close Order";
 
   saveButtonStatusOtherProcedure: string = "Save Procedure"
 
@@ -706,9 +706,9 @@ export class DashboardComponent {
     //const item = JSON.parse(sessionStorage.getItem("item") || "[]");
     const item = JSON.parse(sessionStorage.getItem("item") || '{}');
 
-    this.initialVisit = JSON.parse(sessionStorage.getItem("initialPatientVisit") || '{}');
+    this.initialVisit = JSON.parse(sessionStorage.getItem("initialClientVisit") || '{}');
 
-    console.log("Retrieved initial Visit original from sessionStorage:", JSON.parse(sessionStorage.getItem("initialPatientVisit") || '{}'));
+    console.log("Retrieved initial Visit original from sessionStorage:", JSON.parse(sessionStorage.getItem("initialClientVisit") || '{}'));
 
     console.log("Retrieved initial Visit from sessionStorage:", this.initialVisit);
 
@@ -716,22 +716,22 @@ export class DashboardComponent {
 
     console.log("Retrieved item from sessionStorage:", item);
 
-    console.log('PatientFirstName', item.patientFirstName);
-    console.log('PatientSecondName', item.patientSecondName);
-    console.log('Patientprofilepic', item.patientProfilePic);
-    console.log('PatientFileNo', item.patientFileNo);
+    console.log('ClientFirstName', item.clientFirstName);
+    console.log('ClientSecondName', item.clientSecondName);
+    console.log('Clientprofilepic', item.clientProfilePic);
+    console.log('ClientFileNo', item.clientFileNo);
 
-    this.patientFirstName = item.patientFirstName;
-    this.patientSecondName = item.patientSecondName;
-    this.patientProfilePic = item.patientProfilePic;
-    this.patientFileNo = item.patientFileNo;
-    this.patientId = item.id;
+    this.clientFirstName = item.clientFirstName;
+    this.clientSecondName = item.clientSecondName;
+    this.clientProfilePic = item.clientProfilePic;
+    this.clientFileNo = item.clientFileNo;
+    this.clientId = item.id;
 
 
-    if (this.patientId) {
-      this.api.getTotalPatientBalanceDue(this.patientId).subscribe((res) => {
+    if (this.clientId) {
+      this.api.getTotalClientBalanceDue(this.clientId).subscribe((res) => {
 
-        console.log('patientId for totalDebt:',this.patientId);
+        console.log('clientId for totalDebt:',this.clientId);
     
         
         this.totalAmountDue = res.TotalAmountDue;
@@ -748,7 +748,7 @@ export class DashboardComponent {
     
     this.getAllExpenseTransactions();
 
-    //console.log("Patient visits", patientVis);
+    //console.log("Client orders", clientVis);
 
     
     const userRole = sessionStorage.getItem('userrole');
@@ -793,15 +793,15 @@ export class DashboardComponent {
   };
 
   private resetPageLoadingFlags(): void {
-    this.isLoadingNewPatientDeleteOut = false;
-    this.isLoadingNewPatient = false;
-    this.isLoadingNewPatientInvoice = false;
-    this.isLoadingNewPatientTaxDiscount = false;
-    this.isLoadingNewPatientPayment = false;
-    this.isLoadingNewPatientServices = false;
-    this.isLoadingNewPatientPharmacy = false;
-    this.isLoadingNewPatientVitals = false;
-    this.isLoadingNewPatientPharmacyOut = false;
+    this.isLoadingNewClientDeleteOut = false;
+    this.isLoadingNewClient = false;
+    this.isLoadingNewClientInvoice = false;
+    this.isLoadingNewClientTaxDiscount = false;
+    this.isLoadingNewClientPayment = false;
+    this.isLoadingNewClientServices = false;
+    this.isLoadingNewClientPharmacy = false;
+    this.isLoadingNewClientVitals = false;
+    this.isLoadingNewClientPharmacyOut = false;
     this.showDivUpdatedLoaderSearch = false;
     this.isLoadingNewSearch = false;
     this.isLoadingNewVisit = false;
@@ -950,7 +950,7 @@ openOtherProcedureDropdown() {
 
 
 
-  loadPatientVisit(id: any): void {
+  loadClientVisit(id: any): void {
     this.api.getInitialTriageVitalsForVisitId(id).subscribe((res) => {
       this.initialTriageVitals = res;
       console.log(this.initialTriageVitals);
@@ -964,7 +964,7 @@ openOtherProcedureDropdown() {
 
   openConsultation(){
     const data = {
-      medicalHistory: "Please write some patient medical history here",
+      medicalHistory: "Please write some client medical history here",
       clinicalExamination: "Provide outcome of any examination done",
       differentialDiagnosis: "possible diagnosis",
       diagnosis: "definate cause after investigations"
@@ -1093,7 +1093,7 @@ openOtherProcedureDropdown() {
     };
 
     if (!requestData.itemId) {
-      this.responseMessage = "Missing Item Id";
+      this.responseMessage = "Missing Product Id";
       this.responseColor = "rgb(238, 16, 16)";
       this.showDivUpdatedLoaderPharmacy = false;
 
@@ -1235,7 +1235,7 @@ getUserFormDataOtherProcedure(data: any) {
   data.orderedBy = sessionStorage.getItem('username'); // Handle empty age
 
 
-// ✅ Convert patientAge to a double or set to null
+// ✅ Convert clientAge to a double or set to null
 if (data.quantity === undefined || data.quantity === null || data.quantity == '' || data.quantity <= 0) {
   data.quantity = 1; // Handle empty age
 
@@ -1278,7 +1278,7 @@ if ((data.doneBy === undefined || data.doneBy === null || data.doneBy === '') &&
   data.doneBy = "Dr. Mindra";
 }
 
-if ((data.doneBy === undefined || data.doneBy === null || data.doneBy === '') && this.currentProcedureCategory === "outPatient") {
+if ((data.doneBy === undefined || data.doneBy === null || data.doneBy === '') && this.currentProcedureCategory === "outClient") {
   data.doneBy = "Dr. Mindra";
 }
 
@@ -1463,7 +1463,7 @@ const requestData = {
 
           }, 2000); 
 
-          // Reload the patient list
+          // Reload the client list
 
     
     
@@ -1532,7 +1532,7 @@ getUserFormDataTaxDiscount(data: any) {
       this.showDivUpdatedTaxDiscount = false;
       
       //this.getPaymentsByVisitSeparately()
-      this.getAllPatientGroupsForShow()
+      this.getAllClientGroupsForShow()
       console.log("discount added successfully");
       setTimeout(() => {
         this.showDivAddToDataBaseTaxDiscount= false;
@@ -1619,7 +1619,7 @@ getUserFormDataTaxDiscount(data: any) {
 
           }, 2000); 
 
-          // Reload the patient list
+          // Reload the client list
 
   
         },
@@ -1667,7 +1667,7 @@ getUserFormDataPayments(data: any) {
   console.log("Original data:", data);
 
 
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.accountName === undefined || data.accountName === null || data.accountName === '') {
     this.responseMessage = "Missing accountName ";
     this.responseColor = "rgb(238, 16, 16)";
@@ -1681,7 +1681,7 @@ getUserFormDataPayments(data: any) {
 
   
 
-        // ✅ Convert patientAge to a double or set to null
+        // ✅ Convert clientAge to a double or set to null
     if (data.description === undefined || data.description === null || data.description === '') {
        data.description = "Account created with Thanks"
     } 
@@ -1722,7 +1722,7 @@ getUserFormDataPayments(data: any) {
 
 
 
-      this.getAllPatientGroupsForShowExpenseAccount();
+      this.getAllClientGroupsForShowExpenseAccount();
 
       
       this.showDivAddToDataBasePayment = true;
@@ -1814,7 +1814,7 @@ getUserFormDataPayments(data: any) {
 
           }, 2000); 
 
-          // Reload the patient list
+          // Reload the client list
 
   
         },
@@ -1867,7 +1867,7 @@ getUserFormDataExpenses(data: any) {
  
 
 
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.amountTransacted === undefined || data.amountTransacted === null || data.amountTransacted === '') {
     this.responseMessage = "Missing Expense Amount";
     this.responseColor = "rgb(238, 16, 16)";
@@ -1883,7 +1883,7 @@ getUserFormDataExpenses(data: any) {
 
 
 
-        // ✅ Convert patientAge to a double or set to null
+        // ✅ Convert clientAge to a double or set to null
     if (data.description === undefined || data.description === null || data.description === '') {
        data.notes = "Expense done successfully"
     } 
@@ -2013,7 +2013,7 @@ getUserFormDataExpenses(data: any) {
 
           }, 2000); 
 
-          // Reload the patient list
+          // Reload the client list
 
   
         },
@@ -2060,7 +2060,7 @@ getUserFormDataExpenses(data: any) {
     console.log("Original data:", data);
   
 
-// ✅ Convert patientAge to a double or set to null
+// ✅ Convert clientAge to a double or set to null
 if (data.quantity === undefined || data.quantity === null || data.quantity === '' || data.quantity <= 0) {
   data.quantity = 1; // Handle empty age
 
@@ -2223,7 +2223,7 @@ const requestData = {
 
             }, 3000); 
   
-            // Reload the patient list
+            // Reload the client list
   
       
       
@@ -2284,7 +2284,7 @@ const requestData = {
     console.log("Original data:", data);
   
 
-// ✅ Convert patientAge to a double or set to null
+// ✅ Convert clientAge to a double or set to null
 if (data.quantity === undefined || data.quantity === null || data.quantity == '' || data.quantity <= 0) {
   data.quantity = 1; // Handle empty age
 
@@ -2456,7 +2456,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
 
             }, 3000); 
   
-            // Reload the patient list
+            // Reload the client list
       
           },
   
@@ -2511,7 +2511,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
     console.log("Original Data:", data);
     
 
-    // ✅ Convert patientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
+    // ✅ Convert clientDateOfBirth (Object → String "YYYY-MM-DD") or set to null
     if (data.dateTaken && typeof data.dateTaken === 'object') {
       const { year, month, day } = data.dateTaken;
       data.dateTaken = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
@@ -2519,14 +2519,14 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
       data.dateTaken = null; // Handle empty date
     }
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.temperature !== undefined && data.temperature !== null && data.temperature !== '') {
     data.temperature = parseFloat(data.temperature); // Convert to double (JavaScript number)
   } else {
     data.temperature = null; // Handle empty age
   }
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.diastolic !== undefined && data.diastolic !== null && data.diastolic !== '') {
     data.diastolic = parseFloat(data.diastolic); // Convert to double (JavaScript number)
   } else {
@@ -2534,7 +2534,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
   }
   
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.systolic !== undefined && data.systolic !== null && data.systolic !== '') {
     data.systolic = parseFloat(data.systolic); // Convert to double (JavaScript number)
   } else {
@@ -2543,21 +2543,21 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
 
 
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.weight !== undefined && data.weight !== null && data.weight !== '') {
     data.weight = parseFloat(data.weight); // Convert to double (JavaScript number)
   } else {
     data.weight = null; // Handle empty age
   }
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.spO2 !== undefined && data.spO2 !== null && data.spO2 !== '') {
     data.spO2 = parseFloat(data.spO2); // Convert to double (JavaScript number)
   } else {
     data.spO2 = null; // Handle empty age
   }
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.pulseRate !== undefined && data.pulseRate !== null && data.pulseRate !== '') {
     data.pulseRate = parseFloat(data.pulseRate); // Convert to double (JavaScript number)
   } else {
@@ -2565,7 +2565,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
   }
   
   
-  // ✅ Convert patientAge to a double or set to null
+  // ✅ Convert clientAge to a double or set to null
   if (data.height !== undefined && data.height !== null && data.height !== '') {
     data.height = parseFloat(data.height); // Convert to double (JavaScript number)
   } else {
@@ -2591,7 +2591,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
   }
 
 
-    // ✅ Convert patientAge to a double or set to null
+    // ✅ Convert clientAge to a double or set to null
     if (data.systolic == null && data.diastolic == null && data.temperature == null && data.spO2 == null && data.heartRate == null && data.pulseRate == null&& data.respiratoryRate == null) {
       data.systolic = parseFloat(data.systolic); // Convert to double (JavaScript number)
       this.dataBaseResponseMessage = "All filds cant be empty";
@@ -2690,7 +2690,7 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
     
     );
     } else { if(this.saveButtonStatus == "UpDate Vitals"){
-      console.log("patient id", this.vitalId);
+      console.log("client id", this.vitalId);
       console.log("confirm data before Updating to api", data);
   
   
@@ -2723,11 +2723,11 @@ if (data.orderedBy === undefined || data.orderedBy === null || data.orderedBy ==
               this.clearVitalsForm();
             }, 2000); 
   
-            // Reload the patient list
+            // Reload the client list
       
           },
           (error) => {
-            console.error("Error updating patient", error);
+            console.error("Error updating client", error);
             this.dataBaseResponseColor = "rgb(238, 16, 16)";
             this.dataBaseResponseMessage = error;
 
@@ -3168,11 +3168,11 @@ deleteExpense(item: any) {
     
     loadProcedure(id: any) {
  
-      this.api.getPatientGroupByGroupName(id).subscribe((res) => {
-        this.patientGroup = res;
-        //this.currentPatientGroup = this.patientGroup.groupNameShortForm;
-        //console.log('group now',this.patientGroup.groupNameShortForm);
-        //console.log(patientId);
+      this.api.getClientGroupByGroupName(id).subscribe((res) => {
+        this.clientGroup = res;
+        //this.currentClientGroup = this.clientGroup.groupNameShortForm;
+        //console.log('group now',this.clientGroup.groupNameShortForm);
+        //console.log(clientId);
   
       });  
     }
@@ -3192,7 +3192,7 @@ deleteExpense(item: any) {
   
       console.log('this is the item item :', item);
   
-      //console.log('this is the groip id:', item.patientGroupId);
+      //console.log('this is the groip id:', item.clientGroupId);
   
       console.log('plain id:', item.id);
   
@@ -3204,7 +3204,7 @@ deleteExpense(item: any) {
 
       //this.currentProcedureRequestedId = item.id;
   
-     //this.loadPatientGroupByGroupName(item.procedureId)
+     //this.loadClientGroupByGroupName(item.procedureId)
   
       console.log('procedure id:', this.procedureId);
   
@@ -3218,7 +3218,7 @@ deleteExpense(item: any) {
 
       this.currentProcedureRequested = item;
   
-      // Convert patientDateOfBirth to NgbDateStruct
+      // Convert clientDateOfBirth to NgbDateStruct
   
       // Convert timeTaken to HH:mm format
   
@@ -3241,7 +3241,7 @@ deleteExpense(item: any) {
   
       // Dropdown or datepicker-specific logic can be added if necessary
   
-      //this.currentPatientGroup = item.patientGroupId;  // Update patient group dropdown if needed
+      //this.currentClientGroup = item.clientGroupId;  // Update client group dropdown if needed
 
       this.isUpdatingLabTest = true;
 
@@ -3266,7 +3266,7 @@ deleteExpense(item: any) {
     
         console.log('this is the item item :', item);
     
-        //console.log('this is the groip id:', item.patientGroupId);
+        //console.log('this is the groip id:', item.clientGroupId);
     
         console.log('plain id:', item.id);
     
@@ -3278,7 +3278,7 @@ deleteExpense(item: any) {
   
         //this.currentProcedureRequestedId = item.id;
     
-       //this.loadPatientGroupByGroupName(item.procedureId)
+       //this.loadClientGroupByGroupName(item.procedureId)
     
         console.log('procedure id:', this.procedureId);
     
@@ -3308,7 +3308,7 @@ deleteExpense(item: any) {
     
         // Dropdown or datepicker-specific logic can be added if necessary
     
-        //this.currentPatientGroup = item.patientGroupId;  // Update patient group dropdown if needed
+        //this.currentClientGroup = item.clientGroupId;  // Update client group dropdown if needed
   
         this.isUpdatingOtherProcedure = true;
   
@@ -3337,7 +3337,7 @@ deleteExpense(item: any) {
   
       console.log('this is the item item :', item);
   
-      //console.log('this is the groip id:', item.patientGroupId);
+      //console.log('this is the groip id:', item.clientGroupId);
   
       console.log('plain id:', item.id);
   
@@ -3349,7 +3349,7 @@ deleteExpense(item: any) {
 
       //this.currentProcedureRequestedId = item.id;
   
-     //this.loadPatientGroupByGroupName(item.procedureId)
+     //this.loadClientGroupByGroupName(item.procedureId)
   
       console.log('procedure id:', this.procedureId);
   
@@ -3363,7 +3363,7 @@ deleteExpense(item: any) {
 
       this.currentScanProcedureRequested = item;
   
-      // Convert patientDateOfBirth to NgbDateStruct
+      // Convert clientDateOfBirth to NgbDateStruct
   
       // Convert timeTaken to HH:mm format
   
@@ -3386,7 +3386,7 @@ deleteExpense(item: any) {
   
       // Dropdown or datepicker-specific logic can be added if necessary
   
-      //this.currentPatientGroup = item.patientGroupId;  // Update patient group dropdown if needed
+      //this.currentClientGroup = item.clientGroupId;  // Update client group dropdown if needed
 
       this.isUpdatingScan = true;
 
@@ -3402,14 +3402,14 @@ deleteExpense(item: any) {
 
     console.log('this is the item item immediately:', item);
 
-    this.isCollapsedNewPatient = false;
+    this.isCollapsedNewClient = false;
 
     this.saveButtonStatus = "UpDate Vitals"
 
 
     console.log('this is the item item :', item);
 
-    //console.log('this is the groip id:', item.patientGroupId);
+    //console.log('this is the groip id:', item.clientGroupId);
 
     console.log('plain id:', item.id);
 
@@ -3419,10 +3419,10 @@ deleteExpense(item: any) {
 
 
 
-   // this.loadPatientGroupByGroupName(item.patientGroupId)
+   // this.loadClientGroupByGroupName(item.clientGroupId)
 
 
-    //console.log('patient group:', this.currentPatientGroup);
+    //console.log('client group:', this.currentClientGroup);
 
 
     console.log('the save button status:', this.saveButtonStatus);
@@ -3437,7 +3437,7 @@ deleteExpense(item: any) {
 
     this.currentVital = item;
 
-    // Convert patientDateOfBirth to NgbDateStruct
+    // Convert clientDateOfBirth to NgbDateStruct
 
     if (this.currentVital.dateTaken) {
       const date = new Date(this.currentVital.dateTaken);
@@ -3502,21 +3502,21 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
 
     // Dropdown or datepicker-specific logic can be added if necessary
 
-    //this.currentPatientGroup = item.patientGroupId;  // Update patient group dropdown if needed
+    //this.currentClientGroup = item.clientGroupId;  // Update client group dropdown if needed
 
   }
 
-  deletePatient(id: any) {
-    this.api.deletePatientById(id).subscribe(
+  deleteClient(id: any) {
+    this.api.deleteClientById(id).subscribe(
       (response) => {
         console.log("response", response);
   
-        // Reload the patient list
+        // Reload the client list
         this.api.getItems().subscribe((res) => {
           this.productList = res;
           this.data = res;
           this.initializeTableData();
-          console.log("Patient list reloaded");
+          console.log("Client list reloaded");
         });
   
   
@@ -3542,7 +3542,7 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
 
     //this.currentScanProcedure = "Chose Scan"
     this.saveButtonStatusOtherProcedure = "Save Procedure"
-    //this.saveButtonStatus = "Save Patient Vitals";
+    //this.saveButtonStatus = "Save Client Vitals";
   }
 
 
@@ -3557,7 +3557,7 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
 
     //this.currentScanProcedure = "Chose Scan"
     this.saveButtonStatusScan = "Save Scan"
-    //this.saveButtonStatus = "Save Patient Vitals";
+    //this.saveButtonStatus = "Save Client Vitals";
   }
 
 
@@ -3590,7 +3590,7 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
 
     this.currentProcedure = "Chose LabTest"
     this.saveButtonStatusLabTest = "Save LabTest"
-    //this.saveButtonStatus = "Save Patient Vitals";
+    //this.saveButtonStatus = "Save Client Vitals";
   }
 
 
@@ -3598,7 +3598,7 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
 
 
 
-  clearFormShowSavePatient(){
+  clearFormShowSaveClient(){
     this.saveButtonStatus = "Save Vitals";
     this.currentVital = {
       temperature: null,
@@ -3615,15 +3615,15 @@ if (this.currentVital.pulseRate !== undefined && this.currentVital.pulseRate !==
     };
   }
 
-  changeCurrentGroup(patientGroup: any) {
-    if (patientGroup) {
-      this.currentPatientGroup = patientGroup.groupNameShortForm || 'Unknown Group';
-      this.currentPatientGroupId = patientGroup.id || null;
-      console.log('Selected group name:', this.currentPatientGroup);
-      console.log('Selected group ID:', this.currentPatientGroupId);
+  changeCurrentGroup(clientGroup: any) {
+    if (clientGroup) {
+      this.currentClientGroup = clientGroup.groupNameShortForm || 'Unknown Group';
+      this.currentClientGroupId = clientGroup.id || null;
+      console.log('Selected group name:', this.currentClientGroup);
+      console.log('Selected group ID:', this.currentClientGroupId);
     } else {
-      console.warn('No patient group selected');
-      this.currentPatientGroup = 'Choose Group Name';
+      console.warn('No client group selected');
+      this.currentClientGroup = 'Choose Group Name';
     }
   }
 
@@ -3757,11 +3757,11 @@ returnUnitCost(): number {
 
 
 
-  loadPatientGroups(){
-    this.api.getPatientGroupList().subscribe((res) => {
-      this.patientGroupList = res;
-      console.log('group list',this.patientGroupList);
-      //console.log(patientId);
+  loadClientGroups(){
+    this.api.getClientGroupList().subscribe((res) => {
+      this.clientGroupList = res;
+      console.log('group list',this.clientGroupList);
+      //console.log(clientId);
 
     });  }
 
@@ -3771,7 +3771,7 @@ returnUnitCost(): number {
       this.api.getLabTestList().subscribe((res) => {
         this.labTestList = res;
         console.log('Lab list',this.labTestList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3783,7 +3783,7 @@ loadExpenseList(){
       this.api.getExpenseAccountList().subscribe((res) => {
         this.expenseList = res;
         console.log('item list',this.expenseList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3793,7 +3793,7 @@ loadExpenseCategoryList(){
       this.api.getExpenseCategoryList().subscribe((res) => {
         this.expenseCategoryList = res;
         console.log('item list',this.expenseCategoryList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3817,7 +3817,7 @@ onDropdownClick(event: MouseEvent): void {
       this.api.getDrugList().subscribe((res) => {
         this.itemList = res;
         console.log('item list',this.itemList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3830,7 +3830,7 @@ onDropdownClick(event: MouseEvent): void {
       this.api.getScanList().subscribe((res) => {
         this.scanList = res;
         console.log('scan list',this.scanList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3839,7 +3839,7 @@ onDropdownClick(event: MouseEvent): void {
       this.api.getOtherProcedureList().subscribe((res) => {
         this.procedureList = res;
         console.log('procedure list',this.procedureList);
-        //console.log(patientId);
+        //console.log(clientId);
   
       });  
     }
@@ -3948,7 +3948,7 @@ deleteItemUsed(id:any){
 
 }
 
-  getAllPatientGroupsForShow() {
+  getAllClientGroupsForShow() {
 
     this.api.getAllExpenseCategories().subscribe((res) => {
 
@@ -3963,7 +3963,7 @@ deleteItemUsed(id:any){
 
 
 
-  getAllPatientGroupsForShowExpenseAccount() {
+  getAllClientGroupsForShowExpenseAccount() {
 
     this.api.getAllExpenseCategoriesExpenseAccount().subscribe((res) => {
 
@@ -3980,11 +3980,11 @@ deleteItemUsed(id:any){
 
 
 
-  clearFormShowNewPatientGroup(){
+  clearFormShowNewClientGroup(){
 
-    this.getAllPatientGroupsForShow();
+    this.getAllClientGroupsForShow();
 
-    //this.currentPatientGroup = "Chose Group Name";
+    //this.currentClientGroup = "Chose Group Name";
     if (this.usersFormTaxDiscount) {
       this.usersFormTaxDiscount.resetForm();  // Reset the form to clear all fields
 
@@ -3994,11 +3994,11 @@ deleteItemUsed(id:any){
 
 
 
-    clearFormShowNewPatientGroupExpenseAccount(){
+    clearFormShowNewClientGroupExpenseAccount(){
 
-    this.getAllPatientGroupsForShowExpenseAccount();
+    this.getAllClientGroupsForShowExpenseAccount();
 
-    //this.currentPatientGroup = "Chose Group Name";
+    //this.currentClientGroup = "Chose Group Name";
     if (this.usersFormTaxDiscount) {
       this.usersFormTaxDiscount.resetForm();  // Reset the form to clear all fields
 
@@ -4127,45 +4127,45 @@ deleteItemUsed(id:any){
     }
     
 
-  loadPatientGroupByGroupName(id: any) {
+  loadClientGroupByGroupName(id: any) {
 
-      this.api.getPatientGroupByGroupName(id).subscribe((res) => {
-        this.patientGroup = res;
-        //this.currentPatientGroup = this.patientGroup.groupNameShortForm;
-        //console.log('group now',this.patientGroup.groupNameShortForm);
-        //console.log(patientId);
+      this.api.getClientGroupByGroupName(id).subscribe((res) => {
+        this.clientGroup = res;
+        //this.currentClientGroup = this.clientGroup.groupNameShortForm;
+        //console.log('group now',this.clientGroup.groupNameShortForm);
+        //console.log(clientId);
   
       });  
     }
 
 
-  createNewPatientVisits(patientId:any){
+  createNewClientVisits(clientId:any){
 
     this.visitSaveButtonStatus = "Save Visit"
-    this.patientId = patientId;
+    this.clientId = clientId;
     this.visitReason = "";
     this.visitType = "";
 
-     //this.api.getInitialTriageVitalsForVisitId(patientId).subscribe((res) => {
-       //this.patientVisitList = res;
-       //console.log('Selected VisitListNow',this.patientVisitList);
-       //console.log(patientId);
+     //this.api.getInitialTriageVitalsForVisitId(clientId).subscribe((res) => {
+       //this.clientVisitList = res;
+       //console.log('Selected VisitListNow',this.clientVisitList);
+       //console.log(clientId);
     // });
      }
 
-     loadPatientVisits(patientId: any) {
-      this.isLoadingPatientVisits = true;
+     loadClientVisits(clientId: any) {
+      this.isLoadingClientVisits = true;
   
-      this.api.getInitialTriageVitalsForVisitId(patientId).subscribe({
+      this.api.getInitialTriageVitalsForVisitId(clientId).subscribe({
         next: (res) => {
-          this.patientVisitList = res;
-          console.log('Selected VisitListNow', this.patientVisitList);
-          console.log(patientId);
-          this.isLoadingPatientVisits = false;  // ✅ stop loading when data comes
+          this.clientVisitList = res;
+          console.log('Selected VisitListNow', this.clientVisitList);
+          console.log(clientId);
+          this.isLoadingClientVisits = false;  // ✅ stop loading when data comes
         },
         error: (err) => {
-          console.error('Error loading patient visits', err);
-          this.isLoadingPatientVisits = false;  // ✅ even on error, stop loading
+          console.error('Error loading client orders', err);
+          this.isLoadingClientVisits = false;  // ✅ even on error, stop loading
         }
       });
   }
@@ -4206,7 +4206,7 @@ deleteItemUsed(id:any){
 
     closeVisit(visit:any){
 
-      this.isUpdatingPatientVisit = true;
+      this.isUpdatingClientVisit = true;
 
     const data = {
       visitStatus: "closed", // Spread existing properties
@@ -4232,18 +4232,18 @@ deleteItemUsed(id:any){
             this.responseMessage = "Internal server error";
           }
 
-          this.isUpdatingPatientVisit = false;
+          this.isUpdatingClientVisit = false;
 
   
           this.showDivAddToDataBase = false;
 
-          this.loadPatientVisits(this.patientId)
+          this.loadClientVisits(this.clientId)
 
           this.loadInitialTriageVitalsForVisitId(response.data)
   
           setTimeout(() => {
             this.showDivUpdated = false;
-            this.isCollapsedNewPatient = false;
+            this.isCollapsedNewClient = false;
           }, 2000);
         },
         (error) => {
@@ -4262,7 +4262,7 @@ deleteItemUsed(id:any){
           }
           this.responseColor = "rgb(238, 16, 16)"; // Red for error
 
-          this.isUpdatingPatientVisit = false;
+          this.isUpdatingClientVisit = false;
 
   
           this.showDivUpdated = true;
@@ -4404,7 +4404,7 @@ deleteItemUsed(id:any){
  
 
 
-    this.currentPatientVisit = visit.visitName + " [" +visit.visitDate + "]"; // Update the visit name on selection
+    this.currentClientVisit = visit.visitName + " [" +visit.visitDate + "]"; // Update the visit name on selection
     //this.visitId = visit.id;
     //this.productListProceduresRequested = visit.proceduresRequested;
     console.log(this.productListProceduresRequested);
@@ -4413,7 +4413,7 @@ deleteItemUsed(id:any){
     console.log(visit.id);
     console.log(this.initialTriageVitals);
 
-    console.log('Selected Visit:', this.currentPatientVisit);
+    console.log('Selected Visit:', this.currentClientVisit);
 
 
     if (visit.proceduresRequested && visit.proceduresRequested.length > 0) {
@@ -4578,8 +4578,8 @@ getAllExpenseTransactions(){
   getInitialTriageVitalsByVisitId(visitId: string): any[] {
     const item = JSON.parse(sessionStorage.getItem("item") || "[]");
   
-    if (item.patientVisits && item.patientVisits.length > 0) {
-      const visit = item.patientVisits.find((v: any) => v.id === visitId);
+    if (item.clientVisits && item.clientVisits.length > 0) {
+      const visit = item.clientVisits.find((v: any) => v.id === visitId);
   
       if (visit && visit.initialTriageVitals) {
         return visit.productList;
@@ -4692,13 +4692,13 @@ getAllExpenseTransactions(){
 
 
 
-  filteredPatientGroupList() {
-    let filteredGroupList = this.patientGroupList ?? []; // Ensure it's always an array
+  filteredClientGroupList() {
+    let filteredGroupList = this.clientGroupList ?? []; // Ensure it's always an array
   
     // Filter based on search text
     if (this.searchText) {
-      filteredGroupList = filteredGroupList.filter((patientGroup) =>
-        patientGroup.groupNameShortName?.toLowerCase().includes(this.searchText.toLowerCase())
+      filteredGroupList = filteredGroupList.filter((clientGroup) =>
+        clientGroup.groupNameShortName?.toLowerCase().includes(this.searchText.toLowerCase())
       );
     }
   
@@ -4707,12 +4707,12 @@ getAllExpenseTransactions(){
   }
 
 
-  filteredPatientVisitList() {
-    let filteredList = this.patientVisitList;
+  filteredClientVisitList() {
+    let filteredList = this.clientVisitList;
   
     // Filter based on search text
     if (this.searchText) {
-      filteredList = this.patientVisitList.filter((visit) =>
+      filteredList = this.clientVisitList.filter((visit) =>
         visit.visitName.toLowerCase().includes(this.searchText.toLowerCase())
       );
     }
@@ -5363,24 +5363,24 @@ get filteredProductListConsiltation2(): any[] {
       // Check if the selectedColumn is 'all' or a specific column
       switch (this.selectedColumn) {
         case 'title':
-          return item.patientFirstName.toLowerCase().includes(query);
+          return item.clientFirstName.toLowerCase().includes(query);
         case 'number':
-          return item.patientFileNo.toLowerCase().includes(query);
+          return item.clientFileNo.toLowerCase().includes(query);
         case 'category':
-          return item.patientSecondName.toLowerCase().includes(query);
+          return item.clientSecondName.toLowerCase().includes(query);
         case 'description':
           return item.nextOfKinName.toLowerCase().includes(query);
         case 'price':
-          return item.patientGender.toLowerCase().includes(query);
+          return item.clientGender.toLowerCase().includes(query);
         // Add cases for other columns as needed
         default:
           // If 'all' or an invalid column is selected, search in all columns
           return (
-            item.patientFirstName.toLowerCase().includes(query) ||
-            item.patientFileNo.toLowerCase().includes(query) ||
-            item.patientSecondName.toLowerCase().includes(query) ||
+            item.clientFirstName.toLowerCase().includes(query) ||
+            item.clientFileNo.toLowerCase().includes(query) ||
+            item.clientSecondName.toLowerCase().includes(query) ||
             item.nextOfKinName.toLowerCase().includes(query) ||
-            item.patientGender.toLowerCase().includes(query)
+            item.clientGender.toLowerCase().includes(query)
 
             // Add conditions for other columns as needed
           );
@@ -5539,9 +5539,9 @@ get filteredProductListConsiltation2(): any[] {
       image: "",
     })
 
-    this.modelTitle = "Add New Item"
+    this.modelTitle = "Add New Product"
     this.imgSrc = '/assets/imgplaceholder.jpg';
-    this.actionButton = "Add New Item"
+    this.actionButton = "Add New Product"
     this.closeModalAdd = true;
     this.closeModalUpdate = false;
 
@@ -5614,7 +5614,7 @@ get filteredProductListConsiltation2(): any[] {
     
 
     if (this.saveButtonStatus = "Save Visit ") {
-      this.api.createNewVisit(this.patientId, data).subscribe((result) => {
+      this.api.createNewVisit(this.clientId, data).subscribe((result) => {
         console.log("results id",result.id);
 
         console.log("results",result);
@@ -5633,22 +5633,22 @@ get filteredProductListConsiltation2(): any[] {
 
     } else {
 
-      this.api.updateVisit(this.patientId, data).subscribe(
+      this.api.updateVisit(this.clientId, data).subscribe(
         (response) => {
           console.log("response", response);
 
-          // Reload the patient list
+          // Reload the client list
           this.api.getItems().subscribe((res) => {
             this.productList = res;
             this.data = res;
             this.initializeTableData();
-            console.log("Patient list reloaded");
+            console.log("Client list reloaded");
           });
     
     
         },
         (error) => {
-          console.error("Error updating patient", error);
+          console.error("Error updating client", error);
         }
       );
   };
@@ -5686,8 +5686,8 @@ get filteredProductListConsiltation2(): any[] {
   editProduct(id: number) {
     console.log("modelTitle before "+ this.modelTitle);
 
-    this.modelTitle="Update Item"
-    this.actionButton="Update Item"
+    this.modelTitle="Update Product"
+    this.actionButton="Update Product"
 
    console.log("modelTitle after "+ this.modelTitle);
 

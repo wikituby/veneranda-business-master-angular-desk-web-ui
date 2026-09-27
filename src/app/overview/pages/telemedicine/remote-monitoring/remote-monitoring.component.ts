@@ -15,7 +15,7 @@ export class RemoteMonitoringComponent implements OnInit {
   currentPage: number = 1;
   totalPages: number = 5;
 
-  monitoredPatients: number = 0;
+  monitoredClients: number = 0;
   activeAlerts: number = 0;
 
   items: any[] = [];

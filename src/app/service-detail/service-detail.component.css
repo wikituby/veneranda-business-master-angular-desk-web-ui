@@ -10,8 +10,9 @@
   /* Hero starts under fixed nav (same as home) — no grey gap above */
   padding-top: 80px;
   box-sizing: border-box;
-  background-size: cover;
-  background-position: 45% 18%;
+  background-color: #0f2924;
+  background-size: contain;
+  background-position: center center;
   background-repeat: no-repeat;
   display: flex;
   align-items: flex-end;
@@ -201,10 +202,14 @@
 
 .related-photo {
   width: 72px;
-  height: 72px;
-  border-radius: 10px;
-  background-size: cover;
-  background-position: 45% 20%;
+  height: 88px;
+  border-radius: 8px;
+  background-color: #f4f7f6;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .related-card strong {

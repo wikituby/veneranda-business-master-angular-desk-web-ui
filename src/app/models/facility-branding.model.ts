@@ -25,7 +25,7 @@ export interface FacilityBranding {
   sidebarStacked?: boolean;
   /** true = OTC counter shows prescription fields by default */
   otcIncludePrescribing?: boolean;
-  /** true = pharmacy inventory uses stock batches; false = shop items */
+  /** true = pharmacy inventory uses stock batches; false = shop products */
   pharmacyUseStockBatch?: boolean;
   /** CSV / JSON list of user ids allowed to open visits */
   privilegeOpenVisitUserIds?: string;

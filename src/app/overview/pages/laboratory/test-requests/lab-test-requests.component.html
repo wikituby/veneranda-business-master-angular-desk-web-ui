@@ -64,7 +64,7 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="bi bi-search"></i>
-      <input type="text" placeholder="Search by patient name, test name, or request ID..." [(ngModel)]="searchQuery">
+      <input type="text" placeholder="Search by client name, test name, or request ID..." [(ngModel)]="searchQuery">
     </div>
     <div class="filter-group">
       <select class="filter-select" [(ngModel)]="statusFilter">
@@ -108,7 +108,7 @@
         <thead>
           <tr>
             <th>Request ID</th>
-            <th>Patient</th>
+            <th>Client</th>
             <th>Test Name</th>
             <th>Test Type</th>
             <th>Requested By</th>
@@ -124,11 +124,11 @@
               <div class="request-id">{{request.requestId}}</div>
             </td>
             <td>
-              <div class="patient-cell">
-                <div class="patient-avatar-small">{{request.patient.initials}}</div>
+              <div class="client-cell">
+                <div class="client-avatar-small">{{request.client.initials}}</div>
                 <div>
-                  <div class="patient-name-cell">{{request.patient.name}}</div>
-                  <div class="patient-meta-cell">File: {{request.patient.fileNo}}</div>
+                  <div class="client-name-cell">{{request.client.name}}</div>
+                  <div class="client-meta-cell">File: {{request.client.fileNo}}</div>
                 </div>
               </div>
             </td>

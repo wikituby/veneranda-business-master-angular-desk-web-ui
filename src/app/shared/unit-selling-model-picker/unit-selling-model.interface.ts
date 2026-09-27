@@ -24,7 +24,7 @@ export function findUnitSellingModelByNameKeyword(
   return models.find((model) => String(model?.name || '').toLowerCase().includes(needle)) ?? null;
 }
 
-export function patientGroupUsesCompassionPricing(
+export function clientGroupUsesCompassionPricing(
   group: { groupNameShortForm?: string; groupName?: string } | null | undefined,
   fallbackName?: string | null
 ): boolean {

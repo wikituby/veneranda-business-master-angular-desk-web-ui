@@ -99,7 +99,7 @@ export class ServicesOfferedComponent implements OnInit {
 
 
 
-  isCollapsedNewPatientBulk = true;
+  isCollapsedNewClientBulk = true;
 
   isCollapsedItemsUsedShow = true;
 
@@ -452,7 +452,7 @@ loadDrugList(){
   this.api.getDrugList().subscribe((res) => {
     this.itemList = res;
     console.log('item list',this.itemList);
-    //console.log(patientId);
+    //console.log(clientId);
 
   });  
 }
@@ -475,7 +475,7 @@ loadRequestedOtherProcedure(){
       this.expandedServiceCategoryIds.add(Number(this.currentParentCategoryId));
     }
     console.log('procedure list',this.procedureList);
-    //console.log(patientId);
+    //console.log(clientId);
 
   });  
 }
@@ -512,7 +512,7 @@ loadRequestedOtherProcedureType(){
   this.api.getOtherServiceListType().subscribe((res) => {
     this.procedureListType = res;
     console.log('procedure Type list',this.procedureListType);
-    //console.log(patientId);
+    //console.log(clientId);
 
   });  
 }
@@ -861,7 +861,7 @@ loadRequestedScans(){
   this.api.getAllProcedureList().subscribe((res) => {
     this.scanList = res;
     console.log('scan list',this.scanList);
-    //console.log(patientId);
+    //console.log(clientId);
 
   });  
   setTimeout(() => {
@@ -1930,9 +1930,9 @@ deleteItemUsed(id: any) {
       image: "",
     })
 
-    this.modelTitle = "Add New Item"
+    this.modelTitle = "Add New Product"
     this.imgSrc = '/assets/imgplaceholder.jpg';
-    this.actionButton = "Add New Item"
+    this.actionButton = "Add New Product"
     this.closeModalAdd = true;
     this.closeModalUpdate = false;
 
@@ -2610,8 +2610,8 @@ clearFormShowSaveUpdateItem(){
   editProduct(id: number) {
     console.log("modelTitle before "+ this.modelTitle);
 
-    this.modelTitle="Update Item"
-    this.actionButton="Update Item"
+    this.modelTitle="Update Product"
+    this.actionButton="Update Product"
 
    console.log("modelTitle after "+ this.modelTitle);
 

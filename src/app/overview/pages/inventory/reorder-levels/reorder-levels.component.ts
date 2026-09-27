@@ -33,6 +33,7 @@ export class ReorderLevelsComponent implements OnInit {
 
   isLoadingService = false;
   isSavingReorder = false;
+  creatingPurchaseOrder = false;
   responseColor = '';
   responseMessage = '';
   showDivUpdatedOut = false;
@@ -175,6 +176,38 @@ export class ReorderLevelsComponent implements OnInit {
       return;
     }
     this.loadItems();
+  }
+
+  createPurchaseOrder(): void {
+    const rows = this.filteredReorderBatches.filter((row) => this.isBatchBelowReorderTo(row) && this.qtyToOrder(row) > 0);
+    if (!rows.length) {
+      this.showFeedback('No products are below their reorder-to level.', '#b45309');
+      return;
+    }
+    const lines = rows.map((row) => ({
+      stockItemId: row?.stockItemId ?? row?.stock_item_id ?? row?.itemId ?? null,
+      stockItemName: this.displayStockItemName(row),
+      storeName: this.inventoryIsStockBatch ? this.displayStore(row) : null,
+      batchNumber: this.inventoryIsStockBatch ? this.displayBatchNumber(row) : null,
+      inStock: this.getStockAtHandNumber(row),
+      reorderTo: this.getReorderToNumber(row),
+      quantityOrdered: this.qtyToOrder(row),
+    }));
+    this.creatingPurchaseOrder = true;
+    this.api.createPurchaseOrder({ lines }).subscribe({
+      next: (order: any) => {
+        this.creatingPurchaseOrder = false;
+        const id = order?.id;
+        this.showFeedback(`Purchase order ${order?.orderNo || ''} created.`, 'rgb(11, 155, 112)');
+        if (id) {
+          this.router.navigate(['/overview/pharmacy-purchase-orders'], { queryParams: { id } });
+        }
+      },
+      error: (err: any) => {
+        this.creatingPurchaseOrder = false;
+        this.showFeedback(err?.error?.message || 'Could not create the purchase order.', '#dc2626');
+      },
+    });
   }
 
   goToStockReceive(): void {

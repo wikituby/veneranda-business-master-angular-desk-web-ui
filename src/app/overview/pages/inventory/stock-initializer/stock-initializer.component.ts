@@ -93,7 +93,7 @@ export class StockInitializerComponent implements OnInit {
   }
 
   get modeLabel(): string {
-    return this.inventoryIsStockBatch ? 'Stock batches' : 'Shop items';
+    return this.inventoryIsStockBatch ? 'Stock batches' : 'Shop products';
   }
 
   itemLabel(item: PendingItem): string {

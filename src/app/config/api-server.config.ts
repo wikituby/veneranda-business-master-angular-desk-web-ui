@@ -20,7 +20,8 @@ export function getDevProxyBase(): string {
  */
 export const API_DEV_PROXY_BASE = getDevProxyBase();
 
-export const API_DEFAULT_LAN_HOST = '192.168.1.187';
+/** This PC's LAN IP when sharing Quarkus with phones on the same Wi‑Fi. */
+export const API_DEFAULT_LAN_HOST = '192.168.1.114';
 export const API_HEALTH_PATH = '/health';
 
 /** Direct call to API on this machine (Quarkus / local mother emulator). */
@@ -32,7 +33,7 @@ export const API_CLOUD_BASE = `https://backend-mc2d.onrender.com${API_CONTEXT_PA
 /** Canonical public API host for the marketing website (contact form, etc.). */
 export const API_VENERANDA_PUBLIC_BASE = `https://api.venerandahospital.org${API_CONTEXT_PATH}`;
 
-/** Mother app on LAN (phone running the embedded server). */
+/** Mother app / PC Quarkus on LAN. */
 export const API_DEFAULT_LAN_BASE = `http://${API_DEFAULT_LAN_HOST}:${API_DEFAULT_PORT}${API_CONTEXT_PATH}`;
 
 export const STORAGE_KEY_ACTIVE_BASE = 'apiActiveBaseUrl';

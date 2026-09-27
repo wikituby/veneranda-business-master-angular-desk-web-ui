@@ -232,8 +232,8 @@
                 <span class="exp-item-name">{{ clientFullName(c) }}</span>
                 <span class="exp-item-cat">
                   {{ c.occupation || 'No occupation' }}
-                  • Age: {{ c.patientAge ?? c.age ?? '—' }}
-                  • Group: {{ c.patientGroupName || c.patientGroup?.groupName || c.patientGroup || '—' }}
+                  • Age: {{ c.clientAge ?? c.age ?? '—' }}
+                  • Group: {{ c.clientGroupName || c.clientGroup?.groupName || c.clientGroup || '—' }}
                 </span>
               </li>
               <li class="exp-empty" *ngIf="!filteredClientsForPicker.length">
@@ -322,19 +322,19 @@
     <div class="form-grid">
       <div class="form-field">
         <label>First Name</label>
-        <input class="form-control" type="text" [(ngModel)]="newClientForm.patientFirstName" placeholder="First name" />
+        <input class="form-control" type="text" [(ngModel)]="newClientForm.clientFirstName" placeholder="First name" />
       </div>
       <div class="form-field">
         <label>Second Name</label>
-        <input class="form-control" type="text" [(ngModel)]="newClientForm.patientSecondName" placeholder="Second name" />
+        <input class="form-control" type="text" [(ngModel)]="newClientForm.clientSecondName" placeholder="Second name" />
       </div>
       <div class="form-field">
         <label>Contact / Phone</label>
-        <input class="form-control" type="text" [(ngModel)]="newClientForm.patientContact" placeholder="Starts with 256" />
+        <input class="form-control" type="text" [(ngModel)]="newClientForm.clientContact" placeholder="Starts with 256" />
       </div>
       <div class="form-field">
         <label>Gender</label>
-        <select class="form-control" [(ngModel)]="newClientForm.patientGender">
+        <select class="form-control" [(ngModel)]="newClientForm.clientGender">
           <option value="">Select gender</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
@@ -343,11 +343,11 @@
       </div>
       <div class="form-field">
         <label>Date of Birth</label>
-        <input class="form-control" type="date" [(ngModel)]="newClientForm.patientDateOfBirth" />
+        <input class="form-control" type="date" [(ngModel)]="newClientForm.clientDateOfBirth" />
       </div>
       <div class="form-field">
         <label>Age</label>
-        <input class="form-control" type="number" min="0" step="0.01" [(ngModel)]="newClientForm.patientAge" placeholder="Age" />
+        <input class="form-control" type="number" min="0" step="0.01" [(ngModel)]="newClientForm.clientAge" placeholder="Age" />
       </div>
       <div class="form-field">
         <label>Occupation</label>
@@ -355,7 +355,7 @@
       </div>
       <div class="form-field">
         <label>Address</label>
-        <input class="form-control" type="text" [(ngModel)]="newClientForm.patientAddress" placeholder="Address" />
+        <input class="form-control" type="text" [(ngModel)]="newClientForm.clientAddress" placeholder="Address" />
       </div>
       <div class="form-field full-width">
         <label>Next of Kin Name</label>

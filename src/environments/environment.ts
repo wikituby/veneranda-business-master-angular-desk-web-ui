@@ -12,8 +12,8 @@ export const environment = {
     messagingSenderId: '475672285070',
   },
 
-  // API Configuration — mother app on phone; dev uses ng serve proxy (see proxy.conf.json)
-  apiUrl: 'http://192.168.1.187:8080/health_care',
+  // API Configuration — ng serve uses proxy.conf.json → localhost:8080
+  apiUrl: 'http://localhost:4800/health_care',
   apiTimeout: 30000,
   apiRetries: 2,
   

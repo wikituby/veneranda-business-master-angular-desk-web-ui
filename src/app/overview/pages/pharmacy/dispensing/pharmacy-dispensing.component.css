@@ -390,14 +390,14 @@
   color: #94a3b8;
 }
 
-.prescription-patient {
+.prescription-client {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
 }
 
-.patient-avatar-small {
+.client-avatar-small {
   width: 48px;
   height: 48px;
   border-radius: 10px;
@@ -410,27 +410,27 @@
   font-size: 16px;
 }
 
-.patient-info {
+.client-info {
   flex: 1;
 }
 
-.patient-name {
+.client-name {
   font-size: 16px;
   font-weight: 600;
   color: #0f172a;
   margin-bottom: 4px;
 }
 
-.dark .patient-name {
+.dark .client-name {
   color: #f1f5f9;
 }
 
-.patient-meta {
+.client-meta {
   font-size: 13px;
   color: #64748b;
 }
 
-.dark .patient-meta {
+.dark .client-meta {
   color: #94a3b8;
 }
 
@@ -481,7 +481,7 @@
   border: 1px solid #334155;
 }
 
-.patient-info-card {
+.client-info-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   padding: 20px;
@@ -492,7 +492,7 @@
   gap: 16px;
 }
 
-.patient-avatar-large {
+.client-avatar-large {
   width: 64px;
   height: 64px;
   border-radius: 12px;
@@ -505,12 +505,12 @@
   font-size: 24px;
 }
 
-.patient-details-large h3 {
+.client-details-large h3 {
   margin: 0 0 4px 0;
   font-size: 20px;
 }
 
-.patient-details-large p {
+.client-details-large p {
   margin: 4px 0;
   opacity: 0.9;
   font-size: 14px;

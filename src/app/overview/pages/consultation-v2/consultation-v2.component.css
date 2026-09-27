@@ -141,7 +141,7 @@
   display: none;
 }
 
-.cv2-patient-card {
+.cv2-client-card {
   text-align: center;
   padding-bottom: 0;
   min-width: 0;
@@ -1106,7 +1106,7 @@
   object-fit: cover;
 }
 
-.cv2-patient-name {
+.cv2-client-name {
   margin: 0;
   font-size: 18px;
   font-weight: 400;
@@ -1140,7 +1140,7 @@
   box-sizing: border-box;
 }
 
-.cv2-patient-meta {
+.cv2-client-meta {
   display: grid;
   gap: 8px;
   text-align: left;
@@ -1459,8 +1459,9 @@
 
 .cv2-tabs {
   display: flex;
-  gap: 8px;
-  padding: 6px var(--cv2-column-inset);
+  align-items: center;
+  gap: 12px;
+  padding: 10px var(--cv2-column-inset);
   overflow-x: auto;
   border-bottom: 1px solid var(--cv2-border);
   background: linear-gradient(180deg, #fff, #f8fafc);
@@ -1474,6 +1475,109 @@
   grid-row: 1;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
+}
+
+.cv2-progress-tabs {
+  gap: 14px;
+}
+
+.cv2-tab--client {
+  flex-shrink: 0;
+}
+
+.cv2-progress-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: thin;
+}
+
+.cv2-progress-step {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  min-width: 88px;
+  color: #94a3b8;
+  transition: color 0.15s ease;
+}
+
+.cv2-progress-step-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.cv2-progress-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  max-width: 96px;
+  white-space: normal;
+}
+
+.cv2-progress-connector {
+  flex: 1 1 18px;
+  min-width: 18px;
+  max-width: 48px;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 2px 18px;
+  align-self: center;
+  border-radius: 999px;
+}
+
+.cv2-progress-connector.done {
+  background: #34d399;
+}
+
+.cv2-progress-step.done {
+  color: #047857;
+}
+
+.cv2-progress-step.done .cv2-progress-step-marker {
+  border-color: #34d399;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.cv2-progress-step.current {
+  color: #1d4ed8;
+}
+
+.cv2-progress-step.current .cv2-progress-step-marker {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+}
+
+.cv2-progress-step.upcoming:hover .cv2-progress-step-marker {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.cv2-progress-step.upcoming:hover {
+  color: #334155;
 }
 
 .cv2-tabs::-webkit-scrollbar {
@@ -1622,6 +1726,51 @@
   color: #94a3b8;
 }
 
+.otc-doc-status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.otc-doc-status--quotation {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.otc-doc-status--proforma {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.otc-doc-status--sales-invoice {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.otc-doc-status--receipt {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.cv2-section-divider {
+  margin: 18px 0 10px;
+}
+
+.cv2-section-divider h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cv2-muted, #64748b);
+}
+
 .cv2-tab {
   display: inline-flex;
   align-items: center;
@@ -1703,6 +1852,41 @@
 
 .cv2-required {
   color: var(--cv2-danger);
+}
+
+.cv2-delivery-note-block {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--cv2-border);
+  background: var(--cv2-surface-2, #f8fafc);
+}
+
+.cv2-delivery-note-block .cv2-field {
+  margin-bottom: 8px;
+}
+
+.cv2-muted-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cv2-muted);
+  line-height: 1.4;
+}
+
+.cv2-delivery-confirmed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cv2-delivery-note-text {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--cv2-border);
+  background: #fff;
+  white-space: pre-wrap;
+  line-height: 1.45;
 }
 
 .cv2-head-actions {

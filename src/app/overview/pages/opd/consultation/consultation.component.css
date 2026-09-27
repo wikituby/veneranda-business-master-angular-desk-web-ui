@@ -39,8 +39,8 @@
   gap: 20px;
 }
 
-/* Patient Profile Card */
-.patient-profile-card {
+/* Client Profile Card */
+.client-profile-card {
   text-align: center;
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -48,11 +48,11 @@
   color: white;
 }
 
-.patient-avatar-wrapper {
+.client-avatar-wrapper {
   margin-bottom: 12px;
 }
 
-.patient-avatar {
+.client-avatar {
   width: 90px;
   height: 90px;
   border-radius: 50%;
@@ -60,18 +60,18 @@
   object-fit: cover;
 }
 
-.patient-name-section {
+.client-name-section {
   text-align: center;
 }
 
-.patient-name {
+.client-name {
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 8px 0;
   color: white;
 }
 
-.patient-file-number {
+.client-file-number {
   font-size: 13px;
   opacity: 0.9;
   display: flex;
@@ -90,8 +90,8 @@
   border-color: #334155;
 }
 
-/* Patient Quick Info */
-.patient-quick-info {
+/* Client Quick Info */
+.client-quick-info {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -173,8 +173,8 @@
   background: #475569;
 }
 
-/* Patient Queue Section */
-.patient-queue-section {
+/* Client Queue Section */
+.client-queue-section {
   margin-top: 20px;
 }
 

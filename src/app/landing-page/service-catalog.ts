@@ -9,464 +9,220 @@ export interface LandingServiceItem {
   highlights: string[];
 }
 
+/** Lifestyle photos shared with the landing hero slider. */
+const HERO = {
+  aisle: {
+    image: 'assets/images/hero/business/business_aisle.png',
+    imagePosition: '78% 40%'
+  },
+  pos: {
+    image: 'assets/images/hero/business/business_pos.png',
+    imagePosition: '70% 45%'
+  },
+  managers: {
+    image: 'assets/images/hero/business/business_managers.png',
+    imagePosition: '62% 38%'
+  }
+} as const;
+
+/** Product modules shown on the public business landing page. */
 export const LANDING_SERVICES: LandingServiceItem[] = [
   {
-    slug: 'maternity',
-    image: 'assets/images/hero/dashboard_obgyn.jpg',
-    title: 'Maternity',
-    description: 'Antenatal care, delivery support, and maternal health services for expectant mothers.',
-    imagePosition: '45% 20%',
+    slug: 'product-inventory',
+    ...HERO.aisle,
+    title: 'Product & inventory',
+    description: 'Catalogue products, prices, barcodes, categories, and stock on hand across stores.',
     category: 'offered',
     details: [
-      'Our maternity service supports mothers through pregnancy, delivery planning, and early postnatal care. Antenatal visits help track mother and baby wellbeing, answer questions, and prepare families for a safe birth.',
-      'You can book appointments for routine check-ups, discuss warning signs, and receive guidance on nutrition, birth plans, and follow-up after delivery. Our team works closely with the doctor and scan services when further assessment is needed.',
-      'Whether you are coming for your first visit or continuing care, we aim to make every step clear, respectful, and focused on both mother and baby.'
+      'Keep a clean product catalogue with SKUs, barcodes, selling units, cost and selling prices, reorder levels, and images.',
+      'Organise items by category and shelf so staff can find and sell the right product quickly on desktop or mobile.',
+      'Stock on hand stays visible so purchasing and sales decisions stay grounded in real inventory.'
     ],
     highlights: [
-      'Antenatal check-ups and counselling',
-      'Delivery support and maternal follow-up',
-      'Coordination with ultrasound and laboratory',
-      'Family-centred guidance throughout pregnancy'
+      'Product catalogue with pricing and barcodes',
+      'Categories, units, and shelf positions',
+      'Reorder levels and stock-on-hand visibility',
+      'Works on desktop and the business mobile app'
     ]
   },
   {
-    slug: 'paediatrics',
-    image: 'assets/images/hero/dashboard_pediatrics.jpg',
-    title: 'Paediatrics',
-    description: 'Care for infants, children, and adolescents — from common illnesses to growth check-ups.',
-    imagePosition: '45% 20%',
+    slug: 'stock-management',
+    ...HERO.aisle,
+    title: 'Stock management',
+    description: 'Receive stock, adjust quantities, transfer between stores, take stock, and verify counts.',
     category: 'offered',
     details: [
-      'Paediatric care at Veneranda Hospital covers infants, children, and adolescents. We assess common illnesses, growth progress, and day-to-day concerns that parents want answered quickly.',
-      'Appointments can include review of fever, cough, feeding issues, immunisation counselling, and follow-up after earlier visits. Where needed, we connect care with laboratory tests or imaging for clearer diagnosis.',
-      'Our goal is calm, practical care that helps families understand what is happening and what to do next at home.'
+      'Record goods received into the right store with quantities that update stock immediately.',
+      'Run adjustments, transfers, stock taking, initialisation, and verification so physical counts match the system.',
+      'Track movement history so managers can audit how stock changed over time.'
     ],
     highlights: [
-      'Child illness assessment and treatment',
-      'Growth and development check-ups',
-      'Parent counselling and follow-up plans',
-      'Referral to lab or scan when required'
+      'Stock receive and receive records',
+      'Adjustments, transfers, and tracking',
+      'Stock taking, initialisation, and verify',
+      'Clear audit trail for inventory moves'
     ]
   },
   {
-    slug: 'ultrasound-scans',
-    image: 'assets/images/hero/dashboard_scan_slide.jpg',
-    title: 'Ultrasound & scans',
-    description: 'Ultrasound and a range of imaging / scan services for accurate clinical assessment.',
-    imagePosition: '45% 20%',
+    slug: 'sales-pos',
+    ...HERO.pos,
+    title: 'Sales & checkout',
+    description: 'Point-of-sale checkout with barcodes, customer sales history, and day-to-day retail flow.',
     category: 'offered',
     details: [
-      'Ultrasound and scan services help clinicians see what cannot be judged by examination alone. This supports maternity care, abdominal assessment, and other diagnostic needs requested by the doctor.',
-      'During a session, images are captured and reviewed to guide next steps — whether that is reassurance, further tests, or treatment planning. Results are shared in a way patients and clinicians can act on.',
-      'Having imaging on site means fewer delays and better coordination with consultation, maternity, and laboratory services.'
+      'Sell from an organised checkout that supports barcode lookup, cart lines, and customer attachment.',
+      'Keep sales history available for follow-up, reporting, and customer account review.',
+      'Designed for busy counters where speed and stock accuracy both matter.'
     ],
     highlights: [
-      'Ultrasound sessions for clinical assessment',
-      'Support for maternity and general diagnostics',
-      'On-site imaging that speeds decision-making',
-      'Clear reporting back to the consulting clinician'
+      'Fast barcode-assisted checkout',
+      'Customer-linked sales history',
+      'Stock reduction tied to sales',
+      'Desktop and mobile selling workflows'
     ]
   },
   {
-    slug: 'general-doctor-consultation',
-    image: 'assets/images/hero/dashboard_doctors_hero.jpg',
-    title: 'General doctor consultation',
-    description: 'Walk-in and booked appointments with a full-time doctor ready to see you.',
-    imagePosition: '45% 20%',
+    slug: 'client-management',
+    ...HERO.managers,
+    title: 'Client management',
+    description: 'Maintain client profiles, contacts, next of kin, and account activity for credit or follow-up.',
     category: 'offered',
     details: [
-      'A full-time doctor is available for general consultation — for new concerns, follow-up visits, and clinical review. You can book an appointment or enquire about walk-in availability depending on the day.',
-      'Consultations may include history, examination, prescriptions, and requests for laboratory or scan work when needed. The doctor coordinates with pharmacy, dental, and other departments so care stays connected.',
-      'This is the starting point for most patients who need clinical advice without waiting for specialised pathways alone.'
+      'Register clients with contact and address details so sales and credit can be tied to real people or businesses.',
+      'Capture next-of-kin style contacts where your operation needs them for follow-up.',
+      'Review account balances and transactions when clients buy on account.'
     ],
     highlights: [
-      'Full-time doctor for appointments',
-      'Walk-in and booked visit options',
-      'Prescriptions and investigation requests',
-      'Coordination across hospital departments'
+      'Client registry with contact details',
+      'Next-of-kin / related contacts',
+      'Account balances and transactions',
+      'Sales history by customer'
     ]
   },
   {
-    slug: 'pharmacy',
-    image: 'assets/images/hero/dashboard_pharmacy_dispense.jpg',
-    title: 'Pharmacy',
-    description: 'On-site pharmacy for prescribed medicines and essential medical supplies.',
-    imagePosition: '45% 20%',
+    slug: 'finance-expenses',
+    ...HERO.managers,
+    title: 'Finance & expenses',
+    description: 'Track expenses, debt and loan payments, and keep day-to-day money movement visible.',
     category: 'offered',
     details: [
-      'Our on-site pharmacy dispenses prescribed medicines and essential medical supplies so patients can complete care before leaving the facility.',
-      'Pharmacists and dispensing staff help verify prescriptions, explain how medicines should be taken, and flag anything that needs clarification with the doctor.',
-      'Keeping pharmacy close to consultation and laboratory services reduces the need for separate trips and supports safer, faster treatment.'
+      'Capture operating expenses with categories so cash outflows are not lost in notebooks.',
+      'Record debt and loan payments against clients or financing arrangements your business uses.',
+      'Give owners a clearer picture of money leaving the business alongside sales.'
     ],
     highlights: [
-      'Dispensing of prescribed medicines',
-      'Essential medical supplies on site',
-      'Guidance on how to take medicines',
-      'Linked to doctor and clinical workflows'
+      'Expense capture and categories',
+      'Debt payment recording',
+      'Loan registers and payments',
+      'Finance visibility for owners'
     ]
   },
   {
-    slug: 'laboratory-services',
-    image: 'assets/images/hero/dashboard_lab_cutout.jpg',
-    title: 'Laboratory services',
-    description: 'Full laboratory testing to guide diagnosis, treatment, and follow-up.',
-    imagePosition: '45% 20%',
+    slug: 'reports-statements',
+    ...HERO.managers,
+    title: 'Reports & statements',
+    description: 'Sales reports, stock reports, and operational statements for decisions that need numbers.',
     category: 'offered',
     details: [
-      'Laboratory services provide the tests clinicians need to confirm diagnosis, monitor treatment, and guide follow-up. Samples are collected and processed according to the doctor’s request.',
-      'Results feed back into consultation and other care pathways so decisions are based on clear evidence rather than guesswork alone.',
-      'From routine blood work to broader diagnostic panels, the lab is a core part of care at Veneranda Hospital.'
+      'Review sales performance and stock movement without exporting spreadsheets first.',
+      'Use report screens to answer daily questions: what sold, what is low, and what moved between stores.',
+      'Built for managers who need clarity at the end of a shift or week.'
     ],
     highlights: [
-      'Diagnostic testing for clinical decisions',
-      'Support for treatment monitoring',
-      'Results shared with consulting clinicians',
-      'Integrated with pharmacy and consultation'
+      'Sales history and sales reports',
+      'Stock reports and movement views',
+      'Operational statements for managers',
+      'Desktop overview dashboards'
     ]
   },
   {
-    slug: 'dental-services',
-    image: 'assets/images/hero/dashboard_dental_slide.jpg',
-    title: 'Dental services',
-    description: 'Dental care with a full-time dentist available for appointments and treatment.',
-    imagePosition: '45% 20%',
+    slug: 'multi-store',
+    ...HERO.aisle,
+    title: 'Multi-store operations',
+    description: 'Run more than one store or warehouse location with shared products and location-aware stock.',
     category: 'offered',
     details: [
-      'Dental services are led by a full-time dentist available for appointments and treatment. Care ranges from check-ups and pain assessment to planned dental procedures.',
-      'Patients can book dental visits the same way they book other clinical appointments, and receive clear advice about treatment options and follow-up.',
-      'Having dental care on site means oral health is part of the same trusted place families already use for medical care.'
+      'Define stores and keep inventory context tied to the location staff are working in.',
+      'Transfer stock between locations and keep receive / sell actions store-aware.',
+      'Useful for shops with a main counter plus a back store or branch.'
     ],
     highlights: [
-      'Full-time dentist available',
-      'Check-ups and treatment appointments',
-      'Pain assessment and procedure planning',
-      'Convenient on-site dental clinic'
+      'Store profiles and defaults',
+      'Location-aware stock actions',
+      'Inter-store transfers',
+      'Shared product catalogue'
     ]
   },
   {
-    slug: 'emergency-oxygen',
-    image: 'assets/images/hero/dashboard_emergency.jpg',
-    title: 'Emergency oxygen',
-    description: 'Oxygen support available for emergencies and critical respiratory needs.',
-    imagePosition: '45% 20%',
+    slug: 'mobile-desktop',
+    ...HERO.pos,
+    title: 'Desktop + mobile',
+    description: 'Angular desktop/web console and Flutter business app connected to the same Quarkus backend.',
     category: 'offered',
     details: [
-      'Emergency oxygen support is available for urgent respiratory needs and critical situations. Families and referring clinicians can call for guidance when immediate help is required.',
-      'This service sits alongside our emergency readiness so staff can respond quickly while arranging further clinical care.',
-      'If you need urgent support, use the emergency contact numbers on our landing page and describe the situation clearly so the team can guide next steps.'
+      'Use the web console for deep inventory, finance, and reporting work at the office.',
+      'Use the mobile business app for sales, stock checks, and field updates while staying on the same data.',
+      'One backend means roles, items, clients, and sales stay consistent across devices.'
     ],
     highlights: [
-      'Oxygen ready for emergencies',
-      'Support for critical respiratory needs',
-      'Rapid response coordination',
-      'Clear contact path for urgent enquiry'
+      'Web Business Master console',
+      'Flutter UI connected to live APIs',
+      'Shared authentication and data',
+      'Built for shop-floor and back-office'
     ]
   },
   {
-    slug: 'theatre-surgery',
-    image: 'assets/images/hero/dashboard_theatre.jpg',
-    title: 'Theatre & surgery',
-    description: 'Common surgeries coming soon — including caesarean section (CS), laparoscopies, and more.',
+    slug: 'ecommerce-sync',
+    ...HERO.aisle,
+    title: 'Online catalogue sync',
+    description: 'Publish products to an online storefront and keep catalogue changes flowing from your core inventory.',
     category: 'upcoming',
     details: [
-      'Theatre and surgical services are being developed to support common procedures, including caesarean section, laparoscopies, and related surgical care.',
-      'When live, this pathway will connect preoperative assessment, theatre scheduling, and postoperative follow-up with the rest of hospital care.',
-      'We are expanding capacity so patients who need planned or urgent surgery can receive it closer to home with trusted clinical oversight.'
+      'Upcoming work to push selected products from inventory into an online catalogue.',
+      'Aimed at businesses that sell both over the counter and online without maintaining two product lists.',
+      'Will respect stock and pricing rules defined in the core business system.'
     ],
     highlights: [
-      'Planned theatre capacity expansion',
-      'Support for CS and common surgeries',
-      'Laparoscopy pathway in development',
-      'Integrated pre- and post-operative care'
+      'Select products for online listing',
+      'Shared pricing from inventory',
+      'Fewer double-entry catalogue updates',
+      'Roadmap for omnichannel retail'
     ]
   },
   {
-    slug: 'theatre-services',
-    image: 'assets/images/hero/dashboard_theatre.jpg',
-    title: 'Theatre services',
-    description: 'Expanded operating theatre capacity for planned and urgent surgical procedures.',
+    slug: 'supplier-portal',
+    ...HERO.pos,
+    title: 'Supplier collaboration',
+    description: 'Deeper supplier portals for purchase orders, deliveries, and shared stock visibility.',
     category: 'upcoming',
     details: [
-      'Expanded theatre services will strengthen both planned and urgent surgical procedures at Veneranda Hospital.',
-      'This includes better readiness for surgical teams, clearer scheduling, and safer handoff between wards, theatre, and recovery.',
-      'As this service comes online, patients will have more options to complete surgical care within the same facility network.'
+      'Extend purchasing beyond receive screens into collaborative supplier workflows.',
+      'Help buyers and suppliers agree on deliveries without chasing paper invoices alone.',
+      'Builds on existing stock receive and store foundations already in the system.'
     ],
     highlights: [
-      'Expanded operating theatre capacity',
-      'Planned and urgent procedure support',
-      'Stronger surgical team readiness',
-      'Safer recovery and follow-up pathways'
+      'Purchase order collaboration',
+      'Delivery confirmation flows',
+      'Supplier-facing visibility',
+      'Tied to stock receive history'
     ]
   },
   {
-    slug: 'blood-bank',
-    image: 'assets/images/hero/dashboard_icu.jpg',
-    title: 'Blood bank',
-    description: 'On-site blood bank services coming soon to support emergencies and surgery.',
+    slug: 'advanced-analytics',
+    ...HERO.managers,
+    title: 'Advanced analytics',
+    description: 'Trend dashboards for margins, fast movers, dead stock, and store comparisons.',
     category: 'upcoming',
     details: [
-      'An on-site blood bank is coming soon to support emergencies, theatre cases, and patients who need timely transfusion support.',
-      'Having blood services closer to care will reduce transfer delays and strengthen emergency and surgical readiness.',
-      'This addition is part of our broader growth in critical and surgical capacity for the community.'
+      'Layer richer analytics on top of sales and stock already captured daily.',
+      'Highlight margin leakage, slow movers, and branch performance differences.',
+      'Intended for owners who want foresight, not only end-of-day totals.'
     ],
     highlights: [
-      'On-site blood bank in development',
-      'Support for emergencies and surgery',
-      'Faster transfusion readiness',
-      'Stronger critical-care capacity'
-    ]
-  },
-  {
-    slug: 'ambulance',
-    image: 'assets/images/hero/dashboard_ambulance.jpg',
-    title: 'Ambulance',
-    description: 'Ambulance response coming soon for patient transfer and emergency transport.',
-    category: 'upcoming',
-    details: [
-      'Ambulance services are coming soon to support patient transfer and emergency transport.',
-      'This will help move patients safely between facilities or from the community when urgent care is needed.',
-      'Together with emergency oxygen and expanding theatre capacity, ambulance response completes a stronger emergency chain of care.'
-    ],
-    highlights: [
-      'Emergency transport coming soon',
-      'Patient transfer support',
-      'Faster access to urgent care',
-      'Part of our emergency growth plan'
-    ]
-  }
-,
-  {
-    slug: 'ophthalmology',
-    image: 'assets/images/hero/dashboard_ophthalmology.jpg',
-    title: 'Ophthalmology',
-    description: 'Eye care and vision clinics for exams and follow-up.',
-    category: 'offered',
-    details: [
-      'Our ophthalmology pathway supports eye exams, vision clinics, and follow-up for patients needing specialised eye care.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Eye exams and vision clinics',
-      'Follow-up for eye conditions',
-      'Referral coordination with general consultation',
-      'Clear appointment pathways'
-    ]
-  },
-  {
-    slug: 'xray',
-    image: 'assets/images/hero/dashboard_xray.jpg',
-    title: 'X-ray imaging',
-    description: 'Order, capture, and review X-ray studies in one clinical flow.',
-    category: 'offered',
-    details: [
-      'X-ray imaging supports diagnosis by capturing studies requested by clinicians and returning clear results for treatment decisions.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'X-ray ordering and capture',
-      'Review and reporting support',
-      'Faster diagnostic decisions',
-      'Linked to consultation workflows'
-    ]
-  },
-  {
-    slug: 'ct-scan',
-    image: 'assets/images/hero/dashboard_ct.jpg',
-    title: 'CT scan imaging',
-    description: 'Coordinate CT requests and results for faster diagnosis.',
-    category: 'upcoming',
-    details: [
-      'CT imaging capacity is part of our growth in advanced diagnostics, helping clinicians coordinate requests and results more quickly.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'CT request coordination',
-      'Faster diagnostic turnaround',
-      'Support for complex cases',
-      'Growth in advanced imaging'
-    ]
-  },
-  {
-    slug: 'mri',
-    image: 'assets/images/hero/dashboard_mri.jpg',
-    title: 'MRI imaging',
-    description: 'Schedule and follow through MRI scans with clear reporting.',
-    category: 'upcoming',
-    details: [
-      'MRI services are planned to expand advanced imaging options for patients who need detailed scans and clear clinical reporting.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'MRI scheduling support',
-      'Clinical reporting pathways',
-      'Advanced imaging readiness',
-      'Better continuity for complex diagnosis'
-    ]
-  },
-  {
-    slug: 'inpatient',
-    image: 'assets/images/hero/dashboard_inpatient.jpg',
-    title: 'Inpatient care',
-    description: 'Track bed occupancy and manage inpatient stays across wards.',
-    category: 'offered',
-    details: [
-      'Inpatient care covers ward admissions, bed occupancy, and stay management so patients receive continuous care after consultation or emergency review.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Ward admissions and bed tracking',
-      'Inpatient stay management',
-      'Coordination with doctors and nursing',
-      'Clear handover from outpatient care'
-    ]
-  },
-  {
-    slug: 'emergency-care',
-    image: 'assets/images/hero/dashboard_emergency.jpg',
-    title: 'Emergency care',
-    description: 'Triage urgent cases and keep the emergency bay moving with oxygen-ready support.',
-    category: 'offered',
-    details: [
-      'Emergency care at Veneranda Hospital focuses on triage, urgent assessment, and oxygen-ready response so critical needs are handled quickly.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Emergency triage and assessment',
-      'Oxygen-ready support',
-      'Rapid clinical decision-making',
-      'Coordination with ambulance and theatre growth'
-    ]
-  },
-  {
-    slug: 'reports',
-    image: 'assets/images/hero/dashboard_reports.jpg',
-    title: 'Clinical & operational reports',
-    description: 'Reports that help teams review performance and care quality daily.',
-    category: 'offered',
-    details: [
-      'Reporting supports clinical and operational review so leadership and departments can see what is working and where support is needed.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Clinical performance visibility',
-      'Operational review tools',
-      'Daily insight for teams',
-      'Data to guide improvement'
-    ]
-  },
-  {
-    slug: 'finance',
-    image: 'assets/images/hero/dashboard_finance.jpg',
-    title: 'Accounting & finance',
-    description: 'Track billing, expenses, and financial health of the facility.',
-    category: 'offered',
-    details: [
-      'Finance services keep billing, expenses, and revenue control organised so the hospital can sustain quality care for the community.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Billing and revenue control',
-      'Expense tracking',
-      'Facility financial health',
-      'Transparent operational support'
-    ]
-  },
-  {
-    slug: 'insurance',
-    image: 'assets/images/hero/dashboard_insurance.jpg',
-    title: 'Insurance schemes',
-    description: 'Manage scheme eligibility and insurance billing workflows.',
-    category: 'offered',
-    details: [
-      'Insurance support helps patients and the facility navigate scheme eligibility, cover, and claims so care remains accessible.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Scheme eligibility support',
-      'Claims and billing workflows',
-      'Cover guidance for patients',
-      'Smoother insurance processes'
-    ]
-  },
-  {
-    slug: 'icu',
-    image: 'assets/images/hero/dashboard_icu.jpg',
-    title: 'ICU critical care',
-    description: 'Monitor critical patients and ICU resources with clarity.',
-    category: 'upcoming',
-    details: [
-      'ICU capacity is part of our critical-care growth plan, strengthening monitoring and resources for patients who need intensive support.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Critical patient monitoring',
-      'ICU resource readiness',
-      'Support for high-acuity care',
-      'Linked emergency and theatre pathways'
-    ]
-  },
-  {
-    slug: 'nicu',
-    image: 'assets/images/hero/dashboard_nicu.jpg',
-    title: 'NICU for newborns',
-    description: 'Support neonatal intensive care and incubator-side workflows.',
-    category: 'upcoming',
-    details: [
-      'NICU services will expand newborn intensive care so vulnerable infants can receive specialised support closer to home.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Neonatal intensive care readiness',
-      'Incubator-side workflows',
-      'Family-centred newborn support',
-      'Growth in maternal-child capacity'
-    ]
-  },
-  {
-    slug: 'nutrition',
-    image: 'assets/images/hero/dashboard_nutrition.jpg',
-    title: 'Diet & nutrition',
-    description: 'Plan therapeutic diets and nutrition support for patients.',
-    category: 'offered',
-    details: [
-      'Nutrition services help plan therapeutic diets and feeding support that complements medical treatment and recovery.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Therapeutic diet planning',
-      'Nutrition counselling',
-      'Support for recovery and chronic care',
-      'Coordination with clinical teams'
-    ]
-  },
-  {
-    slug: 'physiotherapy',
-    image: 'assets/images/hero/dashboard_physiotherapy.jpg',
-    title: 'Physiotherapy',
-    description: 'Schedule rehab sessions and track rehabilitation progress.',
-    category: 'offered',
-    details: [
-      'Physiotherapy supports recovery through scheduled sessions and progress tracking after illness, injury, or inpatient care.',
-      'Patients and partners can learn more here and contact Veneranda Hospital to ask about availability, bookings, or funding support linked to this area of care.',
-      'Our teams coordinate across departments so this service connects with consultation, diagnostics, and follow-up whenever needed.'
-    ],
-    highlights: [
-      'Rehab session scheduling',
-      'Progress tracking',
-      'Recovery after illness or surgery',
-      'Support for mobility and function'
+      'Margin and mix analysis',
+      'Fast / slow mover insights',
+      'Store comparison views',
+      'Owner-ready trend dashboards'
     ]
   }
 ];

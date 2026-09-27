@@ -53,7 +53,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   editRoleOriginalName = '';
   editRoleNewName = '';
   isRoleActionInProgress = false;
-  hospitalModules: any[] = [];
+  businessModules: any[] = [];
   hospitalClinics: any[] = [];
   editForm = {
     id: null as number | null,
@@ -121,17 +121,17 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   loadHospitalDirectory(): void {
-    this.api.getAllHospitalModules().subscribe({
+    this.api.getAllBusinessModules().subscribe({
       next: (res: any) => {
-        this.hospitalModules = (Array.isArray(res) ? res : [])
+        this.businessModules = (Array.isArray(res) ? res : [])
           .filter((m: any) => m.active !== false)
           .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || String(a.name).localeCompare(String(b.name)));
       },
       error: () => {
-        this.hospitalModules = [];
+        this.businessModules = [];
       }
     });
-    this.api.getHospitalClinics().subscribe({
+    this.api.getBusinessClinics().subscribe({
       next: (res: any) => {
         this.hospitalClinics = (Array.isArray(res) ? res : []).filter((c: any) => c.active !== false);
       },

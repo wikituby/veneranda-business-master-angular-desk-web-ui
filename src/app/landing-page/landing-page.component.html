@@ -1,369 +1,179 @@
-<!-- Hero Section — side image + left copy (matches mobile dashboard) -->
-<section class="hero" id="home"
+<!-- Full-bleed business hero -->
+<section
+  class="bm-hero"
+  id="home"
   (mouseenter)="pauseAutoSlide()"
   (mouseleave)="resumeAutoSlide()">
-  <div class="slider-container">
-    <div class="hero-stage">
-      <div class="hero-stage-gradient" aria-hidden="true"></div>
-      <div class="hero-side-image" [@fadeIn]="currentSlide">
-        <img
-          [src]="activeSlide.image"
-          [alt]="activeSlide.cardTitle"
-          [style.object-position]="activeSlide.imagePosition || '45% 12%'" />
-      </div>
-      <div class="hero-readability-wash" aria-hidden="true"></div>
-    </div>
+  <div class="bm-hero-media" [@fadeIn]="currentSlide">
+    <img
+      [src]="activeSlide.image"
+      alt=""
+      [style.object-position]="activeSlide.imagePosition || '62% 35%'" />
+    <div class="bm-hero-wash" aria-hidden="true"></div>
+  </div>
 
-    <div class="slider-content">
-      <div class="hero-container">
-        <div class="hero-content">
-          <div class="hero-eyebrow" [@fadeIn]="currentSlide">{{ activeSlide.eyebrow }}</div>
-          <h1 class="hero-title" [@fadeIn]="currentSlide">{{ activeSlide.title }}</h1>
-          <p class="hero-description" [@fadeIn]="currentSlide">
-            {{ activeSlide.description }}
-          </p>
-          <div class="hero-card-note" [@fadeIn]="currentSlide">
-            <h3 class="card-title">{{ activeSlide.cardTitle }}</h3>
-            <p class="card-description">{{ activeSlide.cardDescription }}</p>
-            <a
-              *ngIf="activeSlide.ctaRoute || activeSlide.serviceSlug"
-              class="hero-service-btn"
-              [routerLink]="activeSlide.ctaRoute || ['/service', activeSlide.serviceSlug]">
-              {{ activeSlide.ctaLabel || 'View service details' }}
-              <i class="bi bi-arrow-right"></i>
-            </a>
-          </div>
-        </div>
+  <div class="bm-hero-inner">
+    <div class="bm-hero-copy" [@fadeIn]="currentSlide">
+      <div class="bm-hero-meta">
+        <span class="bm-scene">{{ activeSlide.scene }}</span>
+        <span class="bm-kicker-hero">{{ activeSlide.kicker }}</span>
+      </div>
+      <h1 class="bm-headline">{{ activeSlide.title }}</h1>
+      <p class="bm-lead">{{ activeSlide.description }}</p>
+      <div class="bm-cta">
+        <button type="button" class="bm-btn bm-btn-primary" (click)="goLogin()">
+          Sign in
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <button type="button" class="bm-btn bm-btn-ghost" (click)="goRegister()">
+          Register a business
+        </button>
       </div>
     </div>
+  </div>
 
-    <button class="nav-arrow nav-arrow-left" (click)="previousSlide()" type="button" aria-label="Previous slide">
+  <div class="bm-hero-controls">
+    <span class="bm-slide-index">{{ slideIndexLabel }}</span>
+    <button type="button" class="bm-arrow" (click)="previousSlide()" aria-label="Previous">
       <i class="bi bi-chevron-left"></i>
     </button>
-    <button class="nav-arrow nav-arrow-right" (click)="nextSlide()" type="button" aria-label="Next slide">
+    <div class="bm-dots" role="tablist" aria-label="Hero slides">
+      <button
+        type="button"
+        class="bm-dot"
+        *ngFor="let slide of slides; let i = index"
+        [class.is-active]="i === currentSlide"
+        (click)="goToSlide(i)"
+        [attr.aria-label]="'Show slide ' + (i + 1)"></button>
+    </div>
+    <button type="button" class="bm-arrow" (click)="nextSlide()" aria-label="Next">
       <i class="bi bi-chevron-right"></i>
     </button>
   </div>
 </section>
 
-<!-- Services Offered — directly after hero -->
-<section class="health-services-section" id="services">
-  <div class="health-services-container">
-    <div class="health-services-content">
-      <h2 class="health-services-title">Services we offer today</h2>
-      <p class="services-intro">
-        From maternity to dental, laboratory to pharmacy — Veneranda Hospital is here for your family.
-      </p>
-
-      <div class="feature-cards services-feature-cards">
-        <div class="feature-card" *ngFor="let service of servicesOffered">
-          <div
-            class="card-photo"
-            [class.card-photo--top]="!!service.imagePosition"
-            [style.background-image]="'url(' + service.image + ')'"
-            [style.background-position]="service.imagePosition || '45% 20%'"></div>
-          <div class="card-content">
-            <h3 class="card-title">{{ service.title }}</h3>
-            <p class="card-description">{{ service.description }}</p>
-            <a class="card-detail-btn" [routerLink]="['/service', service.slug]">
-              Read details
-              <i class="bi bi-arrow-right"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Information Section -->
-<section class="info-section" id="contacts">
-  <div class="info-container">
-    <div class="info-card emergency">
-      <div class="info-icon">
-        <i class="bi bi-telephone-plus"></i>
-      </div>
-      <h3>Emergency support</h3>
-      <p>Oxygen is available for emergencies. Call us for urgent medical enquiry or assistance.</p>
-      <div class="contact-info">
-        <i class="bi bi-telephone"></i>
-        <a [href]="contactDetails.phoneLinks[0]">{{ contactDetails.phones[0] }}</a>
-      </div>
-      <div class="contact-info">
-        <i class="bi bi-telephone"></i>
-        <a [href]="contactDetails.phoneLinks[1]">{{ contactDetails.phones[1] }}</a>
-      </div>
-    </div>
-
-    <div class="info-card timetable">
-      <div class="info-icon">
-        <i class="bi bi-calendar-check"></i>
-      </div>
-      <h3>Book an appointment</h3>
-      <p>A full-time doctor and full-time dentist are available for appointments. Call or email us to schedule your visit.</p>
-      <div class="contact-info">
-        <i class="bi bi-envelope"></i>
-        <a [href]="'mailto:' + contactDetails.email">{{ contactDetails.email }}</a>
-      </div>
-      <a href="#services" class="timetable-link">See our services →</a>
-    </div>
-
-    <div class="info-card hours">
-      <div class="info-icon">
-        <i class="bi bi-geo-alt"></i>
-      </div>
-      <h3>Find us</h3>
-      <div class="hours-schedule">
-        <div class="schedule-item">
-          <span>Location</span>
-          <span>{{ contactDetails.location }}</span>
-        </div>
-        <div class="schedule-item">
-          <span>Hours</span>
-          <span>Open 24/7</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Upcoming Services -->
-<section class="upcoming-section" id="upcoming">
-  <div class="upcoming-container">
-    <div class="upcoming-header">
-      <span class="upcoming-label">Coming soon</span>
-      <h2 class="upcoming-title">Growing our services for you</h2>
-      <p class="upcoming-lead">
-        We are expanding theatre and emergency capacity — common surgeries from caesarean section to laparoscopies,
-        plus blood bank and ambulance services.
-      </p>
-    </div>
-    <div class="upcoming-grid">
-      <article class="upcoming-card" *ngFor="let item of upcomingServices">
-        <div class="upcoming-photo" [style.background-image]="'url(' + item.image + ')'"></div>
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
-        <a class="card-detail-btn" [routerLink]="['/service', item.slug]">
-          Read details
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- About teaser — full story lives on the About Us page -->
-<section class="about-teaser-section" id="about">
-  <div class="about-teaser-container">
-    <div class="about-teaser-copy">
-      <span class="about-teaser-label">About Us</span>
-      <h2>
-        Healthcare for our community<br />
-        <span>Veneranda Hospital</span>
-      </h2>
+<!-- Features -->
+<section class="bm-section bm-features" id="features">
+  <div class="bm-wrap">
+    <header class="bm-section-head">
+      <p class="bm-kicker">Features</p>
+      <h2>Everything your business desk needs</h2>
       <p>
-        Learn who we are, meet our leadership, and read how Veneranda Hospital serves families in Bugogo Town Council
-        and the wider Kyegegwa community.
+        From product catalogue to stock floors, sales counters, clients, finance, and reports —
+        one system shaped for real shop operations.
       </p>
-      <a class="about-teaser-btn" routerLink="/about">
-        Open About Us
-        <i class="bi bi-arrow-right"></i>
+    </header>
+
+    <div class="bm-feature-grid">
+      <a
+        class="bm-feature"
+        *ngFor="let feature of features"
+        [routerLink]="['/service', feature.slug]">
+        <div
+          class="bm-feature-visual"
+          [style.background-image]="'url(' + feature.image + ')'"
+          [style.background-position]="feature.imagePosition || 'center center'"></div>
+        <div class="bm-feature-body">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+          <span class="bm-feature-link">
+            View module
+            <i class="bi bi-arrow-right"></i>
+          </span>
+        </div>
       </a>
     </div>
   </div>
 </section>
 
-<!-- Meet Our Expert Team Section -->
-<section class="expert-team-section" id="doctors">
-  <div class="expert-team-container">
-    <div class="expert-team-content">
-      <div class="team-label">
-        <span>Our care team</span>
-        <i class="bi bi-plus"></i>
-      </div>
-
-      <h2 class="team-title">People ready to care for you</h2>
-      <h3 class="team-subtitle">Our clinical &amp; care team</h3>
-
-      <p class="team-description">
-        Meet the people behind Veneranda Hospital — clinicians and staff ready to care for you and your family.
+<!-- Platforms -->
+<section class="bm-section bm-platforms" id="platforms">
+  <div class="bm-wrap bm-platforms-grid">
+    <header class="bm-section-head bm-section-head--left">
+      <p class="bm-kicker">How you use it</p>
+      <h2>Desktop depth. Mobile speed. One backend.</h2>
+      <p>
+        Sign in on the web console for deep work, or on the Flutter business app when you are on the floor —
+        both connect to the same Quarkus APIs and database.
       </p>
-
-      <div class="carousel-navigation" *ngIf="teamMembers.length > 1">
-        <button class="nav-btn prev-btn" type="button" (click)="previousTeamMember()" aria-label="Previous">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button class="nav-btn next-btn" type="button" (click)="nextTeamMember()" aria-label="Next">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="team-carousel">
-      <p class="team-loading" *ngIf="teamLoading">Loading care team…</p>
-      <p class="team-empty" *ngIf="!teamLoading && !teamMembers.length">Care team profiles will appear here soon.</p>
-      <div
-        class="team-members"
-        *ngIf="teamMembers.length"
-        [style.transform]="'translateX(' + currentTeamIndex * -320 + 'px)'"
-      >
-        <div class="team-member" *ngFor="let member of teamMembers">
-          <div class="member-image">
-            <img
-              [src]="personImage(member)"
-              [alt]="member.name"
-              (error)="onTeamImageError($event)"
-            >
-          </div>
-          <h4 class="member-name">{{ member.name }}</h4>
-          <p class="member-description">{{ member.description }}</p>
+    </header>
+    <ul class="bm-platform-list">
+      <li *ngFor="let item of platforms">
+        <i class="bi" [ngClass]="item.icon" aria-hidden="true"></i>
+        <div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.text }}</p>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </section>
 
-<!-- Why patients choose us -->
-<section class="testimonials-section">
-  <div class="testimonials-container">
-    <div class="testimonials-header">
-      <div class="testimonials-label">
-        <span>Why families choose us</span>
-        <i class="bi bi-heart"></i>
-      </div>
-      <h2 class="testimonials-title">Care that covers the whole family</h2>
-    </div>
-
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="profile-image">
-          <img
-            src="https://images.unsplash.com/photo-1584515933487-779824d29309?w=100&h=100&fit=crop"
-            alt="Maternity care">
-        </div>
-        <div class="quote-icon">
-          <i class="bi bi-quote"></i>
-        </div>
-        <div class="testimonial-content">
-          <h4 class="testimonial-name">Maternity &amp; child health</h4>
-          <p class="testimonial-title">Mothers and children</p>
-          <p class="testimonial-text">
-            “From antenatal visits to paediatric care, we can bring the whole family to one place we trust.”
-          </p>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="profile-image">
-          <img
-            src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=100&h=100&fit=crop"
-            alt="Diagnostics">
-        </div>
-        <div class="quote-icon">
-          <i class="bi bi-quote"></i>
-        </div>
-        <div class="testimonial-content">
-          <h4 class="testimonial-name">Scans &amp; laboratory</h4>
-          <p class="testimonial-title">Clear answers faster</p>
-          <p class="testimonial-text">
-            “Ultrasound and lab under one roof means our doctor can act on results without sending us far away.”
-          </p>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="profile-image">
-          <img
-            src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=100&h=100&fit=crop"
-            alt="Dental and pharmacy">
-        </div>
-        <div class="quote-icon">
-          <i class="bi bi-quote"></i>
-        </div>
-        <div class="testimonial-content">
-          <h4 class="testimonial-name">Dental &amp; pharmacy</h4>
-          <p class="testimonial-title">Full-time dentist on site</p>
-          <p class="testimonial-text">
-            “We book the dentist the same way we book the doctor — and collect medicines from the pharmacy before we go home.”
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Success Stories -->
-<section class="stories-section" id="stories">
-  <div class="stories-container">
-    <div class="stories-header">
-      <span class="stories-label">Impact</span>
-      <h2 class="stories-title">Success stories</h2>
-      <p class="stories-lead">
-        Real outcomes from care already happening at Veneranda Hospital — and why continued support matters.
-      </p>
-    </div>
-
-    <div class="stories-grid">
-      <article class="story-card" *ngFor="let story of successStories">
-        <div
-          class="story-photo"
-          [style.background-image]="'url(' + story.image + ')'"
-          [style.background-position]="story.imagePosition || '45% 20%'"></div>
-        <div class="story-body">
-          <span class="story-tag">{{ story.tag }}</span>
-          <h3>{{ story.title }}</h3>
-          <p>{{ story.summary }}</p>
-        </div>
+<!-- Outcomes -->
+<section class="bm-section bm-outcomes" id="outcomes">
+  <div class="bm-wrap">
+    <header class="bm-section-head">
+      <p class="bm-kicker">Why teams switch</p>
+      <h2>Built for the questions owners ask every day</h2>
+    </header>
+    <div class="bm-outcome-row">
+      <article *ngFor="let item of outcomes">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.text }}</p>
       </article>
     </div>
   </div>
 </section>
 
-<!-- Pending projects needing funder support -->
-<section class="support-section" id="support">
-  <div class="support-container">
-    <div class="support-header">
-      <span class="support-label">Donate / partner with us</span>
-      <h2 class="support-title">Pending projects that need support</h2>
-      <p class="support-lead">
-        These expansions are ready for external funders, partners, and donors who want to strengthen healthcare
-        for Bugogo Town Council and the wider Kyegegwa community.
-      </p>
-      <div class="support-contact">
-        <a class="support-contact-btn" [href]="'mailto:' + contactDetails.email + '?subject=Funding%20support%20for%20Veneranda%20Hospital'">
-          <i class="bi bi-envelope"></i>
-          Contact us to fund a project
-        </a>
-        <a class="support-contact-btn support-contact-btn--ghost" [href]="contactDetails.phoneLinks[0]">
-          <i class="bi bi-telephone"></i>
-          {{ contactDetails.phones[0] }}
-        </a>
-      </div>
-    </div>
-
-    <div class="support-grid">
-      <article class="support-card" *ngFor="let project of pendingProjects">
+<!-- Roadmap -->
+<section class="bm-section bm-roadmap" id="upcoming">
+  <div class="bm-wrap">
+    <header class="bm-section-head">
+      <p class="bm-kicker">Coming soon</p>
+      <h2>Next modules on the roadmap</h2>
+      <p>Extensions that build on inventory, sales, and finance you already run today.</p>
+    </header>
+    <div class="bm-roadmap-grid">
+      <a
+        class="bm-roadmap-card"
+        *ngFor="let item of roadmap"
+        [routerLink]="['/service', item.slug]">
         <div
-          class="support-photo"
-          [style.background-image]="'url(' + project.image + ')'"></div>
-        <div class="support-card-body">
-          <div class="support-meta">
-            <span class="support-status">Needs funding</span>
-            <span class="support-goal" *ngIf="project.goal">{{ project.goal }}</span>
-          </div>
-          <h3>{{ project.title }}</h3>
-          <p>{{ project.description }}</p>
-          <ul class="support-needs" *ngIf="project.needs?.length">
-            <li *ngFor="let need of project.needs">{{ need }}</li>
-          </ul>
-          <a
-            class="support-donate-link"
-            [href]="fundingMailLink(project.title)">
-            Express interest
-            <i class="bi bi-arrow-right"></i>
-          </a>
+          class="bm-roadmap-visual"
+          [style.background-image]="'url(' + item.image + ')'"
+          [style.background-position]="item.imagePosition || 'center center'"></div>
+        <div class="bm-roadmap-body">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+          <span>Read details <i class="bi bi-arrow-right"></i></span>
         </div>
-      </article>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact strip -->
+<section class="bm-section bm-contact" id="contacts">
+  <div class="bm-wrap bm-contact-inner">
+    <div>
+      <p class="bm-kicker">Get started</p>
+      <h2>Ready to run your business on Veneranda Business Master?</h2>
+      <p>Sign in to the console, or reach the team for setup and support.</p>
+    </div>
+    <div class="bm-contact-actions">
+      <button type="button" class="bm-btn bm-btn-primary" (click)="goLogin()">
+        Sign in to console
+      </button>
+      <button type="button" class="bm-btn bm-btn-ghost bm-btn-ghost-dark" (click)="goRegister()">
+        Register a business
+      </button>
+      <a class="bm-btn bm-btn-ghost bm-btn-ghost-dark" [href]="'mailto:' + contactDetails.email">
+        {{ contactDetails.email }}
+      </a>
+      <div class="bm-contact-phones">
+        <a [href]="contactDetails.phoneLinks[0]">{{ contactDetails.phones[0] }}</a>
+        <a [href]="contactDetails.phoneLinks[1]">{{ contactDetails.phones[1] }}</a>
+      </div>
     </div>
   </div>
 </section>

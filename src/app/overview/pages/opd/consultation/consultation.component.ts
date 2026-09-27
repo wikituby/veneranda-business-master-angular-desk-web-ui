@@ -10,11 +10,11 @@ import { ThemeService } from '../../../../services/theme.service';
 export class ConsultationComponent implements OnInit {
   isDarkMode: boolean = false;
   searchQuery: string = '';
-  selectedPatient: any = null;
+  selectedClient: any = null;
 
-  filteredPatients: any[] = [
+  filteredClients: any[] = [
     {
-      patientFileNo: 'P001234',
+      clientFileNo: 'P001234',
       name: 'John Doe',
       initials: 'JD',
       fileNo: 'P001234',
@@ -29,7 +29,7 @@ export class ConsultationComponent implements OnInit {
       phone: '+256 700 000 000'
     },
     {
-      patientFileNo: 'P001235',
+      clientFileNo: 'P001235',
       name: 'Jane Smith',
       initials: 'JS',
       fileNo: 'P001235',
@@ -44,7 +44,7 @@ export class ConsultationComponent implements OnInit {
       phone: '+256 700 000 001'
     },
     {
-      patientFileNo: 'P001236',
+      clientFileNo: 'P001236',
       name: 'Michael Johnson',
       initials: 'MJ',
       fileNo: 'P001236',
@@ -76,9 +76,9 @@ export class ConsultationComponent implements OnInit {
     console.log('Starting new consultation');
   }
 
-  startConsultation(patient: any): void {
-    this.selectedPatient = patient;
+  startConsultation(client: any): void {
+    this.selectedClient = client;
     // Update active status
-    this.filteredPatients.forEach(p => p.active = p.patientFileNo === patient.patientFileNo);
+    this.filteredClients.forEach(p => p.active = p.clientFileNo === client.clientFileNo);
   }
 }

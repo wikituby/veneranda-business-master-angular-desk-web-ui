@@ -19,10 +19,14 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   errorMessage: string = '';
   isDarkMode: boolean = false;
   chartsReady: boolean = false;
+  periodSide: 'this' | 'last' | 'custom' = 'this';
+  periodUnit: 'day' | 'week' | 'month' | 'year' = 'month';
+  customFrom = '';
+  customTo = '';
 
   totalServices: number = 0;
   totalCategories: number = 0;
-  totalPatients: number = 0;
+  totalClients: number = 0;
   totalItems: number = 0;
   totalVisits: number = 0;
   totalVisitsLast30: number = 0;
@@ -30,21 +34,21 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   totalPaymentsReceived: number = 0;
   totalPaymentsReceivedFormatted: string = '0.00';
 
-  patientsTrend: number[] = [];
+  clientsTrend: number[] = [];
   itemsTrend: number[] = [];
   servicesTrend: number[] = [];
   visitsTrend: number[] = [];
   paymentsTrend: number[] = [];
   reorderTrend: number[] = [];
 
-  patientsPath: string = '';
+  clientsPath: string = '';
   itemsPath: string = '';
   servicesPath: string = '';
   visitsPath: string = '';
   paymentsPath: string = '';
   reorderPath: string = '';
 
-  patientsAreaPath: string = '';
+  clientsAreaPath: string = '';
   servicesAreaPath: string = '';
   visitsAreaPath: string = '';
   paymentsAreaPath: string = '';
@@ -53,15 +57,15 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   itemsCategoryLabels: string[] = [];
   itemsCategoryData: number[] = [];
 
-  patientsAgeLabels: string[] = [];
-  patientsAgeData: number[] = [];
+  clientsAgeLabels: string[] = [];
+  clientsAgeData: number[] = [];
 
   // Hospital-specific metrics
   todayAppointments: number = 0;
   pendingAppointments: number = 0;
   completedAppointments: number = 0;
   
-  admittedPatients: number = 0;
+  admittedClients: number = 0;
   newAdmissionsToday: number = 0;
   dischargesToday: number = 0;
   
@@ -82,7 +86,7 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   outstandingPaymentsFormatted: string = '0.00';
   
   emergencyCases: number = 0;
-  criticalPatients: number = 0;
+  criticalClients: number = 0;
   
   recentActivities: any[] = [];
   upcomingAppointments: any[] = [];
@@ -92,30 +96,38 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     'summary',
     'pendingTasks',
     'quickLinks',
+    'businessMetrics',
     'hospitalMetrics',
     'charts',
     'appointments',
     'activities',
   ] as const;
-  expandedDashboardSections = new Set<string>([...this.allDashboardSectionIds]);
+  expandedDashboardSections = new Set<string>([
+    'summary',
+    'pendingTasks',
+    'quickLinks',
+    'businessMetrics',
+    'charts',
+    'appointments',
+    'activities',
+  ]);
 
   quickLinks = [
-    { label: 'Patient Registry', icon: 'bi-people', route: '/overview/all-patients', color: '#2563eb' },
-    { label: 'Queue', icon: 'bi-list-ol', route: '/overview/queue-management', color: '#0d9488' },
-    { label: 'Laboratory', icon: 'bi-flask', route: '/overview/lab-v2', color: '#7c3aed' },
-    { label: 'OTC Dispensary', icon: 'bi-capsule', route: '/overview/otc-dispensary', color: '#2acc7b' },
-    { label: 'Ultrasound Scan', icon: 'bi-camera', route: '/overview/scan-v2', color: '#db2777' },
-    { label: 'Cashier', icon: 'bi-cash-register', route: '/overview/cashier', color: '#059669' },
+    { label: 'Client Registry', icon: 'bi-people', route: '/overview/all-clients', color: '#2563eb' },
+    { label: 'Point of Sale', icon: 'bi-cart-check', route: '/overview/otc-dispensary', color: '#059669' },
+    { label: 'Cashier', icon: 'bi-cash-register', route: '/overview/cashier', color: '#0d9488' },
     { label: 'Expenses', icon: 'bi-wallet2', route: '/overview/expenses', color: '#d97706' },
     { label: 'Stock Receive', icon: 'bi-box-arrow-in-down', route: '/overview/stock-receive', color: '#0891b2' },
+    { label: 'Reorder Levels', icon: 'bi-exclamation-triangle', route: '/overview/reorder-levels', color: '#dc2626' },
     { label: 'Stock Verification', icon: 'bi-clipboard2-check', route: '/overview/stock-verification', color: '#0d9488' },
-    { label: 'Stock Initializer', icon: 'bi-box-arrow-in-right', route: '/overview/stock-initializer', color: '#2563eb' },
-    { label: 'Services', icon: 'bi-heart-pulse', route: '/overview/services-management', color: '#4f46e5' },
+    { label: 'Services', icon: 'bi-grid', route: '/overview/services-management', color: '#4f46e5' },
+    { label: 'Purchase Orders', icon: 'bi-truck', route: '/overview/pharmacy-purchase-orders', color: '#db2777' },
   ];
 
   private themeSubscription?: Subscription;
   private apiReadySub?: Subscription;
   private lastLoadedApiBase = '';
+  private chartInstances: any[] = [];
 
   constructor(
     private api: ApiService,
@@ -149,6 +161,187 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   ngOnDestroy(): void {
     this.themeSubscription?.unsubscribe();
     this.apiReadySub?.unsubscribe();
+    this.destroyCharts();
+  }
+
+  get greetingName(): string {
+    const raw = String(sessionStorage.getItem('username') || 'there').trim();
+    const first = raw.split(/\s+/)[0] || 'there';
+    return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+  }
+
+  get greetingText(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return 'Good Morning';
+    }
+    if (hour < 17) {
+      return 'Good Afternoon';
+    }
+    return 'Good Evening';
+  }
+
+  get dashboardDateLabel(): string {
+    return new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  get averageOrderValueFormatted(): string {
+    const orders = this.todayAppointments || 0;
+    const revenue = this.isMdUser() ? this.todayRevenue : 0;
+    if (!orders || !revenue) {
+      return '0';
+    }
+    return (revenue / orders).toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    });
+  }
+
+  get categorySlices(): { label: string; value: number; pct: number; color: string }[] {
+    const colors = ['#7c3aed', '#22c55e', '#3b82f6', '#f97316', '#ef4444'];
+    const pairs = this.itemsCategoryLabels
+      .map((label, index) => ({
+        label: String(label || 'Other').trim() || 'Other',
+        value: Number(this.itemsCategoryData[index]) || 0,
+      }))
+      .filter((pair) => pair.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+    const total = pairs.reduce((sum, pair) => sum + pair.value, 0) || 1;
+    return pairs.map((pair, index) => ({
+      ...pair,
+      pct: Math.round((pair.value / total) * 100),
+      color: colors[index % colors.length],
+    }));
+  }
+
+  get categoryDonutBackground(): string {
+    const slices = this.categorySlices;
+    if (!slices.length) {
+      return 'conic-gradient(#e8edf3 0 100%)';
+    }
+    let cursor = 0;
+    const stops = slices.map((slice) => {
+      const start = cursor;
+      cursor += slice.pct;
+      return `${slice.color} ${start}% ${cursor}%`;
+    });
+    if (cursor < 100) {
+      stops.push(`#e8edf3 ${cursor}% 100%`);
+    }
+    return `conic-gradient(${stops.join(', ')})`;
+  }
+
+  get categoryTotal(): number {
+    const total = this.categorySlices.reduce((sum, slice) => sum + slice.value, 0);
+    return total || this.totalVisits || 0;
+  }
+
+  get topCategories(): { label: string; value: number; color: string }[] {
+    const colors = ['#7c3aed', '#22c55e', '#3b82f6', '#f97316', '#ef4444'];
+    return this.itemsCategoryLabels
+      .map((label, index) => ({
+        label: String(label || 'Other').trim() || 'Other',
+        value: Number(this.itemsCategoryData[index]) || 0,
+        color: colors[index % colors.length],
+      }))
+      .filter((row) => row.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }
+
+  get orderStatusParts(): { label: string; count: number; pct: number; color: string }[] {
+    const parts = [
+      { label: 'Completed', count: this.completedAppointments, color: '#22a06b' },
+      { label: 'Open', count: this.pendingAppointments, color: '#f5b301' },
+      { label: 'In progress', count: this.pendingLabTests + this.pendingScanTests, color: '#ff6a2a' },
+      { label: 'Needs stock', count: this.criticalStockItems, color: '#94a3b8' },
+    ];
+    const total = parts.reduce((sum, part) => sum + part.count, 0) || 1;
+    return parts.map((part) => ({
+      ...part,
+      pct: Math.round((part.count / total) * 100),
+    }));
+  }
+
+  get orderStatusBackground(): string {
+    let cursor = 0;
+    const stops = this.orderStatusParts.map((part) => {
+      const start = cursor;
+      cursor += part.pct;
+      return `${part.color} ${start}% ${cursor}%`;
+    });
+    return `conic-gradient(${stops.join(', ')})`;
+  }
+
+  get completedShareLabel(): string {
+    const done = this.completedAppointments;
+    const open = this.pendingAppointments + this.pendingLabTests + this.pendingScanTests;
+    const total = done + open;
+    if (!total) {
+      return '0%';
+    }
+    return `${((done / total) * 100).toFixed(1)}%`;
+  }
+
+  get barScale(): number {
+    return Math.max(...this.topCategories.map((row) => row.value), 1);
+  }
+
+  sparkPath(index: number): string {
+    const paths = [this.visitsPath, this.paymentsPath, this.clientsPath, this.servicesPath, this.reorderPath];
+    return paths[index % paths.length] || '';
+  }
+
+  printDashboard(): void {
+    window.print();
+  }
+
+  choosePeriod(side: 'this' | 'last', unit: string): void {
+    if (unit !== 'day' && unit !== 'week' && unit !== 'month' && unit !== 'year') {
+      return;
+    }
+    this.periodSide = side;
+    this.periodUnit = unit;
+    this.customFrom = '';
+    this.customTo = '';
+    this.loadCounts();
+  }
+
+  chooseCustom(): void {
+    if (!this.customFrom || !this.customTo) {
+      return;
+    }
+    this.periodSide = 'custom';
+    this.loadCounts();
+  }
+
+  get periodRangeLabel(): string {
+    const range = this.resolvePeriodRange();
+    if (range.from === range.to) {
+      return this.formatChipDate(range.from);
+    }
+    return `${this.formatChipDate(range.from)} – ${this.formatChipDate(range.to)}`;
+  }
+
+  get topCategoryLabel(): string {
+    return this.topCategories[0]?.label || '—';
+  }
+
+  trendDelta(series: number[]): { text: string; up: boolean } {
+    if (!series || series.length < 2) {
+      return { text: '—', up: true };
+    }
+    const previous = Number(series[series.length - 2]) || 0;
+    const latest = Number(series[series.length - 1]) || 0;
+    if (!previous) {
+      return { text: latest ? 'New' : '0%', up: latest >= previous };
+    }
+    const pct = ((latest - previous) / Math.abs(previous)) * 100;
+    return { text: `${Math.abs(pct).toFixed(1)}%`, up: pct >= 0 };
   }
 
   ngAfterViewInit(): void {
@@ -241,12 +434,12 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
 
   get pendingTasks(): { label: string; count: number; icon: string; route: string; tone: string; isAmount?: boolean }[] {
     const tasks = [
-      { label: 'Pending Lab Tests', count: this.pendingLabTests, icon: 'bi-flask', route: '/overview/lab-v2', tone: 'purple' },
-      { label: 'Pending Scans', count: this.pendingScanTests, icon: 'bi-camera', route: '/overview/scan-v2', tone: 'blue' },
-      { label: 'Reorder Items', count: this.totalReorderItems, icon: 'bi-exclamation-triangle', route: '/overview/reorder-levels', tone: 'orange' },
-      { label: 'Outstanding Payments', count: this.outstandingPayments, icon: 'bi-cash-stack', route: '/overview/patient-billing', tone: 'teal', isAmount: true },
+      { label: 'Reorder Products', count: this.totalReorderItems, icon: 'bi-exclamation-triangle', route: '/overview/reorder-levels', tone: 'orange' },
+      { label: 'Outstanding Payments', count: this.outstandingPayments, icon: 'bi-cash-stack', route: '/overview/cashier', tone: 'teal', isAmount: true },
       { label: 'Near Expiry Stock', count: this.nearExpiryItems, icon: 'bi-hourglass-split', route: '/overview/expired-items', tone: 'red' },
       { label: 'Low Confidence Stock', count: this.lowConfidenceStockItems, icon: 'bi-shield-exclamation', route: '/overview/stock-verification', tone: 'red' },
+      { label: 'Open Service Orders', count: this.pendingLabTests + this.pendingScanTests, icon: 'bi-bag-check', route: '/overview/services-management', tone: 'purple' },
+      { label: 'Low Stock Products', count: this.criticalStockItems, icon: 'bi-box-seam', route: '/overview/reorder-levels', tone: 'blue' },
     ];
     if (!this.isMdUser()) {
       return tasks.filter((t) => t.label !== 'Outstanding Payments');
@@ -281,11 +474,14 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private loadCounts(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
+    if (!this.chartsReady) {
+      this.isLoading = true;
+      this.errorMessage = '';
+    }
     this.lastLoadedApiBase = this.apiConfig.getBaseUrl();
+    const range = this.resolvePeriodRange();
 
-    this.api.getDashboardSummary().subscribe({
+    this.api.getDashboardSummary(range.from, range.to).subscribe({
       next: (summary) => {
         this.applySummaryResponse(summary || {});
         this.loadStockVerificationAlerts();
@@ -301,13 +497,13 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
   private applySummaryResponse(summary: any): void {
     this.totalServices = Number(summary.totalServices) || 0;
     this.totalCategories = Number(summary.totalCategories) || 0;
-    this.totalPatients = Number(summary.totalPatients) || 0;
+    this.totalClients = Number(summary.totalClients) || 0;
     this.totalItems = Number(summary.totalItems) || 0;
     this.totalVisits = Number(summary.totalVisits) || 0;
     this.totalVisitsLast30 = Number(summary.totalVisitsLast30) || 0;
     this.totalReorderItems = Number(summary.totalReorderItems) || 0;
 
-    this.patientsTrend = this.toNumberArray(summary.patientsTrend);
+    this.clientsTrend = this.toNumberArray(summary.clientsTrend);
     this.itemsTrend = this.toNumberArray(summary.itemsTrend);
     this.servicesTrend = this.toNumberArray(summary.servicesTrend);
     this.visitsTrend = this.toNumberArray(summary.visitsTrend);
@@ -316,13 +512,13 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.itemsCategoryLabels = Array.isArray(summary.itemsCategoryLabels) ? summary.itemsCategoryLabels : [];
     this.itemsCategoryData = this.toNumberArray(summary.itemsCategoryData);
-    this.patientsAgeLabels = Array.isArray(summary.patientsAgeLabels) ? summary.patientsAgeLabels : [];
-    this.patientsAgeData = this.toNumberArray(summary.patientsAgeData);
+    this.clientsAgeLabels = Array.isArray(summary.clientsAgeLabels) ? summary.clientsAgeLabels : [];
+    this.clientsAgeData = this.toNumberArray(summary.clientsAgeData);
 
     this.todayAppointments = Number(summary.todayAppointments) || 0;
     this.pendingAppointments = Number(summary.pendingAppointments) || 0;
     this.completedAppointments = Number(summary.completedAppointments) || 0;
-    this.admittedPatients = Number(summary.admittedPatients) || 0;
+    this.admittedClients = Number(summary.admittedClients) || 0;
     this.newAdmissionsToday = Number(summary.newAdmissionsToday) || 0;
     this.dischargesToday = Number(summary.dischargesToday) || 0;
     this.pendingLabTests = Number(summary.pendingLabTests) || 0;
@@ -332,7 +528,7 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     this.criticalStockItems = Number(summary.criticalStockItems) || 0;
     this.nearExpiryItems = Number(summary.nearExpiryItems) || 0;
     this.emergencyCases = Number(summary.emergencyCases) || 0;
-    this.criticalPatients = Number(summary.criticalPatients) || 0;
+    this.criticalClients = Number(summary.criticalClients) || 0;
 
     this.totalPaymentsReceived = Number(summary.totalPaymentsReceived) || 0;
     this.todayRevenue = Number(summary.todayRevenue) || 0;
@@ -362,6 +558,69 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     this.buildSparklinePaths();
   }
 
+  private resolvePeriodRange(): { from: string; to: string } {
+    if (this.periodSide === 'custom' && this.customFrom && this.customTo) {
+      return this.customFrom <= this.customTo
+        ? { from: this.customFrom, to: this.customTo }
+        : { from: this.customTo, to: this.customFrom };
+    }
+    const today = this.startOfDay(new Date());
+    let from = today;
+    let to = today;
+    if (this.periodSide === 'last' && this.periodUnit === 'day') {
+      from = this.addDays(today, -1);
+      to = from;
+    } else if (this.periodUnit === 'week') {
+      const thisWeek = this.startOfWeek(today);
+      from = this.periodSide === 'last' ? this.addDays(thisWeek, -7) : thisWeek;
+      to = this.addDays(from, 6);
+    } else if (this.periodUnit === 'month') {
+      const monthOffset = this.periodSide === 'last' ? -1 : 0;
+      from = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+      to = new Date(today.getFullYear(), today.getMonth() + monthOffset + 1, 0);
+    } else if (this.periodUnit === 'year') {
+      const year = today.getFullYear() + (this.periodSide === 'last' ? -1 : 0);
+      from = new Date(year, 0, 1);
+      to = new Date(year, 11, 31);
+    }
+    return { from: this.toIso(from), to: this.toIso(to) };
+  }
+
+  private startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private startOfWeek(date: Date): Date {
+    const start = this.startOfDay(date);
+    const day = start.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    return this.addDays(start, diff);
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const next = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    next.setDate(next.getDate() + days);
+    return next;
+  }
+
+  private toIso(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  private formatChipDate(iso: string): string {
+    const [year, month, day] = iso.split('-').map((part) => Number(part));
+    if (!year || !month || !day) {
+      return iso;
+    }
+    return new Date(year, month - 1, day).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
   private toNumberArray(value: any): number[] {
     if (!Array.isArray(value)) {
       return [];
@@ -385,14 +644,14 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     const toArea = (d: string, width = 140, height = 36): string =>
       d ? `${d} L ${width},${height} L 0,${height} Z` : '';
 
-    this.patientsPath = buildPath(this.patientsTrend);
+    this.clientsPath = buildPath(this.clientsTrend);
     this.itemsPath = buildPath(this.itemsTrend);
     this.servicesPath = buildPath(this.servicesTrend);
     this.visitsPath = buildPath(this.visitsTrend);
     this.paymentsPath = buildPath(this.paymentsTrend);
     this.reorderPath = buildPath(this.reorderTrend);
 
-    this.patientsAreaPath = toArea(this.patientsPath);
+    this.clientsAreaPath = toArea(this.clientsPath);
     this.servicesAreaPath = toArea(this.servicesPath);
     this.visitsAreaPath = toArea(this.visitsPath);
     this.paymentsAreaPath = toArea(this.paymentsPath);
@@ -413,7 +672,7 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     console.error('API Error:', err);
     if (err?.status === 0) {
       this.errorMessage =
-        'Cannot reach the clinic server (network blocked or offline). Use Change server, or check that the API is running.';
+        'Cannot reach the business server (network blocked or offline). Use Change server, or check that the API is running.';
     } else {
       this.errorMessage =
         'Failed to load summary data. ' +
@@ -423,191 +682,92 @@ export class MainDashboardComponent implements OnInit, OnDestroy, AfterViewInit 
     this.cdr.detectChanges();
   }
 
-  private generateTrendData(baseValue: number, months: number): number[] {
-    const data: number[] = [];
-    const avgValue = baseValue / 2;
-    
-    for (let i = 0; i < months; i++) {
-      const t = (i / months) * Math.PI * 2;
-      const wave1 = Math.sin(t) * (avgValue * 0.3);
-      const wave2 = Math.cos(t * 1.5) * (avgValue * 0.2);
-      const noise = (Math.random() - 0.5) * (avgValue * 0.1);
-      
-      const value = avgValue + wave1 + wave2 + noise;
-      data.push(Math.max(0, Math.round(value)));
-    }
-    
-    return data;
+  private destroyCharts(): void {
+    this.chartInstances.forEach((chart) => {
+      try {
+        chart.destroy();
+      } catch {
+        /* chart already released */
+      }
+    });
+    this.chartInstances = [];
   }
 
   private renderCharts(): void {
-    const monthLabels = ['M-5','M-4','M-3','M-2','M-1','Now'];
-
-    const byId = (id: string) => document.getElementById(id) as HTMLCanvasElement | null;
-
-    const patientsEl = byId('patientsLine');
-    if (patientsEl && (window as any).Chart) {
-      new Chart(patientsEl, {
-        type: 'line',
-        data: { labels: monthLabels, datasets: [{ data: this.patientsTrend, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.15)', tension: 0.3, fill: true, pointRadius: 0 }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-      });
+    this.destroyCharts();
+    const ChartLib = (window as any).Chart;
+    const canvas = document.getElementById('revenueOrdersChart') as HTMLCanvasElement | null;
+    if (!canvas || !ChartLib) {
+      return;
     }
-
-    const patientsAgeEl = byId('patientsAgePie');
-    if (patientsAgeEl && (window as any).Chart) {
-      new Chart(patientsAgeEl.getContext('2d') as any, {
-        type: 'pie',
-        data: {
-          labels: this.patientsAgeLabels,
-          datasets: [{
-            data: this.patientsAgeData,
-            backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4']
-          }]
-        },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-      });
+    const labels = ['M-5', 'M-4', 'M-3', 'M-2', 'M-1', 'Now'].slice(-Math.max(this.visitsTrend.length, this.paymentsTrend.length, 1));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
     }
+    const revenueFill = ctx.createLinearGradient(0, 0, 0, 220);
+    revenueFill.addColorStop(0, 'rgba(255, 106, 42, 0.28)');
+    revenueFill.addColorStop(1, 'rgba(255, 106, 42, 0.02)');
+    const ordersFill = ctx.createLinearGradient(0, 0, 0, 220);
+    ordersFill.addColorStop(0, 'rgba(34, 160, 107, 0.22)');
+    ordersFill.addColorStop(1, 'rgba(34, 160, 107, 0.02)');
 
-    const itemsEl = byId('itemsBar');
-    if (itemsEl && (window as any).Chart) {
-      const ctx = itemsEl.getContext('2d') as any;
-      
-      const gradient1 = ctx.createLinearGradient(0, 0, 0, itemsEl.height || 250);
-      gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-      gradient1.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
-      
-      const gradient2 = ctx.createLinearGradient(0, 0, 0, itemsEl.height || 250);
-      gradient2.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-      gradient2.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-
-      const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
-      const categoryEntries = this.itemsCategoryLabels.map((label, i) => ({
-        label,
-        value: this.itemsCategoryData[i]
-      })).sort((a, b) => b.value - a.value);
-      
-      const datasets: any[] = [];
-      
-      if (categoryEntries.length > 0) {
-        const trend1 = this.generateTrendData(categoryEntries[0].value, 12);
-        datasets.push({
-          label: categoryEntries[0].label,
-          data: trend1,
-          borderColor: 'rgba(59, 130, 246, 1)',
-          backgroundColor: gradient1,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointHoverBackgroundColor: 'rgba(59, 130, 246, 1)',
-          borderWidth: 2
-        });
-      }
-      
-      if (categoryEntries.length > 1) {
-        const trend2 = this.generateTrendData(categoryEntries[1].value, 12);
-        datasets.push({
-          label: categoryEntries[1].label,
-          data: trend2,
-          borderColor: 'rgba(16, 185, 129, 1)',
-          backgroundColor: gradient2,
-          tension: 0.4,
-          fill: true,
-          pointRadius: 0,
-          pointHoverRadius: 6,
-          pointHoverBackgroundColor: 'rgba(16, 185, 129, 1)',
-          borderWidth: 2
-        });
-      }
-
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: monthLabels,
-          datasets: datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { 
-              display: true,
-              position: 'top',
-              align: 'start',
-              labels: {
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 15,
-                font: { size: 12, weight: '500' },
-                color: '#64748b'
-              }
-            }, 
-            tooltip: { 
-              enabled: true,
-              mode: 'index',
-              intersect: false,
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              titleColor: '#1e293b',
-              bodyColor: '#475569',
-              borderColor: '#e2e8f0',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: true,
-              callbacks: {
-                label: function(context: any) {
-                  return context.dataset.label + ': ' + context.parsed.y + ' items';
-                }
-              }
-            }
+    const chart = new ChartLib(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Revenue',
+            data: this.paymentsTrend.length ? this.paymentsTrend : [0],
+            borderColor: '#ff6a2a',
+            backgroundColor: revenueFill,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 0,
+            borderWidth: 2.5,
+            yAxisID: 'y',
           },
-          interaction: {
-            mode: 'nearest',
-            axis: 'x',
-            intersect: false
+          {
+            label: 'Orders',
+            data: this.visitsTrend.length ? this.visitsTrend : [0],
+            borderColor: '#22a06b',
+            backgroundColor: ordersFill,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 0,
+            borderWidth: 2.5,
+            yAxisID: 'y1',
           },
-          scales: {
-            x: {
-              grid: { display: false, drawBorder: false },
-              ticks: { color: '#94a3b8', font: { size: 11 }, padding: 8 }
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(148, 163, 184, 0.1)', drawBorder: false },
-              ticks: { 
-                color: '#94a3b8',
-                font: { size: 11 },
-                padding: 8,
-                callback: function(value: any) {
-                  return value + ' items';
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
-    const servicesEl = byId('servicesPie');
-    if (servicesEl && (window as any).Chart) {
-      const total = this.totalServices || 1;
-      const cat = this.totalCategories || Math.floor(total * 0.6);
-      const rest = Math.max(total - cat, 0);
-      new Chart(servicesEl.getContext('2d') as any, {
-        type: 'pie',
-        data: { labels: ['Categories','Other'], datasets: [{ data: [cat, rest], backgroundColor: ['#a855f7','#d1c4f3'] }] },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-    }
-
-    const visitsEl = byId('visitsLine');
-    if (visitsEl && (window as any).Chart) {
-      new Chart(visitsEl, {
-        type: 'line',
-        data: { labels: monthLabels, datasets: [{ data: this.visitsTrend, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.15)', tension: 0.3, fill: true, pointRadius: 0 }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-      });
-    }
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', intersect: false },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 11 } },
+          },
+          y: {
+            position: 'left',
+            beginAtZero: true,
+            grid: { color: 'rgba(148, 163, 184, 0.15)' },
+            ticks: { color: '#94a3b8', font: { size: 11 } },
+          },
+          y1: {
+            position: 'right',
+            beginAtZero: true,
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#94a3b8', font: { size: 11 } },
+          },
+        },
+      },
+    });
+    this.chartInstances.push(chart);
   }
 }

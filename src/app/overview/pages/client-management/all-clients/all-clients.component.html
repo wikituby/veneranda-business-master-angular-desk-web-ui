@@ -1,0 +1,1056 @@
+<!-- Add Client Modal -->
+<div class="client-modal-overlay" id="clientModal" *ngIf="!isCollapsedNewClient">
+  <div class="client-modal-container">
+    <div class="client-modal">
+      <div class="client-modal-header">
+        <h2 class="client-modal-title">
+          <i class="bi" [ngClass]="isEditingClient ? 'bi-pencil-square' : 'bi-person-plus-fill'"></i>
+          {{ saveButtonStatus }}
+        </h2>
+        <button type="button" class="client-modal-close" (click)="closeClientModal()" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="client-modal-body">
+        <form #clientForm="ngForm" (ngSubmit)="saveClient(clientForm.value)">
+          <div class="client-form-grid">
+            <div class="client-form-field">
+              <label for="clientFirstName" class="client-form-label">
+                First Name <span class="required">*</span>
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClient.clientFirstName" 
+                     name="clientFirstName" 
+                     class="client-form-input" 
+                     id="clientFirstName" 
+                     placeholder="Enter first name" 
+                     required>
+            </div>
+
+            <div class="client-form-field">
+              <label for="clientSecondName" class="client-form-label">
+                Second Name <span class="required">*</span>
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClient.clientSecondName" 
+                     name="clientSecondName" 
+                     class="client-form-input" 
+                     id="clientSecondName" 
+                     placeholder="Enter second name"
+                     required>
+            </div>
+
+            <div class="client-form-field">
+              <label for="clientContact" class="client-form-label">
+                Contact/Phone <span class="required">*</span>
+              </label>
+              <input type="tel" 
+                     [(ngModel)]="currentClient.clientContact" 
+                     name="clientContact" 
+                     class="client-form-input" 
+                     id="clientContact" 
+                     placeholder="Starts with 256" 
+                     maxlength="12"
+                     pattern="256[0-9]{9}"
+                     inputmode="numeric"
+                     required>
+            </div>
+
+            <div class="client-form-field">
+              <label for="clientGender" class="client-form-label">
+                Gender <span class="required">*</span>
+              </label>
+              <select [(ngModel)]="currentClient.clientGender" 
+                      name="clientGender" 
+                      class="client-form-input" 
+                      id="clientGender" 
+                      required>
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="client-form-field">
+              <label for="occupation" class="client-form-label">
+                Occupation
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClient.occupation" 
+                     name="occupation" 
+                     class="client-form-input" 
+                     id="occupation" 
+                     placeholder="Enter occupation">
+            </div>
+
+            <div class="client-form-field">
+              <label for="clientAddress" class="client-form-label">Address</label>
+              <input type="text"
+                     [(ngModel)]="currentClient.clientAddress"
+                     name="clientAddress"
+                     class="client-form-input"
+                     id="clientAddress"
+                     placeholder="Enter client address">
+            </div>
+
+            <div class="client-form-field">
+              <label for="clientGroup" class="client-form-label">
+                Client Group
+              </label>
+              <div class="custom-dropdown">
+                <input type="text" 
+                       class="client-form-input dropdown-trigger" 
+                       id="clientGroup"
+                       [value]="currentClient.clientGroup || ''"
+                       placeholder="Select client group"
+                       readonly
+                       (click)="toggleClientGroupDropdown()">
+                <div class="dropdown-panel" *ngIf="isClientGroupDropdownOpen">
+                  <div class="dropdown-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" 
+                           class="search-input" 
+                           placeholder="Search client groups..." 
+                           [(ngModel)]="clientGroupSearchQuery"
+                           (input)="filterClientGroups()"
+                           (click)="$event.stopPropagation()">
+                  </div>
+                  <div class="dropdown-list" (click)="$event.stopPropagation()">
+                    <div class="dropdown-item" 
+                         *ngFor="let group of filteredClientGroupList"
+                         (click)="selectClientGroup(group)">
+                      <div class="item-primary">{{ group.groupName || group.name }}</div>
+                      <div class="item-secondary" *ngIf="group.groupNameShortForm">{{ group.groupNameShortForm }}</div>
+                    </div>
+                    <div class="dropdown-item empty" *ngIf="filteredClientGroupList.length === 0">
+                      <div class="item-primary">No groups found</div>
+                    </div>
+                  </div>
+                  <div class="dropdown-footer" (click)="$event.stopPropagation()">
+                    <button type="button" class="add-new-btn" (click)="openAddNewGroupModal()">
+                      <i class="bi bi-plus-circle"></i>
+                      Add New Group
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next of Kin Section -->
+            <div class="client-form-field full-width" style="grid-column: 1 / -1; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+              <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px; font-weight: 600;">Next of Kin Information</h4>
+            </div>
+
+            <div class="client-form-field">
+              <label for="nextOfKinName" class="client-form-label">
+                Next of Kin Name
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClient.nextOfKinName" 
+                     name="nextOfKinName" 
+                     class="client-form-input" 
+                     id="nextOfKinName" 
+                     placeholder="Enter next of kin name">
+            </div>
+
+            <div class="client-form-field">
+              <label for="nextOfKinContact" class="client-form-label">
+                Next of Kin Contact
+              </label>
+              <input type="tel" 
+                     [(ngModel)]="currentClient.nextOfKinContact" 
+                     name="nextOfKinContact" 
+                     class="client-form-input" 
+                     id="nextOfKinContact" 
+                     placeholder="Starts with 256"
+                     maxlength="12"
+                     pattern="256[0-9]{9}"
+                     inputmode="numeric">
+            </div>
+
+            <div class="client-form-field">
+              <label for="relationship" class="client-form-label">
+                Relationship
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClient.relationship" 
+                     name="relationship" 
+                     class="client-form-input" 
+                     id="relationship" 
+                     placeholder="e.g., Brother, Sister, Spouse">
+            </div>
+
+            <div class="client-form-field full-width">
+              <label for="nextOfKinAddress" class="client-form-label">Next of Kin Address</label>
+              <textarea [(ngModel)]="currentClient.nextOfKinAddress" 
+                        name="nextOfKinAddress" 
+                        class="client-form-textarea" 
+                        id="nextOfKinAddress" 
+                        placeholder="Enter next of kin address"
+                        rows="2"></textarea>
+            </div>
+          </div>
+
+          <div *ngIf="showDivAddToDataBaseNewClient" class="client-form-message" [ngClass]="{'success': responseColor === 'rgb(11, 155, 112)', 'error': responseColor === 'rgb(238, 16, 16)'}">
+            <i class="bi" [ngClass]="responseColor === 'rgb(11, 155, 112)' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'"></i>
+            {{ responseMessage }}
+          </div>
+
+          <div *ngIf="showDivUpdatedLoaderNewClient" class="client-form-loading">
+            <div class="client-loader"></div>
+            <p>{{ isEditingClient ? 'Updating client...' : 'Saving client...' }}</p>
+          </div>
+
+          <div class="client-modal-actions">
+            <button type="button" 
+                    class="client-btn-secondary" 
+                    (click)="closeClientModal()"
+                    [disabled]="isButtonDisabled">
+              Cancel
+            </button>
+            <button type="submit" 
+                    class="client-btn-primary" 
+                    [disabled]="isButtonDisabled">
+              <span *ngIf="!showDivUpdatedLoaderNewClient">
+                <i class="bi bi-save"></i>
+                {{ saveButtonStatus }}
+              </span>
+              <span *ngIf="showDivUpdatedLoaderNewClient" class="button-loading">
+                <span class="spinner-small"></span>
+                {{ isEditingClient ? 'Updating...' : 'Saving...' }}
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk import modal -->
+<div class="client-modal-overlay" *ngIf="showImportModal" (click)="closeImportModal()">
+  <div class="client-modal-container import-modal-container" (click)="$event.stopPropagation()">
+    <div class="client-modal">
+      <div class="client-modal-header">
+        <h2 class="client-modal-title">
+          <i class="bi bi-upload"></i>
+          Import Clients
+        </h2>
+        <button type="button" class="client-modal-close" (click)="closeImportModal()" aria-label="Close" [disabled]="importUploading">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="client-modal-body">
+        <p class="import-hint">
+          Upload an Excel or CSV file using the same columns as the client registry form.
+          <strong>First Name, Second Name, Contact,</strong> and <strong>Gender</strong> are required on each row.
+        </p>
+
+        <div class="import-actions-row">
+          <button type="button" class="client-btn-secondary" (click)="downloadImportTemplate()">
+            <i class="bi bi-download"></i>
+            Download Template
+          </button>
+          <label class="import-file-label">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            Choose File
+            <input type="file" accept=".xlsx,.xls,.csv" (change)="onImportFileChange($event)" [disabled]="importUploading">
+          </label>
+        </div>
+
+        <p class="import-file-name" *ngIf="importFileName">
+          <i class="bi bi-paperclip"></i> {{ importFileName }}
+        </p>
+        <p class="import-parse-error" *ngIf="importParseError">{{ importParseError }}</p>
+
+        <div class="import-summary" *ngIf="importPreviewRows.length">
+          <span class="import-summary-valid">{{ importValidRows.length }} ready</span>
+          <span class="import-summary-invalid" *ngIf="importInvalidCount">{{ importInvalidCount }} with errors</span>
+        </div>
+
+        <div class="import-preview-wrap" *ngIf="importPreviewRows.length">
+          <table class="import-preview-table">
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>First Name</th>
+                <th>Second Name</th>
+                <th>Contact</th>
+                <th>Gender</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of importPreviewRows" [class.import-row-error]="!row.isValid">
+                <td>{{ row.rowNumber }}</td>
+                <td>{{ row.data.clientFirstName || '—' }}</td>
+                <td>{{ row.data.clientSecondName || '—' }}</td>
+                <td>{{ row.data.clientContact || '—' }}</td>
+                <td>{{ row.data.clientGender || '—' }}</td>
+                <td>
+                  <span class="import-status-ok" *ngIf="row.isValid">Ready</span>
+                  <span class="import-status-error" *ngIf="!row.isValid">{{ row.errors.join('; ') }}</span>
+                  <span class="import-status-warn" *ngIf="row.warnings.length">{{ row.warnings.join('; ') }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="client-modal-actions">
+          <button type="button" class="client-btn-secondary" (click)="closeImportModal()" [disabled]="importUploading">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="client-btn-primary"
+            (click)="uploadImportedClients()"
+            [disabled]="importUploading || !importValidRows.length">
+            <span *ngIf="!importUploading">
+              <i class="bi bi-cloud-upload"></i>
+              Import {{ importValidRows.length }} Client(s)
+            </span>
+            <span *ngIf="importUploading" class="button-loading">
+              <span class="spinner-small"></span>
+              Importing…
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Client Group Modal -->
+<div class="client-modal-overlay" id="groupModal" *ngIf="!isCollapsedNewGroup">
+  <div class="client-modal-container">
+    <div class="client-modal">
+      <div class="client-modal-header">
+        <h2 class="client-modal-title">
+          <i class="bi bi-people-fill"></i>
+          {{ saveButtonStatusGroup }}
+        </h2>
+        <button type="button" class="client-modal-close" (click)="closeAddNewGroupModal()" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="client-modal-body">
+        <form #groupForm="ngForm" (ngSubmit)="saveGroup(groupForm.value)">
+          <div class="client-form-grid">
+            <div class="client-form-field full-width">
+              <label for="groupName" class="client-form-label">
+                Group Name <span class="required">*</span>
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClientGroup.groupName" 
+                     name="groupName" 
+                     class="client-form-input" 
+                     id="groupName" 
+                     placeholder="Enter client group name" 
+                     required>
+            </div>
+
+            <div class="client-form-field full-width">
+              <label for="groupNameShortForm" class="client-form-label">
+                Short Form
+              </label>
+              <input type="text" 
+                     [(ngModel)]="currentClientGroup.groupNameShortForm" 
+                     name="groupNameShortForm" 
+                     class="client-form-input" 
+                     id="groupNameShortForm" 
+                     placeholder="Enter short form (e.g., VIP, REG)">
+            </div>
+
+            <div class="client-form-field full-width">
+              <label for="description" class="client-form-label">Description</label>
+              <textarea [(ngModel)]="currentClientGroup.description" 
+                        name="description" 
+                        class="client-form-textarea" 
+                        id="description"
+                        placeholder="Additional notes or description about the client group"
+                        rows="3"></textarea>
+            </div>
+          </div>
+
+          <div *ngIf="showDivAddToDataBaseNewClient" class="client-form-message" [ngClass]="{'success': responseColor === 'rgb(11, 155, 112)', 'error': responseColor === 'rgb(238, 16, 16)'}">
+            <i class="bi" [ngClass]="responseColor === 'rgb(11, 155, 112)' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'"></i>
+            {{ responseMessage }}
+          </div>
+
+          <div class="client-modal-actions">
+            <button type="button" 
+                    class="client-btn-secondary" 
+                    (click)="closeAddNewGroupModal()"
+                    [disabled]="isButtonDisabled">
+              Cancel
+            </button>
+            <button type="submit" 
+                    class="client-btn-primary" 
+                    [disabled]="isButtonDisabled">
+              <i class="bi bi-save"></i>
+              {{ saveButtonStatusGroup }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Client details (read-only) -->
+<div class="client-details-modal-overlay"
+     [class.dark]="isDarkMode"
+     *ngIf="showClientDetailsModal"
+     (click)="closeClientDetailsModal()">
+  <div class="client-details-modal-container" (click)="$event.stopPropagation()">
+    <div class="client-details-modal" *ngIf="clientDetailsRecord as d">
+      <div class="client-details-modal-header">
+        <h2 class="client-details-modal-title">
+          <i class="bi bi-person-vcard"></i>
+          Client Details
+        </h2>
+        <button type="button" class="client-details-modal-close" (click)="closeClientDetailsModal()" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="client-details-modal-body">
+        <div class="client-details-two-cols">
+          <dl class="client-details-dl">
+            <dt>Full name</dt>
+            <dd>{{ getFullName(d) }}</dd>
+            <dt>File number</dt>
+            <dd>{{ d.clientFileNo || 'N/A' }}</dd>
+            <dt>Phone</dt>
+            <dd>{{ formatPhone(d.clientContact) || 'N/A' }}</dd>
+            <dt>Gender</dt>
+            <dd>{{ d.clientGender || 'N/A' }}</dd>
+          </dl>
+          <dl class="client-details-dl">
+            <dt>Address</dt>
+            <dd>{{ d.clientAddress || 'N/A' }}</dd>
+            <dt>Occupation</dt>
+            <dd>{{ d.occupation || 'N/A' }}</dd>
+            <dt>Client group</dt>
+            <dd>{{ d.clientGroupName || 'N/A' }}</dd>
+            <dt>Debt</dt>
+            <dd><span class="client-details-balance" [class.balance-due]="d.totalBalanceDue != null && d.totalBalanceDue > 0"
+                      [class.balance-zero]="hasZeroBalance(d)">{{ formatClientBalance(d) }}</span></dd>
+            <ng-container *ngIf="d.diagnosis">
+              <dt>Diagnosis</dt>
+              <dd>{{ d.diagnosis }}</dd>
+            </ng-container>
+          </dl>
+        </div>
+        <h3 class="client-details-subheading">Next of kin</h3>
+        <div class="client-details-two-cols">
+          <dl class="client-details-dl">
+            <dt>Name</dt>
+            <dd>{{ d.nextOfKinName || 'N/A' }}</dd>
+            <dt>Contact</dt>
+            <dd>{{ formatPhone(d.nextOfKinContact) || d.nextOfKinContact || 'N/A' }}</dd>
+          </dl>
+          <dl class="client-details-dl">
+            <dt>Relationship</dt>
+            <dd>{{ d.relationship || 'N/A' }}</dd>
+            <dt>Address</dt>
+            <dd>{{ d.nextOfKinAddress || 'N/A' }}</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="client-details-modal-footer">
+        <button type="button" class="client-details-btn-close" (click)="closeClientDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="client-management-page" [class.dark]="isDarkMode">
+  <div class="page-header">
+    <div class="header-left">
+      <h2 class="page-title">
+        <i class="bi bi-people-fill"></i>
+        Client Registry
+      </h2>
+      <nav class="breadcrumb-nav" aria-label="breadcrumb">
+        <ol class="breadcrumb-list">
+          <li class="breadcrumb-item">
+            <a href="#" class="breadcrumb-link">Home</a>
+          </li>
+          <li class="breadcrumb-separator">
+            <i class="bi bi-chevron-right"></i>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="#" class="breadcrumb-link">Client Management</a>
+          </li>
+          <li class="breadcrumb-separator">
+            <i class="bi bi-chevron-right"></i>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            Client Registry
+          </li>
+        </ol>
+      </nav>
+    </div>
+    
+    <div class="header-right">
+      <div class="search-box-template">
+        <i class="bi bi-search"></i>
+        <input type="text" 
+               [ngModel]="searchQuery" 
+               (ngModelChange)="onSearchQueryChange($event)"
+               placeholder="Search name, next of kin, address, file no, phone…">
+        <i class="bi bi-x search-clear" *ngIf="searchQuery" (click)="onSearchQueryChange('')"></i>
+      </div>
+      <button class="add-client-btn-template" 
+              type="button"
+              (click)="openClientModal()">
+        <i class="bi bi-plus-circle-fill"></i>
+        Add Client
+      </button>
+      <button class="import-btn-template" 
+              type="button"
+              (click)="openImportModal()">
+        <i class="bi bi-upload"></i>
+        Import
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoadingService" class="loading-container">
+    <div class="loader"></div>
+    <p>Loading clients data...</p>
+  </div>
+
+  <div *ngIf="showDivUpdatedOut" class="alert" [style.background-color]="responseColor">
+    {{ responseMessage }}
+  </div>
+
+  <div class="table-container-template" *ngIf="!isLoadingService">
+    <div class="client-filters-bar">
+      <label class="client-filter-field">
+        <span>Date from</span>
+        <div class="client-filter-control-group">
+          <input
+            type="text"
+            class="client-filter-control client-filter-date-input"
+            placeholder="Select date"
+            name="pendingCreatedDateFrom"
+            [(ngModel)]="pendingCreatedDateFromStruct"
+            ngbDatepicker
+            #dateFromPicker="ngbDatepicker"
+            readonly />
+          <button
+            type="button"
+            class="client-filter-date-toggle"
+            (click)="dateFromPicker.toggle()"
+            aria-label="Open date from calendar">
+            <i class="bi bi-calendar3"></i>
+          </button>
+        </div>
+      </label>
+
+      <label class="client-filter-field">
+        <span>Date to</span>
+        <div class="client-filter-control-group">
+          <input
+            type="text"
+            class="client-filter-control client-filter-date-input"
+            placeholder="Select date"
+            name="pendingCreatedDateTo"
+            [(ngModel)]="pendingCreatedDateToStruct"
+            ngbDatepicker
+            #dateToPicker="ngbDatepicker"
+            readonly />
+          <button
+            type="button"
+            class="client-filter-date-toggle"
+            (click)="dateToPicker.toggle()"
+            aria-label="Open date to calendar">
+            <i class="bi bi-calendar3"></i>
+          </button>
+        </div>
+      </label>
+
+      <div class="client-filter-field client-filter-field-group">
+        <div class="client-filter-dropdown">
+          <button
+            type="button"
+            class="client-filter-dropdown-trigger"
+            (click)="toggleFilterGroupDropdown($event)"
+            [attr.aria-expanded]="filterGroupDropdownOpen">
+            <span>{{ getPendingClientGroupLabel() }}</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="client-filter-dropdown-menu" *ngIf="filterGroupDropdownOpen" role="listbox">
+            <button
+              type="button"
+              class="client-filter-dropdown-item"
+              [class.active]="pendingClientGroupFilter === 'all'"
+              (click)="selectFilterClientGroup('all')">
+              All groups
+            </button>
+            <button
+              type="button"
+              class="client-filter-dropdown-item"
+              *ngFor="let group of clientGroupList"
+              [class.active]="pendingClientGroupFilter == group.id"
+              (click)="selectFilterClientGroup(group.id)">
+              {{ group.groupName || group.name }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-filter-field">
+        <div class="client-filter-dropdown">
+          <button
+            type="button"
+            class="client-filter-dropdown-trigger"
+            (click)="toggleFilterDebtDropdown($event)"
+            [attr.aria-expanded]="filterDebtDropdownOpen">
+            <span>{{ getPendingDebtLabel() }}</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="client-filter-dropdown-menu" *ngIf="filterDebtDropdownOpen" role="listbox">
+            <button
+              type="button"
+              class="client-filter-dropdown-item"
+              *ngFor="let option of debtFilterOptions"
+              [class.active]="pendingDebtFilter === option.value"
+              (click)="selectFilterDebt(option.value)">
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-filter-field client-filter-actions">
+        <button type="button" class="client-filter-load-btn" (click)="applyRegistryFilters()">
+          <i class="bi bi-funnel"></i>
+          Load
+        </button>
+
+        <button type="button" class="client-filter-clear-btn" (click)="clearAdvancedFilters()">
+          <i class="bi bi-x-circle"></i>
+          Clear
+        </button>
+
+        <div class="client-filter-export-dropdown">
+          <button
+            type="button"
+            class="client-filter-export-btn"
+            (click)="toggleExportDropdown($event)"
+            [attr.aria-expanded]="exportDropdownOpen">
+            <i class="bi bi-download"></i>
+            Export
+            <i class="bi bi-chevron-down client-filter-export-caret"></i>
+          </button>
+          <div class="client-filter-export-menu" *ngIf="exportDropdownOpen" role="menu">
+            <button type="button" class="client-filter-export-item" (click)="exportFilteredClients('excel')">
+              <i class="bi bi-file-earmark-spreadsheet"></i>
+              Excel (.xlsx)
+            </button>
+            <button type="button" class="client-filter-export-item" (click)="exportFilteredClients('pdf')">
+              <i class="bi bi-file-earmark-pdf"></i>
+              PDF (.pdf)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper-template" #htmlData>
+      <table class="modern-table-template">
+        <thead>
+          <tr>
+            <th class="pat-th-cb no-sort">
+              <input type="checkbox" class="select-all-checkbox">
+            </th>
+            <th class="no-sort">File No</th>
+            <th class="client-name-column no-sort">Client Name</th>
+            <th class="phone-number-column no-sort">Phone</th>
+            <th class="no-sort">Gender</th>
+            <th class="no-sort">Address</th>
+            <th class="no-sort">Occupation</th>
+            <th class="no-sort">Actions</th>
+            <th class="balance-column-header no-sort">Debt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of filteredClientList | paginate: { itemsPerPage: itemsPerPage, currentPage: page }; let i = index"
+              class="client-table-data-row"
+              (click)="onClientTableRowClick(client, $event)">
+            <td class="client-row-select-cell" (click)="$event.stopPropagation()">
+              <input type="checkbox" class="row-checkbox">
+            </td>
+            <td>
+              <span class="client-id">{{ client.clientFileNo || 'N/A' }}</span>
+            </td>
+            <td class="pat-td-shrink">
+              <div class="client-name-cell">
+                <div class="client-avatar" [style.background-color]="getAvatarColor(client)">
+                  {{ getInitials(client) }}
+                </div>
+                <div class="client-name-text">{{ getFullName(client) }}</div>
+              </div>
+            </td>
+            <td class="pat-td-shrink">
+              <span class="phone-text-template">{{ formatPhone(client.clientContact || client.phone) || 'N/A' }}</span>
+            </td>
+            <td>
+              <span class="gender-badge-template" [ngClass]="{'male': (client.clientGender || client.gender) === 'Male', 'female': (client.clientGender || client.gender) === 'Female'}">
+                {{ client.clientGender || client.gender || 'N/A' }}
+              </span>
+            </td>
+            <td class="pat-td-shrink">
+              <span class="address-text">{{ client.clientAddress || client.address || 'N/A' }}</span>
+            </td>
+            <td class="pat-td-shrink">
+              <span class="occupation-text">{{ client.occupation || 'N/A' }}</span>
+            </td>
+            <td class="client-row-actions-cell" (click)="$event.stopPropagation()">
+              <div class="action-dropdown-container">
+                <button class="action-dropdown-btn" 
+                        (click)="toggleActionDropdown(client, $event)" 
+                        title="Actions"
+                        [attr.aria-expanded]="openActionDropdownId === client.id">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+              </div>
+            </td>
+            <td class="balance-column" (click)="$event.stopPropagation()">
+              <span
+                class="balance-badge-template"
+                [ngClass]="getBalanceBadgeClasses(client)"
+                [class.balance-badge-clickable]="hasClientDebt(client)"
+                [title]="hasClientDebt(client) ? 'Click to pay client debt' : ''"
+                (click)="onBalanceBadgeClick(client, $event)">
+                {{ formatClientBalance(client) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredClientList.length === 0">
+            <td colspan="10" class="no-data-template">
+              <i class="bi bi-inbox"></i>
+              <p>{{ clientLoadError || 'No clients found' }}</p>
+              <button
+                *ngIf="clientLoadError"
+                type="button"
+                class="client-filter-load-btn client-retry-btn"
+                (click)="initializeTableData()">
+                <i class="bi bi-arrow-clockwise"></i>
+                Retry
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrapper">
+      <div class="pagination-info">
+        Showing {{ (page - 1) * itemsPerPage + 1 }} - {{ page * itemsPerPage > filteredClientList.length ? filteredClientList.length : page * itemsPerPage }} of {{ filteredClientList.length }} clients
+      </div>
+      <pagination-controls (pageChange)="onPageChange($event)"></pagination-controls>
+      <div class="pagination-size">
+        <div class="page-size-dropdown">
+          <button
+            type="button"
+            class="page-size-trigger"
+            (click)="togglePageSizeMenu($event)"
+            [attr.aria-expanded]="pageSizeMenuOpen"
+            [disabled]="pageSizeSaving">
+            <span>{{ itemsPerPage }} per page</span>
+            <i
+              class="bi"
+              [class.bi-lock-fill]="lockedRegistryItemsPerPage === itemsPerPage"
+              [class.bi-chevron-down]="lockedRegistryItemsPerPage !== itemsPerPage"
+              [title]="lockedRegistryItemsPerPage === itemsPerPage ? 'Default locked' : 'Choose page size'"></i>
+          </button>
+          <div class="page-size-menu" *ngIf="pageSizeMenuOpen" (click)="$event.stopPropagation()">
+            <div class="page-size-menu-hint">
+              Select a size for now, or lock one as your saved default.
+            </div>
+            <div
+              class="page-size-option"
+              *ngFor="let size of pageSizeOptions"
+              [class.active]="itemsPerPage === size"
+              [class.locked]="lockedRegistryItemsPerPage === size">
+              <button
+                type="button"
+                class="page-size-option-main"
+                (click)="onItemsPerPageChange(size)">
+                {{ size }} per page
+              </button>
+              <button
+                type="button"
+                class="page-size-lock-btn"
+                [class.is-locked]="lockedRegistryItemsPerPage === size"
+                [disabled]="pageSizeSaving"
+                [title]="lockedRegistryItemsPerPage === size ? 'Unlock default' : 'Lock as default'"
+                (click)="lockedRegistryItemsPerPage === size ? unlockRegistryPageSize($event) : lockRegistryPageSize(size, $event)">
+                <i class="bi" [ngClass]="lockedRegistryItemsPerPage === size ? 'bi-lock-fill' : 'bi-unlock'"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions menu: fixed overlay so it is never clipped by the table -->
+  <div
+    class="action-dropdown-menu action-dropdown-menu-fixed"
+    *ngIf="openActionDropdownId !== null && actionDropdownClient"
+    [ngStyle]="actionMenuStyle"
+    [ngClass]="{'dropdown-up': dropdownDirection === 'up', 'dropdown-down': dropdownDirection === 'down'}"
+    role="menu"
+    (click)="$event.stopPropagation()">
+    <button type="button" class="action-dropdown-item details" (click)="openClientDetails(actionDropdownClient)">
+      <i class="bi bi-person-vcard"></i>
+      <span>Client Details</span>
+    </button>
+    <button class="action-dropdown-item edit" (click)="editClient(actionDropdownClient)">
+      <i class="bi bi-pencil"></i>
+      <span>Edit Client</span>
+    </button>
+    <button type="button"
+            class="action-dropdown-item consultation"
+            (click)="openConsultation(actionDropdownClient)"
+            [disabled]="consultationLoadingClientId === actionDropdownClient.id">
+      <i class="bi" [ngClass]="consultationLoadingClientId === actionDropdownClient.id ? 'bi-hourglass-split' : 'bi-receipt'"></i>
+      <span>{{ consultationLoadingClientId === actionDropdownClient.id ? 'Opening…' : 'Transactions' }}</span>
+    </button>
+  </div>
+</div>
+
+<!-- Queue client modal (from Client Registry actions) -->
+<div class="queue-modal-overlay" [class.dark]="isDarkMode" *ngIf="showQueueClientModal" (click)="closeQueueClientModal()">
+  <div class="queue-modal" (click)="$event.stopPropagation()">
+    <div class="queue-modal-head">
+      <h3 class="queue-modal-title">Queue Client</h3>
+      <button type="button" class="btn btn-light btn-sm" (click)="closeQueueClientModal()">Close</button>
+    </div>
+
+    <div class="queue-client-summary" *ngIf="queueSelectedClient">
+      <div><strong>Surname:</strong> <span class="queue-client-value">{{ queueSelectedClient.clientSecondName }}</span></div>
+      <div><strong>O.P NO.:</strong> <span class="queue-client-value">{{ queueSelectedClient.clientFileNo }}</span></div>
+      <div><strong>Other Names:</strong> <span class="queue-client-value">{{ queueSelectedClient.clientFirstName }}</span></div>
+    </div>
+
+    <hr />
+
+    <p class="queue-error" *ngIf="queueError">{{ queueError }}</p>
+
+    <div class="queue-form-grid">
+      <label>From
+        <select name="registryQueueFromModuleId" [(ngModel)]="queueForm.fromModuleId">
+          <option [ngValue]="null">Select module</option>
+          <option *ngFor="let m of queueModules" [ngValue]="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+
+      <label>To
+        <select [(ngModel)]="queueForm.toModuleId" (ngModelChange)="onQueueToModuleChange()">
+          <option [ngValue]="null">Select destination</option>
+          <option *ngFor="let m of queueDestinationModules" [ngValue]="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="!isQueueDischargeDestination(queueForm.toModuleId)">Clinic
+        <select [(ngModel)]="queueForm.clinicId">
+          <option [ngValue]="null">—</option>
+          <option *ngFor="let c of queueClinics" [ngValue]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+
+      <label>Visit Default Scheme
+        <select [(ngModel)]="queueForm.clientGroupId" (ngModelChange)="onQueueSchemeChange()">
+          <option [ngValue]="null">—</option>
+          <option *ngFor="let g of clientGroupList" [ngValue]="g.id">{{ g.groupName }}</option>
+        </select>
+      </label>
+
+      <label class="full">Note
+        <textarea [(ngModel)]="queueForm.note" rows="3"></textarea>
+      </label>
+    </div>
+
+    <div class="queue-checkboxes">
+      <label class="queue-check">
+        <input type="checkbox" [(ngModel)]="queueForm.emergency" /> Is Emergency
+      </label>
+      <label class="queue-check">
+        <input type="checkbox" [(ngModel)]="queueForm.revisit" /> Is Revisit
+      </label>
+      <label class="queue-check" *ngIf="!isQueueDischargeDestination(queueForm.toModuleId)">
+        <input type="checkbox" [(ngModel)]="queueForm.printQueueTicket" /> Print Queue Ticket
+      </label>
+    </div>
+
+    <div class="queue-modal-actions">
+      <button type="button" class="btn btn-light btn-sm" (click)="closeQueueClientModal()">Cancel</button>
+      <button type="button" class="btn btn-success btn-sm" (click)="submitQueueFromRegistry()" [disabled]="queueSaving">
+        {{
+          queueSaving
+            ? (isQueueDischargeDestination(queueForm.toModuleId) ? 'Discharging...' : 'Queuing...')
+            : (isQueueDischargeDestination(queueForm.toModuleId) ? 'Discharge client' : 'Queue client')
+        }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Pay all client debt modal (from balance badge) — same design as client order -->
+<div
+  id="registryPayAllClientDebtModal"
+  class="registry-pay-all-debt-overlay pv-modern-modal-host"
+  *ngIf="showPayAllDebtModal"
+  (click)="closePayAllClientDebtModal()">
+  <div
+    class="registry-pay-all-debt-dialog pv-pay-all-debt-modal-dialog"
+    role="document"
+    (click)="$event.stopPropagation()">
+    <div class="pv-modern-modal pv-modern-modal--pay-debt">
+      <div class="pv-modern-modal-header border-0">
+        <div>
+          <h5 class="modal-title mb-0">
+            <i class="bi bi-wallet2"></i>
+            Pay all client debt
+          </h5>
+          <p class="mb-0 pv-modern-modal-subtitle">
+            Payment is applied from the oldest visit first until the amount is used up.
+            Each slice appears on that visit's Invoice | Payment tab.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="pv-modern-modal-close"
+          aria-label="Close"
+          (click)="closePayAllClientDebtModal()">&times;</button>
+      </div>
+      <div class="pv-modern-modal-body">
+        <div class="pv-pay-all-debt-summary mb-3">
+          <div class="pv-pay-all-debt-stat">
+            <span class="pv-pay-all-debt-stat-label">Total outstanding (visits)</span>
+            <span class="pv-pay-all-debt-stat-value">UGX {{ payAllDebtTotalOutstanding() | number:'1.0-2' }}</span>
+          </div>
+          <div class="pv-pay-all-debt-stat" *ngIf="payAllDebtClientTotalDue">
+            <span class="pv-pay-all-debt-stat-label">Client total debt</span>
+            <span class="pv-pay-all-debt-stat-value">UGX {{ payAllDebtClientTotalDue }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="payAllDebtLoading" class="pv-modern-empty-state text-center py-4">
+          <i class="bi bi-arrow-repeat pv-modern-empty-icon"></i>
+          <p class="mb-0 small">Loading orders…</p>
+        </div>
+
+        <form *ngIf="!payAllDebtLoading" class="pv-modern-modal-form" (ngSubmit)="submitPayAllClientDebt()">
+          <div class="pv-modern-modal-card">
+            <h6 class="pv-modern-modal-section-title mb-3">
+              <i class="bi bi-cash-coin"></i>
+              Payment details
+            </h6>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label">Amount to pay</label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  class="form-control form-control-sm"
+                  [(ngModel)]="payAllDebtForm.amountToPay"
+                  name="payAllAmount"
+                  (ngModelChange)="onPayAllDebtAmountChange()"
+                  required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Payment form</label>
+                <select class="form-control form-control-sm" [(ngModel)]="payAllDebtForm.paymentForm" name="payAllPaymentForm">
+                  <option value="Cash At Hand">Cash At Hand</option>
+                  <option value="Mobile Money">Mobile Money</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Notes</label>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  [(ngModel)]="payAllDebtForm.notes"
+                  name="payAllNotes"
+                  placeholder="Pay all client debt" />
+              </div>
+            </div>
+          </div>
+
+          <div class="pv-modern-modal-section mt-4" *ngIf="payAllDebtAllocation.length">
+            <h6 class="pv-modern-modal-section-title">
+              <i class="bi bi-list-check"></i>
+              Allocation preview (oldest visits first)
+            </h6>
+            <div class="pv-modern-table-wrap pv-modern-table-wrap--scroll">
+              <table class="table table-sm table-bordered pv-modern-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Visit</th>
+                    <th>Date</th>
+                    <th>Balance due</th>
+                    <th>Will pay</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of payAllDebtAllocation">
+                    <td>Visit {{ row.visitNumber ?? row.visitId }}</td>
+                    <td>{{ row.visitDate || '—' }}</td>
+                    <td>{{ row.balanceDue | number:'1.0-2' }}</td>
+                    <td class="fw-bold text-success">{{ row.amountToApply | number:'1.0-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            *ngIf="!payAllDebtAllocation.length && payAllDebtForm.amountToPay"
+            class="pv-modern-alert pv-modern-alert--warning mt-3 mb-0">
+            No orders with outstanding balance match this amount.
+          </div>
+
+          <div
+            *ngIf="payAllDebtMessage"
+            class="pv-modern-alert mt-3 mb-0"
+            [class.pv-modern-alert--success]="payAllDebtMessageOk"
+            [class.pv-modern-alert--error]="!payAllDebtMessageOk">
+            {{ payAllDebtMessage }}
+            <div *ngIf="payAllDebtResult?.allocations?.length" class="mt-2 small fw-normal">
+              <div *ngFor="let alloc of payAllDebtResult.allocations">
+                Visit {{ alloc.visitNumber ?? alloc.visitId }} — UGX {{ alloc.amountPaid | number:'1.0-2' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="pv-modern-modal-footer border-0 px-0 pb-0 mt-3">
+            <button type="button" class="pv-modern-btn pv-modern-btn-secondary" (click)="closePayAllClientDebtModal()">
+              Close
+            </button>
+            <button
+              type="submit"
+              class="pv-modern-btn pv-modern-btn-primary"
+              [disabled]="payAllDebtSaving || !payAllDebtAllocation.length">
+              <i class="bi bi-check2-circle" *ngIf="!payAllDebtSaving"></i>
+              <span *ngIf="!payAllDebtSaving">Apply payment</span>
+              <span *ngIf="payAllDebtSaving">Processing…</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

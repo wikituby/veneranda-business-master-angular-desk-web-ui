@@ -8,12 +8,12 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ApiService, StockDosageRule } from '../../services/api.service';
-import { PatientWeightVitalsService } from '../../services/patient-weight-vitals.service';
+import { ClientWeightVitalsService } from '../../services/client-weight-vitals.service';
 import { formatTreatmentPeriodUnit } from '../../utils/prescribing-prefill.util';
 import {
   buildStandardDosageOptionsFromRules,
-  formatStandardDosagePatientSummary,
-  isPatientWeightMissing,
+  formatStandardDosageClientSummary,
+  isClientWeightMissing,
   StandardDosageContext,
   StandardDosageOption,
 } from '../../utils/standard-dosage.util';
@@ -29,8 +29,8 @@ export class StandardDosagePickerComponent implements OnDestroy {
   @Input() drugLabel = '';
   @Input() lastUnitValue = 1;
   @Input() unitOfMeasure = '';
-  @Input() patientAgeYears: number | null = null;
-  @Input() patientWeightKg: number | null = null;
+  @Input() clientAgeYears: number | null = null;
+  @Input() clientWeightKg: number | null = null;
   @Input() visitId: number | null = null;
   @Input() currentDoseValue: number | null = null;
   @Input() defaultRoute = 'Oral';
@@ -38,7 +38,7 @@ export class StandardDosagePickerComponent implements OnDestroy {
   @Input() disabled = false;
 
   @Output() optionApplied = new EventEmitter<StandardDosageOption>();
-  @Output() patientWeightUpdated = new EventEmitter<number>();
+  @Output() clientWeightUpdated = new EventEmitter<number>();
 
   @ViewChild('modalOverlay') modalOverlay?: ElementRef<HTMLElement>;
 
@@ -57,7 +57,7 @@ export class StandardDosagePickerComponent implements OnDestroy {
 
   constructor(
     private api: ApiService,
-    private patientWeightVitals: PatientWeightVitalsService
+    private clientWeightVitals: ClientWeightVitalsService
   ) {}
 
   openModal(): void {
@@ -87,12 +87,12 @@ export class StandardDosagePickerComponent implements OnDestroy {
     this.closeModal();
   }
 
-  patientSummary(): string {
-    return formatStandardDosagePatientSummary(this.buildContext());
+  clientSummary(): string {
+    return formatStandardDosageClientSummary(this.buildContext());
   }
 
   showRecordWeightButton(): boolean {
-    return isPatientWeightMissing(this.buildContext()) && this.canRecordWeight();
+    return isClientWeightMissing(this.buildContext()) && this.canRecordWeight();
   }
 
   canRecordWeight(): boolean {
@@ -104,8 +104,8 @@ export class StandardDosagePickerComponent implements OnDestroy {
     if (!this.canRecordWeight()) {
       return;
     }
-    this.recordWeightValue = this.patientWeightKg != null && this.patientWeightKg > 0
-      ? this.patientWeightKg
+    this.recordWeightValue = this.clientWeightKg != null && this.clientWeightKg > 0
+      ? this.clientWeightKg
       : null;
     this.recordWeightError = '';
     this.showRecordWeightModal = true;
@@ -133,12 +133,12 @@ export class StandardDosagePickerComponent implements OnDestroy {
 
     this.recordWeightSaving = true;
     this.recordWeightError = '';
-    this.patientWeightVitals.saveWeightForVisit(visitId, weight).subscribe({
+    this.clientWeightVitals.saveWeightForVisit(visitId, weight).subscribe({
       next: (savedWeight) => {
         this.recordWeightSaving = false;
         this.showRecordWeightModal = false;
         this.recordedWeightKg = savedWeight;
-        this.patientWeightUpdated.emit(savedWeight);
+        this.clientWeightUpdated.emit(savedWeight);
         this.reloadOptionsAfterWeightSaved();
       },
       error: () => {
@@ -238,8 +238,8 @@ export class StandardDosagePickerComponent implements OnDestroy {
       drugName: this.drugLabel,
       lastUnitValue: Number(this.lastUnitValue) || 1,
       unitOfMeasure: this.unitOfMeasure,
-      patientAgeYears: this.patientAgeYears,
-      patientWeightKg: this.recordedWeightKg ?? this.patientWeightKg,
+      clientAgeYears: this.clientAgeYears,
+      clientWeightKg: this.recordedWeightKg ?? this.clientWeightKg,
       currentDoseValue: this.currentDoseValue,
       defaultRoute: this.defaultRoute,
       defaultDoseUnit: this.defaultDoseUnit,

@@ -3,14 +3,12 @@
     <div class="about-page-hero-inner">
       <span class="about-eyebrow">About Us</span>
       <h1>
-        Healthcare for our community<br />
-        <span>Veneranda Hospital</span>
+        Built for African businesses<br />
+        <span>Veneranda Business Master</span>
       </h1>
       <p>
-        Veneranda Hospital offers services ranging from maternity and paediatrics to ultrasound and other scan types,
-        general doctor consultation, pharmacy, full laboratory services, and dental care. A full-time doctor and a
-        full-time dentist are available for appointments. We are growing — theatre and surgical services, blood bank,
-        and ambulance support are on the way.
+        Veneranda Business Master helps shops and distributors run inventory, sales, clients, expenses, and reports
+        from one system — on desktop and mobile — so owners see stock and money clearly every day.
       </p>
     </div>
   </div>
@@ -18,36 +16,36 @@
   <div class="about-page-body">
     <div class="about-stats">
       <div class="about-stat">
-        <div class="about-stat-label">Doctor for appointments</div>
-        <div class="about-stat-value">Full time</div>
+        <div class="about-stat-label">Desktop console</div>
+        <div class="about-stat-value">Full web app</div>
       </div>
       <div class="about-stat">
-        <div class="about-stat-label">Dentist available</div>
-        <div class="about-stat-value">Full time</div>
+        <div class="about-stat-label">Mobile app</div>
+        <div class="about-stat-value">Shop floor ready</div>
       </div>
       <div class="about-stat">
-        <div class="about-stat-label">Location</div>
-        <div class="about-stat-value">Bugogo Town Council, Kyegegwa</div>
+        <div class="about-stat-label">Focus</div>
+        <div class="about-stat-value">Retail &amp; distribution</div>
       </div>
     </div>
 
     <div class="about-founder">
       <div class="about-founder-photo">
-        <img [src]="defaultPersonImage" alt="Dr. Kabugo Nicholas" />
+        <img [src]="aboutHeroImage" alt="Veneranda Business Master in store" />
       </div>
       <div class="about-founder-copy">
-        <h2>Medical leadership</h2>
-        <h3>Dr. Kabugo Nicholas</h3>
-        <p class="about-founder-role">Medical Director &amp; Supervising Doctor</p>
+        <h2>What we build</h2>
+        <h3>One system for stock, sales, and money</h3>
+        <p class="about-founder-role">Product vision</p>
         <p>
-          Dr. Kabugo Nicholas leads clinical care and oversees medical standards at Veneranda Hospital, guiding teams
-          that serve families across our community every day.
+          From catalogue and stock receive to checkout, client accounts, and end-of-day reports — Veneranda Business Master
+          keeps desktop and mobile on the same live business data so teams stop juggling notebooks and spreadsheets.
         </p>
       </div>
     </div>
 
     <section class="about-people">
-      <h2>Our leadership</h2>
+      <h2>How we support you</h2>
       <div class="about-people-grid">
         <article class="about-person-card" *ngFor="let person of leadership">
           <div class="about-person-photo">
@@ -60,24 +58,6 @@
             <h3>{{ person.name }}</h3>
             <p class="about-person-role">{{ person.role }}</p>
             <p *ngIf="person.description">{{ person.description }}</p>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="about-people">
-      <h2>Board of Advisors</h2>
-      <div class="about-people-grid about-people-grid--advisors">
-        <article class="about-person-card" *ngFor="let advisor of boardOfAdvisors">
-          <div class="about-person-photo">
-            <img
-              [src]="personImage(advisor)"
-              [alt]="advisor.name"
-              (error)="$any($event.target).src = defaultPersonImage" />
-          </div>
-          <div class="about-person-body">
-            <h3>{{ advisor.name }}</h3>
-            <p class="about-person-role">{{ advisor.role }}</p>
           </div>
         </article>
       </div>

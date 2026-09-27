@@ -2,10 +2,9 @@
   <div class="contact-hero">
     <div class="contact-hero-inner">
       <span class="contact-eyebrow">Contact Us</span>
-      <h1>Get in touch with Veneranda Hospital</h1>
+      <h1>Get in touch with Veneranda Business Master</h1>
       <p>
-        Call, email, or send a message. We are here for appointments, emergencies, and general enquiries
-        at H5VH+6R, Lukwemigo.
+        Call, email, or send a message about demos, registration, billing, or product support.
       </p>
     </div>
   </div>
@@ -45,7 +44,7 @@
           rows="6"
           [(ngModel)]="form.message"
           required
-          placeholder="How can we help you?"></textarea>
+          placeholder="How can we help your business?"></textarea>
       </label>
 
       <div class="contact-actions">
@@ -85,14 +84,14 @@
           {{ row.note }}
         </p>
       </div>
-      <a class="contact-book-btn" routerLink="/book-appointment">Book an appointment</a>
+      <a class="contact-book-btn" routerLink="/book-appointment">Request a demo</a>
     </aside>
   </div>
 
-  <section class="contact-map-section" aria-label="Veneranda Hospital map">
+  <section class="contact-map-section" aria-label="Veneranda Business Master map">
     <div class="contact-map-header">
       <h2>Find us on the map</h2>
-      <p>Veneranda Hospital — {{ contact.location }}</p>
+      <p>Veneranda Business Master — {{ contact.location }}</p>
       <a
         class="contact-map-link"
         [href]="mapsSearchUrl"
@@ -105,7 +104,7 @@
     <div class="contact-map-frame">
       <iframe
         [src]="mapUrl"
-        title="Veneranda Hospital on Google Maps"
+        title="Veneranda Business Master on Google Maps"
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
         allowfullscreen></iframe>

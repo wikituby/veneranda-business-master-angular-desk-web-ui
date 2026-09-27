@@ -159,7 +159,7 @@ export class ShopItemManagementComponent implements OnInit {
   }
 
   loadCategories(onDone?: () => void): void {
-    this.api.getAllItemCategoriesHospitalItem().subscribe({
+    this.api.getAllItemCategoriesBusinessItem().subscribe({
       next: (res: any) => {
         this.categories = this.normalizeList(res);
         onDone?.();
@@ -173,7 +173,7 @@ export class ShopItemManagementComponent implements OnInit {
   }
 
   loadLowestPackages(): void {
-    this.api.getAllLowestPackagesHospitalItem().subscribe({
+    this.api.getAllLowestPackagesBusinessItem().subscribe({
       next: (res: any) => {
         this.lowestPackages = this.normalizeList(res);
         this.refreshUnitOptionsFromPackages();
@@ -226,6 +226,7 @@ export class ShopItemManagementComponent implements OnInit {
       reOrderLevel: item?.reOrderLevel ?? null,
       reOrderTo: item?.reOrderTo ?? null,
       unitSellingModelId: item?.unitSellingModelId ?? null,
+      useUnitSellingModel: item?.useUnitSellingModel !== false,
       dosage: item?.dosage ?? null,
       dosageUnit: item?.dosageUnit ?? '',
       frequency: item?.frequency ?? null,
@@ -281,7 +282,7 @@ export class ShopItemManagementComponent implements OnInit {
       return;
     }
     this.isAddingParentCategory = true;
-    this.api.addItemCategoryHospitalItem({ name: trimmed }).subscribe({
+    this.api.addItemCategoryBusinessItem({ name: trimmed }).subscribe({
       next: (res: any) => {
         this.isAddingParentCategory = false;
         const createdId = this.resolveCreatedId(res);
@@ -337,7 +338,7 @@ export class ShopItemManagementComponent implements OnInit {
       return;
     }
     this.isAddingSubCategory = true;
-    this.api.addItemCategoryHospitalItem({ name: trimmed, parentId }).subscribe({
+    this.api.addItemCategoryBusinessItem({ name: trimmed, parentId }).subscribe({
       next: (res: any) => {
         this.isAddingSubCategory = false;
         const createdId = this.resolveCreatedId(res);
@@ -529,7 +530,7 @@ export class ShopItemManagementComponent implements OnInit {
     }
     this[loadingFlag] = true;
     this.api
-      .addLowestPackageHospitalItem({
+      .addLowestPackageBusinessItem({
         title: trimmed,
         standardAbbreviation: trimmed.slice(0, 8),
         description: '',
@@ -666,6 +667,8 @@ export class ShopItemManagementComponent implements OnInit {
       costPrice: this.form.costPrice ?? 0,
       reOrderLevel: this.form.reOrderLevel,
       reOrderTo: this.form.reOrderTo,
+      unitSellingModelId: this.form.useUnitSellingModel === false ? null : this.form.unitSellingModelId,
+      useUnitSellingModel: this.form.useUnitSellingModel !== false,
       dosage: drug ? this.form.dosage : null,
       dosageUnit: drug ? this.form.dosageUnit : '',
       frequency: drug ? this.form.frequency : null,
@@ -693,6 +696,7 @@ export class ShopItemManagementComponent implements OnInit {
       reOrderLevel: null,
       reOrderTo: null,
       unitSellingModelId: null,
+      useUnitSellingModel: true,
       dosage: null,
       dosageUnit: '',
       frequency: null,

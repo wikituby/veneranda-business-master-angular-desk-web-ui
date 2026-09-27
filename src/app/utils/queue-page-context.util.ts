@@ -98,7 +98,7 @@ function findConsultationModule(list: QueueRouteModule[]): QueueRouteModule | un
     const rk = norm(m.routeKey);
     const code = norm(m.code).toUpperCase();
     return (
-      rk === 'patient-visit' ||
+      rk === 'client-visit' ||
       rk === 'consultations-center' ||
       rk === 'consultation' ||
       rk === 'triage' ||
@@ -142,7 +142,6 @@ const OVERVIEW_SEGMENT_MODULE: Record<string, (list: QueueRouteModule[]) => Queu
   'pharmacy-dispensing': (list) => findModule(list, isPharmacyModule),
   'pharmacy-prescription-management': (list) => findModule(list, isPharmacyModule),
   'pharmacy-pricing': (list) => findModule(list, isPharmacyModule),
-  'pharmacy-stock-tracking': (list) => findModule(list, isPharmacyModule),
   'pharmacy-purchase-orders': (list) => findModule(list, isPharmacyModule),
   'pharmacy-expiry-alerts': (list) => findModule(list, isPharmacyModule),
   'pharmacy-suppliers': (list) => findModule(list, isPharmacyModule),
@@ -152,8 +151,7 @@ const OVERVIEW_SEGMENT_MODULE: Record<string, (list: QueueRouteModule[]) => Queu
   'opd-investigations': findConsultationModule,
   'opd-diagnosis': findConsultationModule,
   'opd-follow-ups': findConsultationModule,
-  'consultations-center': findConsultationModule,
-  'patient-billing': findFinanceModule,
+  'client-billing': findFinanceModule,
   'expenses': findFinanceModule,
   'finance-dashboard': findFinanceModule,
   'finance-reports': findFinanceModule,
@@ -170,12 +168,11 @@ const STANDALONE_ROUTE_PAGE_KEYS: Record<string, string> = {
   '/messages': 'messages',
   '/overview/messages': 'messages',
   '/help': 'help',
-  '/patient-visits-list': 'patient-visits-list',
 };
 
 /**
  * Resolve the hospital module (department) for the page currently open.
- * Used so queue lists only patients sent to that department (toModule).
+ * Used so queue lists only clients sent to that department (toModule).
  */
 export function resolveModuleIdForUrl(
   url: string,
@@ -226,11 +223,11 @@ export function resolvePageContextFromUrl(
       }
     }
 
-    if (path.includes('patient-visit') || path.includes('consultations-center')) {
+    if (path.includes('client-visit')) {
       const visitMod = findConsultationModule(list);
       moduleId = toModuleId(visitMod);
       departmentLabel =
-        visitMod?.name || labelFromOverviewSegment('patient-visit') || 'Consultation';
+        visitMod?.name || labelFromOverviewSegment('client-visit') || 'Consultation';
       return {
         moduleId,
         departmentLabel,
@@ -256,7 +253,7 @@ export function resolvePageContextFromUrl(
       if (moduleId == null && (seg.includes('pharmacy') || seg.includes('otc'))) {
         const pharmacy = findModule(list, isPharmacyModule);
         moduleId = toModuleId(pharmacy);
-        departmentLabel = pharmacy?.name || 'Pharmacy';
+        departmentLabel = pharmacy?.name || 'POS';
       }
 
       if (moduleId == null) {

@@ -82,7 +82,7 @@
         and <strong>order quantity</strong> per batch under Stock Management.
       </p>
       <p class="page-subtitle" *ngIf="!inventoryIsStockBatch">
-        Monitor shop items below target stock and configure <strong>reorder to</strong> and
+        Monitor shop products below target stock and configure <strong>reorder to</strong> and
         <strong>reorder level</strong> for each item.
       </p>
     </div>
@@ -95,7 +95,7 @@
 
       <select class="filter-select" [(ngModel)]="selectedColumn">
         <option value="all">All fields</option>
-        <option value="item">{{ inventoryIsStockBatch ? 'Stock item' : 'Item' }}</option>
+        <option value="item">{{ inventoryIsStockBatch ? 'Stock item' : 'Product' }}</option>
         <option *ngIf="inventoryIsStockBatch" value="store">Store</option>
         <option *ngIf="inventoryIsStockBatch" value="batch">Batch no.</option>
       </select>
@@ -129,6 +129,11 @@
 
       <button type="button" class="action-btn" (click)="refresh()" title="Refresh">
         <i class="bi bi-arrow-clockwise"></i>
+      </button>
+
+      <button type="button" class="action-btn" (click)="createPurchaseOrder()" [disabled]="creatingPurchaseOrder">
+        <i class="bi bi-cart-plus"></i>
+        {{ creatingPurchaseOrder ? 'Creating…' : 'Create purchase order' }}
       </button>
 
       <button type="button" class="action-btn" (click)="goToStockReceive()">
@@ -180,7 +185,7 @@
       [class.active]="viewMode === 'all'"
       (click)="setViewMode('all')"
     >
-      All {{ inventoryIsStockBatch ? 'batches' : 'items' }} ({{ allBatches.length }})
+      All {{ inventoryIsStockBatch ? 'batches' : 'products' }} ({{ allBatches.length }})
     </button>
     <button type="button" class="view-tab link-tab" (click)="goToStockBatch()">
       <i class="bi bi-box-seam"></i> {{ inventoryIsStockBatch ? 'Stock batch' : 'Items' }}
@@ -219,7 +224,7 @@
 
   <div *ngIf="isLoadingService" class="loading-container">
     <div class="loader"></div>
-    <p>Loading {{ inventoryIsStockBatch ? 'stock batches' : 'items' }}...</p>
+    <p>Loading {{ inventoryIsStockBatch ? 'stock batches' : 'products' }}...</p>
   </div>
 
   <div *ngIf="showDivUpdatedOut" class="alert" [style.background-color]="responseColor">
@@ -233,7 +238,7 @@
           <tr>
             <th class="col-sn">SN</th>
             <th class="col-status">Status</th>
-            <th class="col-item">{{ inventoryIsStockBatch ? 'Stock item' : 'Item' }}</th>
+            <th class="col-item">{{ inventoryIsStockBatch ? 'Stock item' : 'Product' }}</th>
             <th class="col-store" *ngIf="inventoryIsStockBatch">Store</th>
             <th class="col-batch" *ngIf="inventoryIsStockBatch">Batch</th>
             <th class="col-num">In stock</th>
@@ -284,13 +289,13 @@
             <td [attr.colspan]="inventoryIsStockBatch ? 11 : 8" class="no-data">
               <i class="bi bi-inbox"></i>
               <p *ngIf="viewMode === 'needs-reorder'">
-                No {{ inventoryIsStockBatch ? 'batches' : 'items' }} are below their reorder-to level.
+                No {{ inventoryIsStockBatch ? 'batches' : 'products' }} are below their reorder-to level.
               </p>
               <p *ngIf="viewMode === 'needs-config'">
-                All {{ inventoryIsStockBatch ? 'batches in this store' : 'items' }} have a reorder target set.
+                All {{ inventoryIsStockBatch ? 'batches in this store' : 'products' }} have a reorder target set.
               </p>
               <p *ngIf="viewMode === 'all'">
-                No {{ inventoryIsStockBatch ? 'stock batches found for this store' : 'shop items found' }}.
+                No {{ inventoryIsStockBatch ? 'stock batches found for this store' : 'shop products found' }}.
               </p>
             </td>
           </tr>
@@ -306,7 +311,7 @@
             ? filteredReorderBatches.length
             : page * itemsPerPage
         }}
-        of {{ filteredReorderBatches.length }} {{ inventoryIsStockBatch ? 'batches' : 'items' }}
+        of {{ filteredReorderBatches.length }} {{ inventoryIsStockBatch ? 'batches' : 'products' }}
       </div>
       <pagination-controls (pageChange)="page = $event"></pagination-controls>
       <div class="pagination-size">

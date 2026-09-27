@@ -15,7 +15,7 @@ type ExpiredItemsTab = 'expired-list' | 'expired-register';
 })
 export class ExpiredItemsComponent implements OnInit {
   isDarkMode = false;
-  /** True = stock batches; false = shop items (business setting). */
+  /** True = stock batches; false = shop products (business setting). */
   inventoryIsStockBatch = true;
   isLoading = false;
   expiredBatches: any[] = [];
@@ -370,7 +370,7 @@ export class ExpiredItemsComponent implements OnInit {
         finish(
           (regRes?.message || 'Saved to expiry register.') +
             ' Could not update item stock — ' +
-            (updErr?.error?.message || 'open Shop items and set quantity to 0.'),
+            (updErr?.error?.message || 'open Shop products and set quantity to 0.'),
           true
         ),
     });

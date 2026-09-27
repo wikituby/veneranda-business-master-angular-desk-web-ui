@@ -408,13 +408,13 @@
   font-family: 'Courier New', monospace;
 }
 
-.patient-cell {
+.client-cell {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.patient-avatar-small {
+.client-avatar-small {
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -427,22 +427,22 @@
   font-size: 13px;
 }
 
-.patient-name-cell {
+.client-name-cell {
   font-weight: 600;
   color: #0f172a;
   margin-bottom: 2px;
 }
 
-.dark .patient-name-cell {
+.dark .client-name-cell {
   color: #f1f5f9;
 }
 
-.patient-meta-cell {
+.client-meta-cell {
   font-size: 12px;
   color: #64748b;
 }
 
-.dark .patient-meta-cell {
+.dark .client-meta-cell {
   color: #94a3b8;
 }
 

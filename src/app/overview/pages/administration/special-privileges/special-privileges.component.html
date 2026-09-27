@@ -3,7 +3,7 @@
     <div class="header-left">
       <h1 class="page-title"><i class="bi bi-shield-lock"></i> Special Privileges</h1>
       <p class="page-subtitle">
-        MD-only. Controls multi-visit debt groups, who may assign patients to those groups, and who may re-open closed visits.
+        MD-only. Controls multi-visit debt groups, who may assign clients to those groups, and who may re-open closed visits.
         Settings are stored in the database and checked on every restricted action.
       </p>
     </div>
@@ -15,13 +15,13 @@
 
   <form class="subscription-layout" *ngIf="!isLoading" (ngSubmit)="save()">
     <section class="status-card special-privileges-card">
-      <h2>Debt-permitted patient groups</h2>
+      <h2>Debt-permitted client groups</h2>
       <p class="hint">
         Members of selected groups may receive new services or prescriptions on a new visit even when an older closed visit still has unpaid balance.
       </p>
-      <p class="hint" *ngIf="patientGroupsLoading">Loading groups…</p>
-      <div class="privilege-column privilege-column--wide" *ngIf="!patientGroupsLoading">
-        <label class="privilege-user" *ngFor="let g of patientGroups">
+      <p class="hint" *ngIf="clientGroupsLoading">Loading groups…</p>
+      <div class="privilege-column privilege-column--wide" *ngIf="!clientGroupsLoading">
+        <label class="privilege-user" *ngFor="let g of clientGroups">
           <input
             type="checkbox"
             [disabled]="!canEdit"
@@ -29,7 +29,7 @@
             (change)="toggleId(privilegeCreditAllowedGroupIds, g.id, $any($event.target).checked)" />
           <span>{{ g.groupName }}</span>
         </label>
-        <p class="hint" *ngIf="!patientGroups.length">No patient groups found.</p>
+        <p class="hint" *ngIf="!clientGroups.length">No client groups found.</p>
       </div>
     </section>
 
@@ -40,7 +40,7 @@
       <div class="privilege-grid" *ngIf="!privilegeUsersLoading">
         <div class="privilege-column">
           <h3>Open closed visits</h3>
-          <p class="privilege-desc">Re-open a closed patient visit.</p>
+          <p class="privilege-desc">Re-open a closed client order.</p>
           <label class="privilege-user" *ngFor="let u of privilegeUsers">
             <input
               type="checkbox"
@@ -51,9 +51,9 @@
           </label>
         </div>
         <div class="privilege-column">
-          <h3>Add patients to debt-permitted groups</h3>
+          <h3>Add clients to debt-permitted groups</h3>
           <p class="privilege-desc">
-            Assign patients to groups selected above (and legacy Veneranda Hospital).
+            Assign clients to groups selected above (and legacy Veneranda Hospital).
           </p>
           <label class="privilege-user" *ngFor="let u of privilegeUsers">
             <input

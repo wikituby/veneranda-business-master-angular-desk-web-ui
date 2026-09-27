@@ -174,7 +174,7 @@
     <section class="status-card">
       <h2>HMIS tracer medicines</h2>
       <p class="hint">
-        Map official HMIS tracer lines (ACT, RDT, ORS, etc.) to your pharmacy stock or shop items under
+        Map official HMIS tracer lines (ACT, RDT, ORS, etc.) to your pharmacy stock or shop products under
         <strong>Inventory → Stock Management → HMIS Tracer Mapping</strong>.
         That page searches inventory by name and feeds HMIS stock balances and prescribed treatment counts into weekly/monthly forms.
       </p>
@@ -209,31 +209,22 @@
             [checked]="form.pharmacyUseStockBatch === false"
             (change)="form.pharmacyUseStockBatch = false" />
           <span class="inventory-mode-card">
-            <strong>Shop items</strong>
+            <strong>Shop products</strong>
             <small>Use <code>itemId</code> — one stock record per product; shop item receive and item-level quantities.</small>
           </span>
         </label>
       </div>
       <p class="hint inventory-mode-current">
         Current mode:
-        <strong>{{ form.pharmacyUseStockBatch !== false ? 'Stock batches (stockBatchId)' : 'Shop items (itemId)' }}</strong>
+        <strong>{{ form.pharmacyUseStockBatch !== false ? 'Stock batches (stockBatchId)' : 'Shop products (itemId)' }}</strong>
       </p>
     </section>
 
     <section class="status-card">
-      <h2>Pharmacy — OTC counter sale</h2>
+      <h2>POS — counter sale</h2>
       <p class="hint">
-        Default for the OTC dispensary screen. Staff can still toggle prescription fields on that page for the current session.
+        Point-of-sale counter uses stock or shop products based on the setting above. Prescription fields are disabled for this business app.
       </p>
-      <label class="otc-prescribing-default-switch form-check form-switch">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          role="switch"
-          name="otcIncludePrescribing"
-          [(ngModel)]="form.otcIncludePrescribing" />
-        <span class="form-check-label">Prescription fields (dosage, frequency, duration)</span>
-      </label>
     </section>
 
     <section class="status-card">

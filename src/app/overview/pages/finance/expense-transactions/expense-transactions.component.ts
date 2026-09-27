@@ -54,14 +54,14 @@ export class ExpenseTransactionsComponent implements OnInit {
   receiverSearch = '';
   showAddClientModal = false;
   newClientForm = {
-    patientFirstName: '',
-    patientSecondName: '',
-    patientContact: defaultContactValue(),
-    patientGender: '',
-    patientDateOfBirth: '',
-    patientAge: null as number | null,
+    clientFirstName: '',
+    clientSecondName: '',
+    clientContact: defaultContactValue(),
+    clientGender: '',
+    clientDateOfBirth: '',
+    clientAge: null as number | null,
     occupation: '',
-    patientAddress: '',
+    clientAddress: '',
     nextOfKinName: '',
     nextOfKinContact: defaultContactValue(),
     relationship: '',
@@ -208,10 +208,10 @@ export class ExpenseTransactionsComponent implements OnInit {
   }
 
   clientFullName(c: any): string {
-    const first = c.patientFirstName || c.firstName || c.first_name || '';
-    const second = c.patientSecondName || c.secondName || c.lastName || c.last_name || '';
+    const first = c.clientFirstName || c.firstName || c.first_name || '';
+    const second = c.clientSecondName || c.secondName || c.lastName || c.last_name || '';
     const full = `${first} ${second}`.trim();
-    return full || c.name || c.patientName || 'Unknown';
+    return full || c.name || c.clientName || 'Unknown';
   }
 
   clearFilters(): void {
@@ -239,7 +239,7 @@ export class ExpenseTransactionsComponent implements OnInit {
       next: (res: any) => { this.categories = Array.isArray(res) ? res : []; done(); },
       error: () => { this.categories = []; done(); }
     });
-    this.api.getAllPatients().subscribe({
+    this.api.getAllClients().subscribe({
       next: (res: any) => { this.clients = Array.isArray(res) ? res : []; done(); },
       error: () => { this.clients = []; done(); }
     });
@@ -360,14 +360,14 @@ export class ExpenseTransactionsComponent implements OnInit {
   openAddClientModal(event: Event): void {
     event.stopPropagation();
     this.newClientForm = {
-      patientFirstName: '',
-      patientSecondName: '',
-      patientContact: defaultContactValue(),
-      patientGender: '',
-      patientDateOfBirth: '',
-      patientAge: null,
+      clientFirstName: '',
+      clientSecondName: '',
+      clientContact: defaultContactValue(),
+      clientGender: '',
+      clientDateOfBirth: '',
+      clientAge: null,
       occupation: '',
-      patientAddress: '',
+      clientAddress: '',
       nextOfKinName: '',
       nextOfKinContact: defaultContactValue(),
       relationship: '',
@@ -382,12 +382,12 @@ export class ExpenseTransactionsComponent implements OnInit {
   }
 
   saveNewClient(): void {
-    if (!this.newClientForm.patientFirstName?.trim()) { this.showError('First name is required.'); return; }
-    if (!this.newClientForm.patientSecondName?.trim()) { this.showError('Second name is required.'); return; }
-    if (!this.newClientForm.patientContact?.trim()) { this.showError('Contact is required.'); return; }
-    if (!this.newClientForm.patientGender?.trim()) { this.showError('Gender is required.'); return; }
+    if (!this.newClientForm.clientFirstName?.trim()) { this.showError('First name is required.'); return; }
+    if (!this.newClientForm.clientSecondName?.trim()) { this.showError('Second name is required.'); return; }
+    if (!this.newClientForm.clientContact?.trim()) { this.showError('Contact is required.'); return; }
+    if (!this.newClientForm.clientGender?.trim()) { this.showError('Gender is required.'); return; }
     this.isSaving = true;
-    const dob = (this.newClientForm.patientDateOfBirth || '').trim();
+    const dob = (this.newClientForm.clientDateOfBirth || '').trim();
     let formattedDob: string | null = null;
     if (dob) {
       const date = new Date(dob);
@@ -399,28 +399,28 @@ export class ExpenseTransactionsComponent implements OnInit {
       }
     }
     const payload = {
-      patientFirstName: this.newClientForm.patientFirstName.trim(),
-      patientSecondName: this.newClientForm.patientSecondName.trim(),
-      patientContact: this.newClientForm.patientContact?.trim() || '',
-      patientGender: this.newClientForm.patientGender || '',
-      patientDateOfBirth: formattedDob,
-      patientAge: this.newClientForm.patientAge != null ? Number(this.newClientForm.patientAge) : null,
+      clientFirstName: this.newClientForm.clientFirstName.trim(),
+      clientSecondName: this.newClientForm.clientSecondName.trim(),
+      clientContact: this.newClientForm.clientContact?.trim() || '',
+      clientGender: this.newClientForm.clientGender || '',
+      clientDateOfBirth: formattedDob,
+      clientAge: this.newClientForm.clientAge != null ? Number(this.newClientForm.clientAge) : null,
       occupation: this.newClientForm.occupation?.trim() || '',
-      patientAddress: this.newClientForm.patientAddress?.trim() || '',
+      clientAddress: this.newClientForm.clientAddress?.trim() || '',
       nextOfKinName: this.newClientForm.nextOfKinName?.trim() || '',
       nextOfKinContact: this.newClientForm.nextOfKinContact?.trim() || '',
       relationship: this.newClientForm.relationship?.trim() || '',
       nextOfKinAddress: this.newClientForm.nextOfKinAddress?.trim() || ''
     };
-    this.api.addPatient(payload).subscribe({
+    this.api.addClient(payload).subscribe({
       next: () => {
-        this.api.getAllPatients().subscribe({
+        this.api.getAllClients().subscribe({
           next: (list: any) => {
             this.isSaving = false;
             this.clients = Array.isArray(list) ? list : [];
             const created = this.clients.find(
-              (c) => (c.patientFirstName || c.firstName || '').toLowerCase() === this.newClientForm.patientFirstName.trim().toLowerCase()
-                && (c.patientSecondName || c.secondName || c.lastName || '').toLowerCase() === this.newClientForm.patientSecondName.trim().toLowerCase()
+              (c) => (c.clientFirstName || c.firstName || '').toLowerCase() === this.newClientForm.clientFirstName.trim().toLowerCase()
+                && (c.clientSecondName || c.secondName || c.lastName || '').toLowerCase() === this.newClientForm.clientSecondName.trim().toLowerCase()
             ) ?? this.clients[this.clients.length - 1];
             if (created?.id != null) {
               this.transactionForm.receiverId = Number(created.id);

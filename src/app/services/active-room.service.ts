@@ -39,8 +39,8 @@ export class ActiveRoomService {
       return of({ departments: [], rooms: [] });
     }
     return forkJoin({
-      clinics: this.api.getHospitalClinics(),
-      modules: this.api.getAllHospitalModules(),
+      clinics: this.api.getBusinessClinics(),
+      modules: this.api.getAllBusinessModules(),
     }).pipe(
       map(({ clinics, modules }) => {
         const moduleList = Array.isArray(modules) ? modules : [];

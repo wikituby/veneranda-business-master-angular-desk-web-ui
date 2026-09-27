@@ -24,7 +24,7 @@ export class InvestigationsComponent implements OnInit {
   requests = [
     {
       id: '001',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
       type: 'laboratory',
       testName: 'Complete Blood Count',
       testCode: 'CBC',
@@ -35,7 +35,7 @@ export class InvestigationsComponent implements OnInit {
     },
     {
       id: '002',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
       type: 'radiology',
       testName: 'Chest X-Ray',
       testCode: 'CXR',
@@ -49,7 +49,7 @@ export class InvestigationsComponent implements OnInit {
   get filteredRequests(): any[] {
     return this.requests.filter(request => {
       const matchesSearch = !this.searchQuery || 
-        request.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         request.testName.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesType = !this.typeFilter || request.type === this.typeFilter;
       const matchesStatus = !this.statusFilter || request.status === this.statusFilter;

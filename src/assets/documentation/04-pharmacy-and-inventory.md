@@ -1,144 +1,93 @@
-# Pharmacy and Inventory
+# ERP — Sales, Stock, and Stores
 
-Guide for pharmacy staff, store keepers, and managers responsible for medicines and consumables.
+This is the operating side of the business manager: catalogue, warehouses, purchasing movement, checkout, and the documents that prove a sale.
 
-## Overview
+## Sales documents (order to cash)
 
-Inventory is built around **hospital items** (medicines and consumables), **stock batches** (each receipt with cost and sell price), and **store distribution** (quantities per store: pharmacy, central, others).
+**Path:** **POS**, then **Products orders** for history.
 
-Pharmacy interacts with inventory through:
+| Document | Stock | Payment |
+|----------|--------|---------|
+| Quotation | Not deducted | Optional. Amount can stay empty |
+| Proforma | Not deducted | Optional |
+| Sales invoice | Deducted when the sale completes as a stock document | Recorded when money is received |
+| Receipt | Deducted | Shows amount received |
+| Delivery note | Records handover | Follows the order |
 
-- **Patient visit → Treatment** (dispense on prescription)
-- **OTC dispensary** (over-the-counter sales)
-- **Stock transfer** (move stock between stores)
-- **Overview → Inventory** modules (receive, adjust, report)
+Pipeline on one order:
 
-## Stores and stock labels
+**Quotation → Proforma → Invoice → Receipt → Delivery**
 
-| Store role | Typical use |
-|------------|-------------|
-| Pharmacy | Dispensing to patients and OTC |
-| Central store | Bulk storage; transfers to pharmacy |
-| Other stores | Wards, theatre, etc. when configured |
+Opening a later box can create that document from the products already sold, and fill any missing earlier stage. Confirm in the on-screen dialog before it is created.
 
-On the patient visit Treatment tab:
+### Checkout fields
 
-- **Stock** = sum across stores
-- **Pharmacy** / **Central store** = per-location quantities
+- **Payment method** and **notes** are on one row under the cart. Notes stay editable even when a quotation does not take payment.
+- **Amount received**, **amount due**, and **change** sit on the next row.
+- Totals read in a line, for example **Paid: 100000**.
 
-## Stock receive
+### Products orders
 
-**Path:** Overview → Inventory → **Stock receive**
+- Search placeholder covers orders, client names, and who served the sale.
+- **Filter by date** is a popup: Today, Last month, Last 7 days, or a from–to range.
+- The serial number counts down from the largest.
+- The client column is wide enough to read the name.
+- The active control is an icon. Confirm before turning an order off. Off means view, print, and share only.
 
-Purpose: Record goods inward and create or update **stock batches**.
+### Payments
 
-Typical fields:
+Each payment on an order can be **reversed** after you confirm. The row stays, marked reversed. Paid and debt use only payments that are not reversed.
 
-- Item, quantity, unit of measure
-- Batch identifiers (batch number, expiry where applicable)
-- Cost price, sell price
-- **Profit margin for retail** (and wholesale/special case margins on batch maintenance)
+## Product catalogue
 
-Received stock increases distribution according to the target store rules.
+**Path:** Inventory → **Products**.
 
-## Stock batch management
+Keep, for each item:
 
-**Path:** Overview → Inventory → **Stock batch**
+- Name, barcode, category, unit
+- Cost and selling price (or a unit selling model)
+- Reorder level and restock target
+- Shelf, description, and images where you use them
 
-Maintain batch-level economics:
+Services live in the same selling flow and do not depend on a stock batch.
 
-| Field | Description |
-|-------|-------------|
-| Profit margin for retail | Margin applied to retail/standard sales |
-| Profit margin for wholesale | Wholesale pricing rules |
-| Profit margin for special case | Exceptions (insurance, staff, etc.) |
+## Stock management
 
-Legacy data may map old `profitMargin` values to retail until fully migrated.
+**Path:** Inventory → **Stock management**.
 
-## Stock transfer
+| Action | When to use it |
+|--------|----------------|
+| Receive | Goods arrive from a supplier into a store |
+| Adjust | Correct a quantity that receiving or selling did not explain |
+| Transfer | Move quantity from one store to another |
+| Stock take | Count the shelf |
+| Initialise | Set opening quantities for a new store or item |
+| Verify | Confirm a count before it becomes the book quantity |
+| Tracking | See how a quantity changed |
 
-**Path:** Overview → Inventory → **Stock transfer**
+Receive into the store that physically holds the goods. Selling reduces the store you sell from when the document deducts stock.
 
-Use when stock must move between stores (e.g. central → pharmacy).
+## Stores
 
-**From patient visit:** When pharmacy quantity is zero but total stock exists, use the transfer icon on the Treatment tab (requires role permission).
+**Path:** Inventory → **Stores**.
 
-### Access control
+A store is a counter, shop floor, or warehouse. The catalogue is shared. Quantities are not. Set the store staff are working in before receive, transfer, or sale.
 
-Creating and listing transfers may require:
+## Partners
 
-- **User access** to the Stock transfer page, and/or
-- **Role endpoint access** for:
-  - `stock.transfer.create` (POST transfer)
-  - `stock.transfer.list` (GET transfer history)
+**Path:** Inventory → **Partners** (suppliers and related parties).
 
-Configure under **Overview → Access control** (User access and Role access tabs).
+Record who you buy from so receipts of goods have a source. Deeper supplier portals for shared purchase orders are a later extension. Day-to-day buying is still: partner on file, then stock receive.
 
-## OTC dispensary
+## Reports that close the loop
 
-**Path:** Overview → Pharmacy → **OTC dispensary**
+Use sales reports for what left the counter, and stock reports for what remains and what moved. The main dashboard is the short version of the same questions.
 
-Walk-in sales without a full patient visit workflow.
+## Rules that prevent double books
 
-Business settings may control whether OTC includes full prescribing fields (dosage, frequency, duration) — see **Business settings → OTC include prescribing**.
+- Do not sell a quantity the store does not hold unless your process explicitly allows a backorder.
+- Do not edit a turned-off order. Turn it on again only when a supervisor accepts.
+- Create a new order for a new document. Reuse an order only while editing that document.
+- Reverse a wrong payment. Do not delete it from history.
 
-## Consumable items / item catalogue
-
-**Path:** Overview → Inventory → **Consumable items** (and related item management)
-
-- Define items, units, categories
-- Link to manufacturers and suppliers
-- Set reorder levels
-
-## Stock taking and adjustments
-
-| Module | Purpose |
-|--------|---------|
-| Stock taking | Physical count vs system |
-| Adjustments | Correct quantities after variance |
-| Expired items | Remove or quarantine expired stock |
-| Near expiry / expired drugs routes | Dedicated expiry reports |
-
-## Reorder and suppliers
-
-- **Reorder levels** — alerts when stock falls below threshold
-- **Suppliers** — vendor master data for purchasing
-
-## Pharmacy during a visit
-
-1. Select drug (stock batch) on Treatment tab.
-2. Enter dosing and instructions.
-3. Save treatment line — stock decrements according to backend rules.
-4. Reprint or verify on **Printouts** if needed.
-
-**Clear field** resets the form for the next item without leaving the tab.
-
-## Reporting
-
-Useful Overview reports:
-
-- Drug utilization
-- Inventory summary
-- Pharmacy expiry alerts
-- Store reports / analytics
-
-## Best practices
-
-1. Receive stock before prescribing new batches.
-2. Transfer to pharmacy before peak dispensing hours if central holds stock.
-3. Review near-expiry weekly.
-4. Restrict transfer and adjustment permissions to trusted roles.
-5. Reconcile OTC sales with cashier totals daily.
-
-## Troubleshooting
-
-| Issue | Action |
-|-------|--------|
-| Item not selectable in visit | Check batch exists, not expired, stock > 0 in usable store |
-| Transfer fails | Verify role endpoint access and JWT login |
-| Wrong sell price | Update stock batch margins and sell price |
-| OTC missing dosing fields | Business settings → OTC prescribing option |
-
----
-
-*Document 04 — Pharmacy and inventory — HMS documentation v1.0*
+*Documentation pack 2.0 — September 2026*

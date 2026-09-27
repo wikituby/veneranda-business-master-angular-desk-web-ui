@@ -19,8 +19,8 @@ export class SpecialPrivilegesComponent implements OnInit {
 
   privilegeUsers: { id: number; username: string; role: string }[] = [];
   privilegeUsersLoading = false;
-  patientGroups: { id: number; groupName: string }[] = [];
-  patientGroupsLoading = false;
+  clientGroups: { id: number; groupName: string }[] = [];
+  clientGroupsLoading = false;
 
   privilegeOpenVisitIds = new Set<number>();
   privilegeDebtGroupAssignIds = new Set<number>();
@@ -45,7 +45,7 @@ export class SpecialPrivilegesComponent implements OnInit {
     this.themeService.isDarkMode$.subscribe((isDark) => (this.isDarkMode = isDark));
     this.load();
     this.loadPrivilegeUsers();
-    this.loadPatientGroups();
+    this.loadClientGroups();
   }
 
   get canEdit(): boolean {
@@ -97,12 +97,12 @@ export class SpecialPrivilegesComponent implements OnInit {
     });
   }
 
-  private loadPatientGroups(): void {
-    this.patientGroupsLoading = true;
-    this.api.getAllPatientGroups().subscribe({
+  private loadClientGroups(): void {
+    this.clientGroupsLoading = true;
+    this.api.getAllClientGroups().subscribe({
       next: (res: any) => {
         const list = Array.isArray(res) ? res : res?.data ?? [];
-        this.patientGroups = (Array.isArray(list) ? list : [])
+        this.clientGroups = (Array.isArray(list) ? list : [])
           .map((g: any) => ({
             id: Number(g?.id),
             groupName: String(g?.groupName || g?.name || `Group ${g?.id}`),
@@ -111,11 +111,11 @@ export class SpecialPrivilegesComponent implements OnInit {
           .sort((a: { groupName: string }, b: { groupName: string }) =>
             a.groupName.localeCompare(b.groupName)
           );
-        this.patientGroupsLoading = false;
+        this.clientGroupsLoading = false;
       },
       error: () => {
-        this.patientGroups = [];
-        this.patientGroupsLoading = false;
+        this.clientGroups = [];
+        this.clientGroupsLoading = false;
       },
     });
   }

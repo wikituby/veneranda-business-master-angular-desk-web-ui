@@ -69,7 +69,7 @@ export class StockTransferComponent implements OnInit {
 
   initializeTableData() {
     this.isLoadingService = true;
-    this.api.getStockTransfersHospitalItem().subscribe({
+    this.api.getStockTransfersBusinessItem().subscribe({
       next: (res: any) => {
         this.isLoadingService = false;
         console.log("Raw stock transfers response:", res);
@@ -494,9 +494,9 @@ export class StockTransferComponent implements OnInit {
     this.showDivUpdatedLoader = true;
     this.showDivAddToDataBase = false;
 
-    console.log('[Stock transfer] POST /Hospital-item/transfer-stock — payload:', JSON.stringify(built.payload, null, 2));
+    console.log('[Stock transfer] POST /Business-item/transfer-stock — payload:', JSON.stringify(built.payload, null, 2));
 
-    this.api.transferStockHospitalItem(built.payload).subscribe({
+    this.api.transferStockBusinessItem(built.payload).subscribe({
       next: (res: any) => {
         this.showDivUpdatedLoader = false;
         this.isButtonDisabled = false;

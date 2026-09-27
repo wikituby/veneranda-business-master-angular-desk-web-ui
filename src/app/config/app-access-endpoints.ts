@@ -15,7 +15,7 @@ export const APP_ACCESS_ENDPOINTS: AppAccessEndpoint[] = [
     label: 'Transfer stock (POST)',
     group: 'Inventory — Stock Management',
     httpMethod: 'POST',
-    pathContains: '/Hospital-item/transfer-stock',
+    pathContains: '/Business-item/transfer-stock',
     pageKey: 'stock-transfer',
   },
   {
@@ -23,7 +23,7 @@ export const APP_ACCESS_ENDPOINTS: AppAccessEndpoint[] = [
     label: 'List stock transfers (GET)',
     group: 'Inventory — Stock Management',
     httpMethod: 'GET',
-    pathContains: '/Hospital-item/stock-transfers',
+    pathContains: '/Business-item/stock-transfers',
     pageKey: 'stock-transfer',
   },
 ];

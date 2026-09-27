@@ -46,7 +46,7 @@
       <form (ngSubmit)="submitAdjustment()" #adjForm="ngForm" class="adj-form">
         <div class="form-grid">
           <div class="form-field">
-            <label>{{ inventoryIsStockBatch ? 'Stock batch' : 'Item' }} <span class="req">*</span></label>
+            <label>{{ inventoryIsStockBatch ? 'Stock batch' : 'Product' }} <span class="req">*</span></label>
             <button type="button" class="picker-trigger" (click)="openBatchPicker()">
               <span [class.placeholder]="!selectedBatchSummary">{{ selectedBatchSummary || pickerPlaceholder }}</span>
               <i class="bi bi-search"></i>
@@ -152,7 +152,7 @@
           <thead>
             <tr>
               <th>ID</th>
-              <th>{{ inventoryIsStockBatch ? 'Batch' : 'Item' }}</th>
+              <th>{{ inventoryIsStockBatch ? 'Batch' : 'Product' }}</th>
               <th>Type</th>
               <th>Before</th>
               <th>Change</th>

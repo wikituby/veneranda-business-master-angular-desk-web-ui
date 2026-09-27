@@ -24,7 +24,7 @@ export class AdmissionsComponent implements OnInit {
   admissions = [
     {
       id: '001',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234', age: 45 },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234', age: 45 },
       doctor: 'Dr. Smith',
       department: 'General Medicine',
       ward: 'General Ward',
@@ -36,7 +36,7 @@ export class AdmissionsComponent implements OnInit {
     },
     {
       id: '002',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235', age: 32 },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235', age: 32 },
       doctor: 'Dr. Johnson',
       department: 'Cardiology',
       ward: 'ICU',
@@ -48,7 +48,7 @@ export class AdmissionsComponent implements OnInit {
     },
     {
       id: '003',
-      patient: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236', age: 28 },
+      client: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236', age: 28 },
       doctor: 'Dr. Williams',
       department: 'Pediatrics',
       ward: 'Pediatrics',
@@ -63,7 +63,7 @@ export class AdmissionsComponent implements OnInit {
   get filteredAdmissions(): any[] {
     return this.admissions.filter(admission => {
       const matchesSearch = !this.searchQuery || 
-        admission.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        admission.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         admission.id.toLowerCase().includes(this.searchQuery.toLowerCase());
       
       const matchesWard = !this.wardFilter || admission.ward.toLowerCase().includes(this.wardFilter.toLowerCase());
@@ -84,8 +84,8 @@ export class AdmissionsComponent implements OnInit {
     });
   }
 
-  admitPatient(): void {
-    console.log('Admit patient');
+  admitClient(): void {
+    console.log('Admit client');
   }
 
   viewWards(): void {
@@ -104,11 +104,11 @@ export class AdmissionsComponent implements OnInit {
     console.log('View details:', admission);
   }
 
-  transferPatient(admission: any): void {
-    console.log('Transfer patient:', admission);
+  transferClient(admission: any): void {
+    console.log('Transfer client:', admission);
   }
 
-  dischargePatient(admission: any): void {
-    console.log('Discharge patient:', admission);
+  dischargeClient(admission: any): void {
+    console.log('Discharge client:', admission);
   }
 }

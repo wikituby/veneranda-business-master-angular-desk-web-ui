@@ -3,110 +3,127 @@
     <div class="header-left">
       <h1 class="page-title">
         <i class="bi bi-cart-plus"></i>
-        Purchase Orders
+        {{ order ? order.orderNo : 'Purchase Orders' }}
       </h1>
-      <p class="page-subtitle">Create and manage pharmacy purchase orders</p>
+      <p class="page-subtitle" *ngIf="!order">
+        Orders built from products that have hit their reorder level. Stock does not change until a stock receive.
+      </p>
+      <p class="page-subtitle" *ngIf="order">
+        Quantity starts from the reorder-to gap. Edit it, then export the sheet for the supplier.
+      </p>
     </div>
-    <div class="header-right">
-      <button class="btn-primary" (click)="createNew()">
-        <i class="bi bi-plus-circle"></i>
-        New Purchase
+    <div class="header-right" *ngIf="!order">
+      <button type="button" class="btn-primary" (click)="goToReorder()">
+        <i class="bi bi-arrow-down-circle"></i>
+        From reorder levels
       </button>
-      <button class="btn-secondary">
-        <i class="bi bi-download"></i>
-        Export
+    </div>
+    <div class="header-right" *ngIf="order">
+      <button type="button" class="btn-secondary" (click)="backToList()">Back</button>
+      <button type="button" class="btn-secondary" (click)="exportExcel()">
+        <i class="bi bi-file-earmark-excel"></i>
+        Export Excel
+      </button>
+      <button type="button" class="btn-primary" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving…' : 'Save' }}
       </button>
     </div>
   </div>
 
-  <div class="stats-grid">
-    
-    <div class="stat-card stat-pending">
-      <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
-      <div class="stat-content">
-        <div class="stat-value">{{pendingOrders}}</div>
-        <div class="stat-label">Pending Orders</div>
-      </div>
-    </div>
-    <div class="stat-card stat-completed">
-      <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
-      <div class="stat-content">
-        <div class="stat-value">{{completedOrders}}</div>
-        <div class="stat-label">Completed</div>
-      </div>
-    </div>
-  </div>
+  <p class="po-message" *ngIf="message" [style.color]="messageColor">{{ message }}</p>
+  <p class="po-message" *ngIf="loading">Loading…</p>
 
-  <div class="filters-section">
-    <div class="search-box">
-      <i class="bi bi-search"></i>
-      <input type="text" placeholder="Search..." [(ngModel)]="searchQuery">
-    </div>
-    <div class="filter-group">
-      <select class="filter-select" [(ngModel)]="statusFilter">
-        <option value="">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-      <input type="date" class="filter-select" [(ngModel)]="dateFilter">
-    </div>
-  </div>
-
-  <div class="table-section">
-    <div class="table-header">
-      <h3 class="table-title">Purchase Orders</h3>
-      <div class="table-actions">
-        <button class="btn-sm btn-secondary">
-          <i class="bi bi-funnel"></i>
-          More Filters
-        </button>
-      </div>
-    </div>
-
+  <div class="table-section" *ngIf="!order && !loading">
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th class="no-sort">Order</th>
+            <th class="no-sort">Supplier</th>
+            <th class="no-sort">Lines</th>
+            <th class="no-sort">Status</th>
+            <th class="no-sort">Created</th>
+            <th class="no-sort"></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredItems">
-            <td><div class="item-id">{{item.id}}</div></td>
-            <td><div class="item-name">{{item.name}}</div></td>
+          <tr *ngIf="orders.length === 0">
+            <td colspan="6" class="empty-cell">No purchase orders yet. Create one from Reorder Levels.</td>
+          </tr>
+          <tr *ngFor="let item of orders">
+            <td>{{ item.orderNo }}</td>
+            <td>{{ item.supplierName || '—' }}</td>
+            <td>{{ lineCount(item) }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ formatWhen(item.createdAt) }}</td>
             <td>
-              <span class="status-badge" [class]="'status-' + item.status">
-                {{item.status | titlecase}}
-              </span>
-            </td>
-            <td>{{item.date}}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-icon" (click)="viewDetails(item)">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn-icon" (click)="editItem(item)">
-                  <i class="bi bi-pencil"></i>
-                </button>
-              </div>
+              <button type="button" class="btn-sm btn-secondary" (click)="openOrder(item)">Open</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
 
-    <div class="pagination">
-      <button class="page-btn" [disabled]="currentPage === 1">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-      <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
-      <button class="page-btn" [disabled]="currentPage === totalPages">
-        <i class="bi bi-chevron-right"></i>
-      </button>
+  <div class="po-editor" *ngIf="order && !loading">
+    <div class="po-fields">
+      <label>
+        Supplier
+        <select [ngModel]="order.supplierId" (ngModelChange)="onSupplierChange($event)">
+          <option [ngValue]="null">Select a supplier</option>
+          <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">{{ supplierLabel(supplier) }}</option>
+        </select>
+      </label>
+      <label>
+        Supplier name on the sheet
+        <input type="text" [(ngModel)]="order.supplierName" placeholder="Name printed for the supplier" />
+      </label>
+      <label class="po-notes">
+        Notes
+        <textarea rows="2" [(ngModel)]="order.notes" placeholder="Delivery or payment notes for the supplier"></textarea>
+      </label>
+    </div>
+
+    <p class="po-total">{{ lines.length }} lines · {{ totalQty }} units to order</p>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="no-sort">Product</th>
+            <th class="no-sort">Store</th>
+            <th class="no-sort">In stock</th>
+            <th class="no-sort">Reorder to</th>
+            <th class="no-sort">Qty to order</th>
+            <th class="no-sort">Unit price</th>
+            <th class="no-sort">Notes</th>
+            <th class="no-sort"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="lines.length === 0">
+            <td colspan="8" class="empty-cell">All lines were removed. Save to keep an empty order, or go back and create a new one.</td>
+          </tr>
+          <tr *ngFor="let line of lines; let i = index">
+            <td>{{ line.stockItemName }}</td>
+            <td>{{ line.storeName || '—' }}</td>
+            <td>{{ line.inStock }}</td>
+            <td>{{ line.reorderTo }}</td>
+            <td>
+              <input class="qty-input" type="number" min="0" [(ngModel)]="line.quantityOrdered" />
+            </td>
+            <td>
+              <input class="qty-input" type="number" min="0" step="0.01" [(ngModel)]="line.unitPrice" />
+            </td>
+            <td>
+              <input class="note-input" type="text" [(ngModel)]="line.lineNotes" />
+            </td>
+            <td>
+              <button type="button" class="btn-sm btn-secondary" (click)="removeLine(i)">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

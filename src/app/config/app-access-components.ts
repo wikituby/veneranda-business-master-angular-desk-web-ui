@@ -1,4 +1,4 @@
-﻿export interface AppAccessComponent {
+export interface AppAccessComponent {
   key: string;
   pageKey: string;
   label: string;
@@ -10,13 +10,13 @@ export const APP_ACCESS_COMPONENTS: AppAccessComponent[] = [
   {
     key: 'sold-summary-footer',
     pageKey: 'otc-dispensary',
-    label: 'Items sold summary totals bar',
-    description: 'Lower footer with total sell and profit on the Items sold tab (total cost uses Cost columns restriction).',
+    label: 'Products sold summary totals bar',
+    description: 'Lower footer with total sell and profit on the Products sold tab (total cost uses Cost columns restriction).',
   },
   {
     key: 'sold-table-cost-sell',
     pageKey: 'otc-dispensary',
-    label: 'Items sold table total sell column',
+    label: 'Products sold table total sell column',
     description: 'Total sell column in the sold orders table.',
   },
   {
@@ -30,7 +30,7 @@ export const APP_ACCESS_COMPONENTS: AppAccessComponent[] = [
     key: 'cost-columns',
     pageKey: 'otc-dispensary',
     label: 'Cost columns (unit, TT, totals)',
-    description: 'Hides Cost, TT Cost, unit buy, and total cost fields across Counter Sale, Prescriptions, Items sold, and order detail popups.',
+    description: 'Hides Cost, TT Cost, unit buy, and total cost fields across Counter Sale, Prescriptions, Products sold, and order detail popups.',
   },
   {
     key: 'cost-columns',

@@ -117,11 +117,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
     this.responsibilityItems = [
       {
-        title: 'Clinical documentation',
-        details: 'Maintain complete, accurate, and timely documentation for all assigned patient interactions.'
+        title: 'Job description',
+        details: 'Maintain complete, accurate, and timely documentation for all assigned client interactions.'
       },
       {
-        title: 'Patient safety',
+        title: 'Client safety',
         details: 'Follow infection prevention procedures and escalate safety incidents immediately.'
       },
       {
@@ -137,11 +137,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.policyItems = [
       {
         title: 'Code of Conduct',
-        details: 'Follow professional standards and maintain patient confidentiality at all times.'
+        details: 'Follow professional standards and maintain client confidentiality at all times.'
       },
       {
         title: 'Data Privacy Policy',
-        details: 'Use patient information only for approved clinical and administrative workflows.'
+        details: 'Use client information only for approved clinical and administrative workflows.'
       },
       {
         title: 'Attendance Policy',

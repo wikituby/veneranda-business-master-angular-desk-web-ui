@@ -1,93 +1,123 @@
-<section class="login-mobile-container">
-    <div class="login-mobile-card">
-        <div class="login-header">
-            <img [src]="facilityLogoUrl" [alt]="facilityName + ' logo'" class="login-logo" />
-            <h1 class="login-title">{{ facilityName }}</h1>
+<section class="login-page">
+  <div class="login-split">
+    <aside class="login-visual-col">
+      <div class="login-visual-panel">
+        <img class="login-visual-image" [src]="activeFeatureSlide.image" [alt]="activeFeatureSlide.title" />
+      </div>
+    </aside>
+
+    <div class="login-form-col">
+      <div class="login-form-inner">
+        <div class="login-brand">
+          <img [src]="facilityLogoUrl" [alt]="facilityName" class="login-brand-mark" />
+          <span class="login-brand-name">{{ facilityName }}</span>
         </div>
 
-        <h5 class="login-subtitle">Sign into your {{ facilityName }} account</h5>
+        <header class="login-head">
+          <h1>
+            {{
+              authMode === 'login'
+                ? 'Welcome back'
+                : authMode === 'signup'
+                  ? 'Create account'
+                  : 'Reset password'
+            }}
+          </h1>
+          <p>
+            {{
+              authMode === 'login'
+                ? 'Please enter your details'
+                : authMode === 'signup'
+                  ? 'Register to get started'
+                  : 'A temporary password will be sent to your email'
+            }}
+          </p>
+        </header>
 
         <div class="login-server-row">
-            <span class="login-server-label">Server:</span>
-            <span class="login-server-value" [title]="connectedServerLabel">{{ connectedServerLabel }}</span>
-            <button type="button" class="login-change-server" (click)="changeServer()">Change server</button>
+          <span class="login-server-label">Server</span>
+          <span class="login-server-value" [title]="connectedServerLabel">{{ connectedServerLabel }}</span>
+          <button type="button" class="login-change-server" (click)="changeServer()">Change</button>
         </div>
 
-        <form *ngIf="loginForm" [formGroup]="loginForm" #usersForm="ngForm" (ngSubmit)="getUserFormData(usersForm.value)">
-            
-            <div class="form-group-mobile">
-                <div class="input-wrapper">
-                    <i class="bi bi-envelope-fill input-icon"></i>
-                    <input 
-                        formControlName="email" 
-                        class="form-control-mobile" 
-                        placeholder="Enter email" 
-                        type="email" 
-                        required 
-                        email 
-                    />
-                </div>
-                <div *ngIf="loginForm.controls['email'].dirty && loginForm.controls['email'].hasError('required')" class="error-message">
-                    *Email is required
-                </div>
-                <div *ngIf="loginForm.controls['email'].dirty && loginForm.controls['email'].hasError('email')" class="error-message">
-                    *Please enter a valid email
-                </div>
-            </div>
+        <form *ngIf="authMode === 'login' && loginForm" class="login-form" [formGroup]="loginForm" (ngSubmit)="getUserFormData(loginForm.value)">
+          <label class="login-label">Email address</label>
+          <input formControlName="email" class="login-input" type="email" placeholder="Enter your email" />
 
-            <div class="form-group-mobile">
-                <div class="input-wrapper">
-                    <i class="bi bi-person-fill-lock input-icon"></i>
-                    <input 
-                        formControlName="password" 
-                        class="form-control-mobile" 
-                        placeholder="Enter password"
-                        [type]="type" 
-                    />
-                    <i class="{{eyeIcon}} input-icon-right" (click)="hideShowPassword()"></i>
-                </div>
-                <div *ngIf="loginForm.controls['password'].dirty && loginForm.controls['password'].hasError('required')" class="error-message">
-                    *Password is required
-                </div>
-            </div>
-
-            <div *ngIf="showDivUpdatedLoaderDeletePatient" class="loader-container">
-                <div *ngIf="isLoadingNewPatient" class="simple-loader"></div>
-            </div>
-
-            <div *ngIf="loginErrorMessage" class="error-message-main">
-                {{ loginErrorMessage }}
-            </div>
-
-            <div *ngIf="notFound && !loginErrorMessage" class="error-message-main">
-                Email or password incorrect. Please check and try again.
-            </div>
-
-            <button 
-                [disabled]="loginForm.invalid || isLoadingNewPatient" 
-                class="btn-login-mobile" 
-                type="submit"
-            >
-                <span *ngIf="isLoadingNewPatient" class="spinner-border spinner-border-sm" style="margin-right: 8px;"></span>
-                {{ isLoadingNewPatient ? 'Logging in...' : 'Login' }}
+          <label class="login-label">Password</label>
+          <div class="login-input-wrap">
+            <input formControlName="password" class="login-input" [type]="type" placeholder="Enter your password" />
+            <button type="button" class="login-eye" (click)="hideShowPassword()" aria-label="Toggle password">
+              <i [class]="eyeIcon"></i>
             </button>
+          </div>
 
-            <div class="login-links">
-                <a [routerLink]="['/sendemail']" class="link-forgot">Forgot password?</a>
-            </div>
+          <div class="login-row">
+            <span></span>
+            <button type="button" class="login-forgot" (click)="setAuthMode('forgot')">Forgot password</button>
+          </div>
 
-            <div class="signup-link">
-                <span class="signup-text">Don't have an account?</span>
-                <a [routerLink]="['/signup']" class="link-signup">Register here</a>
-            </div>
+          <div *ngIf="loginErrorMessage" class="login-field-error">{{ loginErrorMessage }}</div>
+          <div *ngIf="notFound && !loginErrorMessage" class="login-field-error">
+            Email or password incorrect. Please check and try again.
+          </div>
 
-            <div class="footer-links">
-                <a class="footer-link">Terms of use</a>
-                <span class="footer-separator">•</span>
-                <a class="footer-link">Privacy policy</a>
-                <span class="footer-separator">•</span>
-                <a class="footer-link">{{ facilityName }}</a>
-            </div>
+          <button [disabled]="loginForm.invalid || showDivUpdatedLoaderDeleteClient" class="login-submit" type="submit">
+            {{ showDivUpdatedLoaderDeleteClient ? 'Signing in…' : 'Sign in' }}
+          </button>
         </form>
+
+        <form *ngIf="authMode === 'signup' && signUpForm" class="login-form" [formGroup]="signUpForm" (ngSubmit)="submitSignUp()">
+          <label class="login-label">Username</label>
+          <input formControlName="username" class="login-input" type="text" placeholder="Username" />
+
+          <label class="login-label">Email address</label>
+          <input formControlName="email" class="login-input" type="email" placeholder="Enter your email" />
+
+          <label class="login-label">Password</label>
+          <div class="login-input-wrap">
+            <input formControlName="password" class="login-input" [type]="type" placeholder="Create a password" />
+            <button type="button" class="login-eye" (click)="hideShowPassword()" aria-label="Toggle password">
+              <i [class]="eyeIcon"></i>
+            </button>
+          </div>
+
+          <label class="login-label">Contact</label>
+          <input formControlName="contact" class="login-input" type="tel" placeholder="Contact (256…)" maxlength="12" />
+
+          <div *ngIf="signupErrorMessage" class="login-field-error">{{ signupErrorMessage }}</div>
+          <div *ngIf="signupSuccessMessage" class="login-field-success">{{ signupSuccessMessage }}</div>
+
+          <button [disabled]="signUpForm.invalid || signupBusy" class="login-submit" type="submit">
+            {{ signupBusy ? 'Creating…' : 'Create account' }}
+          </button>
+        </form>
+
+        <form *ngIf="authMode === 'forgot' && forgotForm" class="login-form" [formGroup]="forgotForm" (ngSubmit)="submitForgotPassword()">
+          <label class="login-label">Email address</label>
+          <input formControlName="email" class="login-input" type="email" placeholder="Enter your email" />
+
+          <button [disabled]="forgotForm.invalid || forgotBusy" class="login-submit" type="submit">
+            {{ forgotBusy ? 'Sending…' : 'Send reset email' }}
+          </button>
+
+          <div *ngIf="forgotErrorMessage" class="login-field-error">{{ forgotErrorMessage }}</div>
+          <div *ngIf="forgotSuccessMessage" class="login-field-success">{{ forgotSuccessMessage }}</div>
+        </form>
+
+        <p class="login-switch" *ngIf="authMode === 'login'">
+          Don't have an account?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('signup')">Sign up</button>
+        </p>
+        <p class="login-switch" *ngIf="authMode === 'signup'">
+          Already have an account?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('login')">Sign in</button>
+        </p>
+        <p class="login-switch" *ngIf="authMode === 'forgot'">
+          Remember your password?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('login')">Sign in</button>
+        </p>
+      </div>
     </div>
+  </div>
 </section>

@@ -22,7 +22,7 @@ export class PharmacyDispensingComponent implements OnInit {
     {
       id: '001',
       date: '2024-01-20',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234', age: 45, gender: 'Male' },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234', age: 45, gender: 'Male' },
       doctor: 'Dr. Smith',
       itemsCount: 3,
       status: 'pending',
@@ -69,7 +69,7 @@ export class PharmacyDispensingComponent implements OnInit {
     {
       id: '002',
       date: '2024-01-20',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235', age: 32, gender: 'Female' },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235', age: 32, gender: 'Female' },
       doctor: 'Dr. Johnson',
       itemsCount: 2,
       status: 'pending',
@@ -94,7 +94,7 @@ export class PharmacyDispensingComponent implements OnInit {
   get filteredPrescriptions(): any[] {
     return this.prescriptions.filter(prescription => {
       const matchesSearch = !this.searchQuery || 
-        prescription.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        prescription.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         prescription.id.toLowerCase().includes(this.searchQuery.toLowerCase());
       
       const matchesPriority = !this.priorityFilter || prescription.priority === this.priorityFilter;

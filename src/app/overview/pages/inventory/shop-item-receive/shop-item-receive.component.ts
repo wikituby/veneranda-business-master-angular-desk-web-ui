@@ -135,7 +135,7 @@ export class ShopItemReceiveComponent implements OnInit {
         const list = this.normalizeItemList(res);
         this.setItems(list);
         if (!list.length) {
-          this.flash('No shop items found.', true);
+          this.flash('No shop products found.', true);
         }
       },
       error: (err: any) => {

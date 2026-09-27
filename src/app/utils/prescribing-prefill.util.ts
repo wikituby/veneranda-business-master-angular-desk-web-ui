@@ -213,7 +213,7 @@ export function formatDosageDisplay(value: unknown, unit: unknown): string {
   return `${v}${u}`;
 }
 
-/** Same display as patient visit pharmacy table: e.g. `2 X 1 (Day(s))`. */
+/** Same display as client order pharmacy table: e.g. `2 X 1 (Day(s))`. */
 export function formatFrequencyDisplay(
   totalUnits: unknown,
   frequencyValue: unknown,

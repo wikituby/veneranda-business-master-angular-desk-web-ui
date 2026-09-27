@@ -239,7 +239,8 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     return (
       segment === 'messages' ||
       segment === 'otc-dispensary' ||
-      segment === 'consultation-v2'
+      segment === 'consultation-v2' ||
+      segment === 'clienttransactions'
     );
   }
 
@@ -247,7 +248,7 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
     return false;
   }
 
-  /** Pharmacy, Consultation v2, and messages always use a collapsed sidebar for more workspace. */
+  /** Pharmacy, Client Transactions, and messages always use a collapsed sidebar for more workspace. */
   private applyDepartmentSidebarCollapse(segment: string): void {
     if (this.shouldCollapseSidebarForSegment(segment)) {
       this.collapseSidebarToIconRail();
@@ -358,7 +359,6 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
       'dashboard',
       'finance-dashboard',
       'service-charges',
-      'patient-billing',
       'cashier',
       'insurance-billing',
       'refunds',
@@ -436,37 +436,33 @@ export class OverviewComponent implements OnInit, OnDestroy, AfterViewInit {
       this.openMenus.add('services');
     }
 
-    if (this.activeSubmenu === 'patient-groups' || this.activeSubmenu === 'all-patients' || this.activeSubmenu === 'queue-management') {
-      this.openMenus.add('patient-management');
-      this.activeGroup = 'patient-management';
+    if (this.activeSubmenu === 'client-groups' || this.activeSubmenu === 'all-clients' || this.activeSubmenu === 'queue-management') {
+      this.openMenus.add('client-management');
+      this.activeGroup = 'client-management';
     }
 
     if (this.activeSubmenu === 'otc-dispensary') {
-      this.openMenus.add('consultations-center');
-      this.openMenus.add('pharmacy');
-      this.activeGroup = 'consultations-center';
+      this.openMenus.add('sales');
+      this.activeGroup = 'sales';
     }
 
     if (
       this.activeSubmenu === 'consultation-v2' ||
-      this.activeSubmenu === 'consultations-center' ||
-      this.activeSubmenu === 'scan' ||
-      this.activeSubmenu === 'scan-v2' ||
-      this.activeSubmenu === 'lab' ||
-      this.activeSubmenu === 'lab-v2' ||
-      this.activeSubmenu === 'dental' ||
-      this.activeSubmenu === 'dental-v2' ||
-      this.activeSubmenu === 'lab-mobile' ||
-      this.activeSubmenu === 'maternal-child-health-requests' ||
-      this.activeSubmenu === 'mch-v2'
+      this.activeSubmenu === 'clienttransactions'
     ) {
       this.openMenus.add('consultations-center');
       this.activeGroup = 'consultations-center';
     }
 
-    if (this.activeSubmenu === 'pharmacy-dispensing') {
-      this.openMenus.add('pharmacy');
-      this.activeGroup = 'pharmacy';
+    if (
+      this.activeSubmenu === 'pharmacy-dispensing' ||
+      this.activeSubmenu === 'pharmacy-pricing' ||
+      this.activeSubmenu === 'pharmacy-purchase-orders' ||
+      this.activeSubmenu === 'pharmacy-expiry-alerts' ||
+      this.activeSubmenu === 'pharmacy-suppliers'
+    ) {
+      this.openMenus.add('sales');
+      this.activeGroup = 'sales';
     }
 
     if (this.shouldCollapseSidebarForSegment(this.activeSubmenu || '')) {

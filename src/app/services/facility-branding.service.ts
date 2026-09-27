@@ -13,9 +13,20 @@ const LOCAL_LOGO_DATA_KEY = 'facilityLogoLocalDataUrl';
 const LOCAL_LOGO_DATA_MAX_CHARS = 1_400_000;
 /** Backend placeholder when no facility name is configured yet. */
 const BACKEND_PLACEHOLDER_NAME = 'Health Facility';
+/** Legacy hospital default — treat as unset so business branding shows. */
+const LEGACY_DEFAULT_NAMES = new Set([
+  'Veneranda Hospital',
+  'Veneranda Health Facility',
+  'Health Facility',
+  'Veneranda Business Manager',
+  'Veneranda Business Management',
+  'Kavuma Medical Clinic',
+]);
 
-export const DEFAULT_FACILITY_NAME = 'Veneranda Hospital';
-export const DEFAULT_FACILITY_LOGO = 'assets/images/logo.jpg';
+export const DEFAULT_FACILITY_NAME = 'Veneranda Business Master';
+export const DEFAULT_FACILITY_LOGO = 'assets/images/veneranda-business-logo.png';
+const BRAND_ASSET_VERSION = 'vbm-logo-2026-09-21c';
+const BRAND_ASSET_VERSION_KEY = 'facilityBrandAssetVersion';
 
 @Injectable({ providedIn: 'root' })
 export class FacilityBrandingService {
@@ -82,6 +93,7 @@ export class FacilityBrandingService {
    * Safe to call before authentication.
    */
   hydrateFromLocalAssets(): { facilityName: string; facilityLogoUrl: string } {
+    this.migrateLegacyBrandAssetsIfNeeded();
     const fromStorage = this.readLocalBranding();
     if (fromStorage) {
       this.cached = { ...this.cached, ...fromStorage };
@@ -91,6 +103,54 @@ export class FacilityBrandingService {
     this.loginNameSubject.next(name);
     this.loginLogoSubject.next(logo);
     return { facilityName: name, facilityLogoUrl: logo };
+  }
+
+  /** Drop stale hospital / old brand names so Business Master assets show on login. */
+  private migrateLegacyBrandAssetsIfNeeded(): void {
+    try {
+      const version = localStorage.getItem(BRAND_ASSET_VERSION_KEY);
+      if (version === BRAND_ASSET_VERSION) {
+        return;
+      }
+      // Always refresh cached logo bytes when the default brand asset changes.
+      localStorage.removeItem(LOCAL_LOGO_DATA_KEY);
+      this.invalidateLogoCache();
+
+      const storedName =
+        localStorage.getItem(LOCAL_NAME_KEY)?.trim() ||
+        sessionStorage.getItem(LOCAL_NAME_KEY)?.trim() ||
+        '';
+      const storedLogo =
+        localStorage.getItem(LOCAL_LOGO_URL_KEY)?.trim() ||
+        sessionStorage.getItem(LOCAL_LOGO_URL_KEY)?.trim() ||
+        '';
+      const legacyLogo =
+        !storedLogo ||
+        storedLogo.includes('logo.jpg') ||
+        storedLogo.includes('med3') ||
+        storedLogo.includes('doctor.png') ||
+        storedLogo.includes('kmc') ||
+        storedLogo.endsWith('/logo.jpg') ||
+        storedLogo.includes('veneranda-business-logo');
+      const legacyName =
+        !storedName ||
+        LEGACY_DEFAULT_NAMES.has(storedName) ||
+        /business manag(er|ement)/i.test(storedName) ||
+        /health facility/i.test(storedName) ||
+        /veneranda hospital/i.test(storedName) ||
+        /kavuma medical/i.test(storedName);
+      if (legacyName || legacyLogo) {
+        this.clearEstablishedBrandLocalKeys();
+        this.cached = {
+          ...(this.cached || {}),
+          facilityName: '',
+          facilityLogoUrl: '',
+        };
+      }
+      localStorage.setItem(BRAND_ASSET_VERSION_KEY, BRAND_ASSET_VERSION);
+    } catch {
+      /* ignore */
+    }
   }
 
   /**
@@ -105,7 +165,10 @@ export class FacilityBrandingService {
 
     const rawName = (data.facilityName || '').trim();
     const logo = (data.facilityLogoUrl || '').trim();
-    const nameIsPlaceholder = !rawName || rawName === BACKEND_PLACEHOLDER_NAME;
+    const nameIsPlaceholder =
+      !rawName ||
+      rawName === BACKEND_PLACEHOLDER_NAME ||
+      LEGACY_DEFAULT_NAMES.has(rawName);
     const establishedName = nameIsPlaceholder ? '' : rawName;
 
     if (!establishedName && !logo) {
@@ -130,7 +193,7 @@ export class FacilityBrandingService {
     };
     this.clearEstablishedBrandLocalKeys();
     this.loginNameSubject.next(DEFAULT_FACILITY_NAME);
-    this.loginLogoSubject.next(DEFAULT_FACILITY_LOGO);
+    this.loginLogoSubject.next(this.getLoginLogoUrl());
   }
 
   private clearEstablishedBrandLocalKeys(): void {
@@ -199,7 +262,7 @@ export class FacilityBrandingService {
     } catch {
       /* ignore */
     }
-    return this.defaultLogoPath;
+    return this.defaultLogoPath + '?' + BRAND_ASSET_VERSION;
   }
 
   /**
@@ -224,13 +287,13 @@ export class FacilityBrandingService {
 
   /** Loads facility logo as a data URL for jsPDF (cached). */
   loadLogoDataUrl(): Promise<string | null> {
+    if (this.logoDataUrlCache) {
+      return Promise.resolve(this.logoDataUrlCache);
+    }
     if (this.logoLoadPromise) {
       return this.logoLoadPromise;
     }
     this.logoLoadPromise = (async () => {
-      if (this.logoDataUrlCache !== undefined) {
-        return this.logoDataUrlCache;
-      }
       try {
         const localData = localStorage.getItem(LOCAL_LOGO_DATA_KEY);
         if (localData?.startsWith('data:image')) {
@@ -242,9 +305,11 @@ export class FacilityBrandingService {
       }
       try {
         const path = this.getLogoUrlForDisplay();
-        const response = await fetch(path);
+        const response = await fetch(path, { mode: 'cors' });
         if (!response.ok) {
-          this.logoDataUrlCache = null;
+          // Allow a later retry (e.g. after branding finishes loading).
+          this.logoLoadPromise = null;
+          this.logoDataUrlCache = undefined;
           return null;
         }
         const blob = await response.blob();
@@ -255,9 +320,17 @@ export class FacilityBrandingService {
           reader.readAsDataURL(blob);
         });
         this.logoDataUrlCache = dataUrl;
+        try {
+          if (dataUrl.length <= LOCAL_LOGO_DATA_MAX_CHARS) {
+            localStorage.setItem(LOCAL_LOGO_DATA_KEY, dataUrl);
+          }
+        } catch {
+          /* ignore quota */
+        }
         return dataUrl;
       } catch {
-        this.logoDataUrlCache = null;
+        this.logoLoadPromise = null;
+        this.logoDataUrlCache = undefined;
         return null;
       }
     })();
@@ -266,7 +339,18 @@ export class FacilityBrandingService {
 
   /** Draw loaded logo on a jsPDF page; call after {@link loadLogoDataUrl}. */
   addLogoToJsPdf(pdf: any, x: number, y: number, w: number, h: number): boolean {
-    const dataUrl = this.logoDataUrlCache;
+    let dataUrl = this.logoDataUrlCache;
+    if (!dataUrl) {
+      try {
+        const localData = localStorage.getItem(LOCAL_LOGO_DATA_KEY);
+        if (localData?.startsWith('data:image')) {
+          dataUrl = localData;
+          this.logoDataUrlCache = localData;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
     if (!dataUrl) {
       return false;
     }
@@ -280,7 +364,13 @@ export class FacilityBrandingService {
       pdf.addImage(dataUrl, format, x, y, w, h, undefined, 'FAST');
       return true;
     } catch {
-      return false;
+      // Retry once as JPEG if format sniffing was wrong.
+      try {
+        pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST');
+        return true;
+      } catch {
+        return false;
+      }
     }
   }
 
@@ -291,14 +381,22 @@ export class FacilityBrandingService {
 
   getFacilityName(): string {
     const cachedName = this.getCached()?.facilityName?.trim();
-    if (cachedName && cachedName !== BACKEND_PLACEHOLDER_NAME) {
+    if (
+      cachedName &&
+      cachedName !== BACKEND_PLACEHOLDER_NAME &&
+      !LEGACY_DEFAULT_NAMES.has(cachedName)
+    ) {
       return cachedName;
     }
     try {
       const stored =
         sessionStorage.getItem(LOCAL_NAME_KEY)?.trim() ||
         localStorage.getItem(LOCAL_NAME_KEY)?.trim();
-      if (stored && stored !== BACKEND_PLACEHOLDER_NAME) {
+      if (
+        stored &&
+        stored !== BACKEND_PLACEHOLDER_NAME &&
+        !LEGACY_DEFAULT_NAMES.has(stored)
+      ) {
         return stored;
       }
     } catch {
@@ -349,7 +447,7 @@ export class FacilityBrandingService {
     return this.getCached()?.otcIncludePrescribing === true;
   }
 
-  /** Default true: pharmacy Choose Treatment uses stock batches; false = shop items. */
+  /** Default true: pharmacy Choose Treatment uses stock batches; false = shop products. */
   getPharmacyUseStockBatch(): boolean {
     return this.getCached()?.pharmacyUseStockBatch !== false;
   }

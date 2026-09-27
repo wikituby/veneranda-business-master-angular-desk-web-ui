@@ -44,25 +44,25 @@ import { FormarrayexampleComponent } from './formarrayexample/formarrayexample.c
 import { Login2Component } from './login2/login2.component';
 import { Login3Component } from './login3/login3.component';
 import { Login4Component } from './auth/login4/login4.component';
-import { PatientComponent } from './patient/patient.component';
-import { PatientVisitComponent } from './patient-visit/patient-visit.component';
+import { ClientComponent } from './client/client.component';
+import { ClientVisitComponent } from './client-visit/client-visit.component';
 import { CapitalizePipe } from './capitalize.pipe';
 import { ServicesOfferedComponent } from './services-offered/services-offered.component';
 import { StockReceiveComponent } from './stock-receive/stock-receive.component';
 import { ScanComponent } from './scan/scan.component';
 import { LabComponent } from './lab/lab.component';
-import { PatientInfoComponent } from './patient-visit/components/patient-info/patient-info.component';
-import { VitalSignsComponent } from './patient-visit/components/vital-signs/vital-signs.component';
-import { PatientVisitContainerComponent } from './patient-visit/components/patient-visit-container/patient-visit-container.component';
+import { ClientInfoComponent } from './client-visit/components/client-info/client-info.component';
+import { VitalSignsComponent } from './client-visit/components/vital-signs/vital-signs.component';
+import { ClientVisitContainerComponent } from './client-visit/components/client-visit-container/client-visit-container.component';
 import { OverviewComponent } from './overview/overview.component';
 import { MainDashboardComponent } from './overview/dashboards/main-dashboard/main-dashboard.component';
 import { LabDashboardComponent } from './overview/dashboards/lab-dashboard/lab-dashboard.component';
-import { PatientDashboardComponent } from './overview/dashboards/patient-dashboard/patient-dashboard.component';
+import { ClientDashboardComponent } from './overview/dashboards/client-dashboard/client-dashboard.component';
 import { FinanceDashboardComponent } from './overview/dashboards/finance-dashboard/finance-dashboard.component';
 import { InventoryDashboardComponent } from './overview/dashboards/inventory-dashboard/inventory-dashboard.component';
 import { ReorderLevelsComponent as OverviewReorderLevelsComponent } from './overview/pages/inventory/reorder-levels/reorder-levels.component';
 import { SuppliersComponent } from './overview/pages/inventory/suppliers/suppliers.component';
-import { AllPatientsComponent } from './overview/pages/patient-management/all-patients/all-patients.component';
+import { AllClientsComponent } from './overview/pages/client-management/all-clients/all-clients.component';
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { ServiceDetailComponent } from './service-detail/service-detail.component';
 import { SiteNavComponent } from './site-nav/site-nav.component';
@@ -74,15 +74,7 @@ import { AssetManagementComponent } from './overview/pages/inventory/asset-manag
 import { StoreManagementComponent } from './overview/pages/inventory/store-management/store-management.component';
 import { StoreReportsComponent } from './overview/pages/inventory/store-reports/store-reports.component';
 import { StoreAnalyticsComponent } from './overview/pages/inventory/store-analytics/store-analytics.component';
-import { ConsultationsCenterComponent } from './overview/pages/consultations-center/consultations-center.component';
 import { ConsultationV2Component } from './overview/pages/consultation-v2/consultation-v2.component';
-import { ScanV2Component } from './overview/pages/scan-v2/scan-v2.component';
-import { LabV2Component } from './overview/pages/lab-v2/lab-v2.component';
-import { DentalV2Component } from './overview/pages/dental-v2/dental-v2.component';
-import { MchV2Component } from './overview/pages/mch-v2/mch-v2.component';
-import { MaternalChildHealthRequestsComponent } from './overview/pages/maternal-child-health/test-requests/maternal-child-health-requests.component';
-import { ConsultationPatientInfoComponent } from './overview/pages/consultations-center/components/consultation-patient-info/consultation-patient-info.component';
-import { ConsultationDetailsComponent } from './overview/pages/consultations-center/components/consultation-details/consultation-details.component';
 import { StockManagementComponent } from './overview/pages/inventory/stock-management/stock-management.component';
 import { ConsumableItemsComponent } from './overview/pages/inventory/consumable-items/consumable-items.component';
 import { StockTransferComponent } from './overview/pages/inventory/stock-transfer/stock-transfer.component';
@@ -100,7 +92,7 @@ import { ManufacturersComponent } from './overview/pages/inventory/manufacturers
 import { ServicesManagementComponent } from './overview/pages/services-management/services-management.component';
 import { ServiceCategoriesComponent } from './overview/pages/services-management/service-categories/service-categories.component';
 import { ServiceTypesComponent } from './overview/pages/services-management/service-types/service-types.component';
-import { PatientGroupsComponent } from './overview/pages/patient-management/patient-groups/patient-groups.component';
+import { ClientGroupsComponent } from './overview/pages/client-management/client-groups/client-groups.component';
 // OPD Components
 import { ConsultationComponent } from './overview/pages/opd/consultation/consultation.component';
 import { PrescriptionsComponent } from './overview/pages/opd/prescriptions/prescriptions.component';
@@ -116,13 +108,13 @@ import { DoctorRoundsComponent } from './overview/pages/ipd/doctor-rounds/doctor
 import { MedicationChartsComponent } from './overview/pages/ipd/medication-charts/medication-charts.component';
 import { ProceduresComponent } from './overview/pages/ipd/procedures/procedures.component';
 import { TransfersComponent } from './overview/pages/ipd/transfers/transfers.component';
-// Patient Management Additional
-import { PatientRegistrationComponent } from './overview/pages/patient-management/patient-registration/patient-registration.component';
-import { PatientProfileComponent } from './overview/pages/patient-management/patient-profile/patient-profile.component';
-import { VisitHistoryComponent } from './overview/pages/patient-management/visit-history/visit-history.component';
-import { AppointmentSchedulingComponent } from './overview/pages/patient-management/appointment-scheduling/appointment-scheduling.component';
-import { QueueManagementComponent } from './overview/pages/patient-management/queue-management/queue-management.component';
-import { ReferralManagementComponent } from './overview/pages/patient-management/referral-management/referral-management.component';
+// Client Management Additional
+import { ClientRegistrationComponent } from './overview/pages/client-management/client-registration/client-registration.component';
+import { ClientProfileComponent } from './overview/pages/client-management/client-profile/client-profile.component';
+import { VisitHistoryComponent } from './overview/pages/client-management/visit-history/visit-history.component';
+import { AppointmentSchedulingComponent } from './overview/pages/client-management/appointment-scheduling/appointment-scheduling.component';
+import { QueueManagementComponent } from './overview/pages/client-management/queue-management/queue-management.component';
+import { ReferralManagementComponent } from './overview/pages/client-management/referral-management/referral-management.component';
 // Laboratory Components
 import { LabTestRequestsComponent } from './overview/pages/laboratory/test-requests/lab-test-requests.component';
 import { SampleCollectionComponent } from './overview/pages/laboratory/sample-collection/sample-collection.component';
@@ -139,7 +131,6 @@ import { RadiologistWorklistComponent } from './overview/pages/radiology/radiolo
 import { PharmacyDispensingComponent } from './overview/pages/pharmacy/dispensing/pharmacy-dispensing.component';
 import { PharmacyPrescriptionManagementComponent } from './overview/pages/pharmacy/prescription-management/pharmacy-prescription-management.component';
 import { PharmacyPricingComponent } from './overview/pages/pharmacy/pricing/pharmacy-pricing.component';
-import { PharmacyStockTrackingComponent } from './overview/pages/pharmacy/stock-tracking/pharmacy-stock-tracking.component';
 import { PharmacyPurchaseOrdersComponent } from './overview/pages/pharmacy/purchase-orders/pharmacy-purchase-orders.component';
 import { PharmacyExpiryAlertsComponent } from './overview/pages/pharmacy/expiry-alerts/pharmacy-expiry-alerts.component';
 import { PharmacySuppliersComponent } from './overview/pages/pharmacy/suppliers/pharmacy-suppliers.component';
@@ -153,7 +144,6 @@ import { PayrollComponent } from './overview/pages/hr/payroll/payroll.component'
 import { PerformanceTrackingComponent } from './overview/pages/hr/performance/performance-tracking.component';
 // Finance Components
 import { ServiceChargesComponent } from './overview/pages/finance/service-charges/service-charges.component';
-import { PatientBillingComponent } from './overview/pages/finance/patient-billing/patient-billing.component';
 import { CashierComponent } from './overview/pages/finance/cashier/cashier.component';
 import { InsuranceBillingComponent } from './overview/pages/finance/insurance-billing/insurance-billing.component';
 import { RefundsComponent } from './overview/pages/finance/refunds/refunds.component';
@@ -208,7 +198,7 @@ import { OnlineConsultationsComponent } from './overview/pages/telemedicine/onli
 import { EPrescriptionsComponent } from './overview/pages/telemedicine/e-prescriptions/e-prescriptions.component';
 import { VideoSchedulingComponent } from './overview/pages/telemedicine/video-scheduling/video-scheduling.component';
 import { RemoteMonitoringComponent } from './overview/pages/telemedicine/remote-monitoring/remote-monitoring.component';
-import { PatientPortalComponent } from './overview/pages/telemedicine/patient-portal/patient-portal.component';
+import { ClientPortalComponent } from './overview/pages/telemedicine/client-portal/client-portal.component';
 // Clinical Decision Support Components
 import { DrugInteractionsComponent } from './overview/pages/clinical-decision-support/drug-interactions/drug-interactions.component';
 import { DiseaseProtocolsComponent } from './overview/pages/clinical-decision-support/protocols/disease-protocols.component';
@@ -230,17 +220,14 @@ import { TheatreScheduleComponent } from './overview/pages/theatre/schedule/thea
 import { TheatreRecordsComponent } from './overview/pages/theatre/records/theatre-records.component';
 import { TheatreManagementComponent } from './overview/pages/theatre/management/theatre-management.component';
 import { DialysisSessionsComponent } from './overview/pages/dialysis/sessions/dialysis-sessions.component';
-import { DialysisPatientDataComponent } from './overview/pages/dialysis/patient-data/dialysis-patient-data.component';
+import { DialysisClientDataComponent } from './overview/pages/dialysis/client-data/dialysis-client-data.component';
 import { EquipmentMaintenanceComponent } from './overview/pages/equipment-maintenance/schedules/equipment-maintenance.component';
 import { BusinessIntelligenceComponent } from './overview/pages/business-intelligence/dashboards/business-intelligence.component';
 import { IntegrationHubComponent } from './overview/pages/integration-hub/external-lab/integration-hub.component';
 // New components from old project
-import { DentalComponent } from './dental/dental.component';
 import { ExpiryDrugsComponent } from './expiry-drugs/expiry-drugs.component';
-import { LabMobilePageComponent } from './lab-mobile-page/lab-mobile-page.component';
 import { MessagesComponent } from './messages/messages.component';
 import { HelpSupportComponent } from './help/help-support.component';
-import { PatientVisitsListComponent } from './patient-visits-list/patient-visits-list.component';
 import { SettingsPrivacyComponent } from './settings-privacy/settings-privacy.component';
 import { StoreManagementComponent as StandaloneStoreManagementComponent } from './store-management/store-management.component';
 import { LoginMobileComponent } from './auth/login-mobile/login-mobile.component';
@@ -257,7 +244,6 @@ import { NetworkConnectionInterceptor } from './interceptors/network-connection.
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { ServerConnectionComponent } from './server-connection/server-connection.component';
 import { ApiConfigService } from './services/api-config.service';
-import { DoctorAssistantComponent } from './doctor-assistant/doctor-assistant.component';
 
 export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<void> {
   return () => apiConfig.initializeOnStartup();
@@ -287,25 +273,25 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     Login2Component,
     Login3Component,
     Login4Component,
-    PatientComponent,
+    ClientComponent,
     CapitalizePipe,
-    PatientVisitComponent,
+    ClientVisitComponent,
     ServicesOfferedComponent,
     StockReceiveComponent,
     ScanComponent,
     LabComponent,
-    PatientInfoComponent,
+    ClientInfoComponent,
     VitalSignsComponent,
-    PatientVisitContainerComponent,
+    ClientVisitContainerComponent,
     OverviewComponent,
     MainDashboardComponent,
     LabDashboardComponent,
-    PatientDashboardComponent,
+    ClientDashboardComponent,
     FinanceDashboardComponent,
     InventoryDashboardComponent,
     OverviewReorderLevelsComponent,
     SuppliersComponent,
-    AllPatientsComponent,
+    AllClientsComponent,
     LandingPageComponent,
     ServiceDetailComponent,
     SiteNavComponent,
@@ -317,15 +303,7 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     StoreManagementComponent,
     StoreReportsComponent,
     StoreAnalyticsComponent,
-    ConsultationsCenterComponent,
     ConsultationV2Component,
-    ScanV2Component,
-    LabV2Component,
-    DentalV2Component,
-    MchV2Component,
-    MaternalChildHealthRequestsComponent,
-    ConsultationPatientInfoComponent,
-    ConsultationDetailsComponent,
     StockManagementComponent,
     ConsumableItemsComponent,
     StockTransferComponent,
@@ -343,7 +321,7 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     ServicesManagementComponent,
     ServiceCategoriesComponent,
     ServiceTypesComponent,
-    PatientGroupsComponent,
+    ClientGroupsComponent,
     // OPD Components
     ConsultationComponent,
     PrescriptionsComponent,
@@ -359,9 +337,9 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     MedicationChartsComponent,
     ProceduresComponent,
     TransfersComponent,
-    // Patient Management Additional
-    PatientRegistrationComponent,
-    PatientProfileComponent,
+    // Client Management Additional
+    ClientRegistrationComponent,
+    ClientProfileComponent,
     VisitHistoryComponent,
     AppointmentSchedulingComponent,
     QueueManagementComponent,
@@ -382,7 +360,6 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     PharmacyDispensingComponent,
     PharmacyPrescriptionManagementComponent,
     PharmacyPricingComponent,
-    PharmacyStockTrackingComponent,
     PharmacyPurchaseOrdersComponent,
     PharmacyExpiryAlertsComponent,
     PharmacySuppliersComponent,
@@ -396,7 +373,6 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     PerformanceTrackingComponent,
     // Finance Components
     ServiceChargesComponent,
-    PatientBillingComponent,
     CashierComponent,
     InsuranceBillingComponent,
     RefundsComponent,
@@ -451,7 +427,7 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     EPrescriptionsComponent,
     VideoSchedulingComponent,
     RemoteMonitoringComponent,
-    PatientPortalComponent,
+    ClientPortalComponent,
     // Clinical Decision Support Components
     DrugInteractionsComponent,
     DiseaseProtocolsComponent,
@@ -473,17 +449,14 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     TheatreRecordsComponent,
     TheatreManagementComponent,
     DialysisSessionsComponent,
-    DialysisPatientDataComponent,
+    DialysisClientDataComponent,
     EquipmentMaintenanceComponent,
     BusinessIntelligenceComponent,
     IntegrationHubComponent,
     // New components from old project
-    DentalComponent,
     ExpiryDrugsComponent,
-    LabMobilePageComponent,
     MessagesComponent,
     HelpSupportComponent,
-    PatientVisitsListComponent,
     SettingsPrivacyComponent,
     StandaloneStoreManagementComponent,
     LoginMobileComponent,
@@ -496,10 +469,7 @@ export function initializeApiConfig(apiConfig: ApiConfigService): () => Promise<
     TreatmentChartModalComponent,
     PdDspAdmCellComponent,
     UserProfileComponent,
-    ServerConnectionComponent,
-    DoctorAssistantComponent
-
-    
+    ServerConnectionComponent
   ],
 
   imports: [

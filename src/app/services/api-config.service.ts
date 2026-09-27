@@ -256,6 +256,21 @@ export class ApiConfigService {
 
   /** Called once at app startup (APP_INITIALIZER). */
   async initializeOnStartup(): Promise<void> {
+    // ng serve: never keep a stale LAN/phone URL — use the local proxy → Quarkus on this PC.
+    if (isAngularDevServer()) {
+      const saved = this.getSavedActiveBase();
+      if (saved) {
+        try {
+          const host = new URL(this.normalizeBaseUrl(saved)).hostname.toLowerCase();
+          if (host !== 'localhost' && host !== '127.0.0.1') {
+            localStorage.removeItem(STORAGE_KEY_ACTIVE_BASE);
+          }
+        } catch {
+          localStorage.removeItem(STORAGE_KEY_ACTIVE_BASE);
+        }
+      }
+    }
+
     if (this.requiresPreLoginServerSelection()) {
       this.setState('needs_input');
       return;
@@ -397,12 +412,10 @@ export class ApiConfigService {
       }
     };
 
-    // Direct LAN to mother phone — most reliable when PC and phone share Wi‑Fi.
-    add(API_DEFAULT_LAN_BASE);
-
-    // Optional dev proxy (same origin); falls back if LAN IP changes and proxy.conf.json is updated.
+    // During ng serve, prefer same-origin proxy → local Quarkus (schema we just migrated).
     if (isAngularDevServer()) {
       add(getDevProxyBase());
+      add(API_LOCALHOST_BASE);
     }
 
     const active = localStorage.getItem(STORAGE_KEY_ACTIVE_BASE);
@@ -410,7 +423,12 @@ export class ApiConfigService {
     for (const s of this.readSavedList()) {
       add(s);
     }
-    add(API_LOCALHOST_BASE);
+
+    // LAN PC / mother phone when not on the Angular dev server.
+    add(API_DEFAULT_LAN_BASE);
+    if (!isAngularDevServer()) {
+      add(API_LOCALHOST_BASE);
+    }
     add(API_CLOUD_BASE);
     return list;
   }

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../../services/api.service';
 import { ThemeService } from '../../../../services/theme.service';
@@ -195,7 +195,7 @@ export class CashierComponent implements OnInit {
 
   loadDebtClients(): void {
     this.loadingDebtClients = true;
-    this.api.getPatientsWithDebt().subscribe({
+    this.api.getClientsWithDebt().subscribe({
       next: (rows: any) => {
         const list = Array.isArray(rows) ? rows : [];
         this.debtClients = list
@@ -218,7 +218,7 @@ export class CashierComponent implements OnInit {
     }
     return this.debtClients.filter((p) => {
       const name = this.clientName(p).toLowerCase();
-      const phone = String(p?.patientContact ?? p?.phone ?? '').toLowerCase();
+      const phone = String(p?.clientContact ?? p?.phone ?? '').toLowerCase();
       return name.includes(q) || phone.includes(q);
     });
   }
@@ -228,10 +228,10 @@ export class CashierComponent implements OnInit {
   }
 
   clientName(p: any): string {
-    const first = String(p?.patientFirstName ?? '').trim();
-    const second = String(p?.patientSecondName ?? '').trim();
+    const first = String(p?.clientFirstName ?? '').trim();
+    const second = String(p?.clientSecondName ?? '').trim();
     const full = `${first} ${second}`.trim();
-    return full || String(p?.patientName ?? `Client #${p?.id ?? ''}`);
+    return full || String(p?.clientName ?? `Client #${p?.id ?? ''}`);
   }
 
   openDebtClient(client: any): void {
@@ -508,13 +508,13 @@ export class CashierComponent implements OnInit {
     };
 
     if (this.debtPayMode === 'client') {
-      const patientId = this.debtPayClient?.id ?? this.selectedDebtClient?.id;
-      if (!patientId) {
+      const clientId = this.debtPayClient?.id ?? this.selectedDebtClient?.id;
+      if (!clientId) {
         this.debtPaySaving = false;
         this.debtPayMessage = 'Select a client first.';
         return;
       }
-      this.api.payAllPatientDebt(patientId, payload).subscribe({
+      this.api.payAllClientDebt(clientId, payload).subscribe({
         next: (res: any) => {
           this.debtPaySaving = false;
           this.showDebtPayModal = false;
@@ -618,7 +618,7 @@ export class CashierComponent implements OnInit {
     fromDate.setDate(fromDate.getDate() - 30);
     const from = fromDate.toISOString().slice(0, 10);
 
-    this.api.filterVisits({ patientName: q, datefrom: from, dateto: to }).subscribe({
+    this.api.filterVisits({ clientName: q, datefrom: from, dateto: to }).subscribe({
       next: (res: any) => {
         this.visitResults = Array.isArray(res) ? res : [];
         this.isSearchingVisits = false;
@@ -664,7 +664,7 @@ export class CashierComponent implements OnInit {
 
   processPayment(): void {
     if (!this.selectedVisit?.id) {
-      this.showError('Select a patient visit first.');
+      this.showError('Select a client order first.');
       return;
     }
     if (!this.paymentForm.amountToPay || this.paymentForm.amountToPay <= 0) {
@@ -715,19 +715,19 @@ export class CashierComponent implements OnInit {
     if (!visit) {
       return;
     }
-    const patient = {
-      id: visit.patientId,
-      patientFirstName: visit.patientName || '',
-      patientName: visit.patientName || ''
+    const client = {
+      id: visit.clientId,
+      clientFirstName: visit.clientName || '',
+      clientName: visit.clientName || ''
     };
-    sessionStorage.setItem('item', JSON.stringify(patient));
-    sessionStorage.setItem('initialPatientVisit', JSON.stringify(visit));
-    this.router.navigate(['/overview/consultations-center']);
+    sessionStorage.setItem('item', JSON.stringify(client));
+    sessionStorage.setItem('initialClientVisit', JSON.stringify(visit));
+    this.router.navigate(['/overview/otc-dispensary']);
   }
 
   openPaymentVisit(payment: any): void {
     if (payment?.visitId) {
-      this.api.getPatientVisitByVisitId(payment.visitId).subscribe({
+      this.api.getClientVisitByVisitId(payment.visitId).subscribe({
         next: (visit: any) => this.openVisit(visit),
         error: () => this.showError('Could not open visit for this receipt')
       });

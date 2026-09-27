@@ -45,8 +45,8 @@ export interface MessagePushEvent {
     chartId?: number;
     treatmentRequestedId?: number;
     visitId?: number;
-    patientId?: number;
-    patientName?: string;
+    clientId?: number;
+    clientName?: string;
     treatmentName?: string;
     nextDoseDate?: string;
     nextDoseTime?: string;
@@ -61,7 +61,7 @@ export interface MessagePushEvent {
     category?: string;
     procedureCategoryName?: string;
     status?: string;
-    patientName?: string;
+    clientName?: string;
   };
 }
 

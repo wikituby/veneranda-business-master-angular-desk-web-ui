@@ -69,7 +69,7 @@ export class ItemManagementComponent implements OnInit, AfterViewInit, OnDestroy
 
   isCollapsedNewItem = true;
 
-  isCollapsedNewPatientBulk = true;
+  isCollapsedNewClientBulk = true;
 
 
   showDivUpdatedLoaderNewItem:boolean = false;
@@ -641,7 +641,7 @@ toggleCollapseNewItem(){
         }, 3000); 
 
   
-        // Reload the patient list
+        // Reload the client list
         this.api.getItems().subscribe((res) => {
           this.productList = res;
           this.data = res;
@@ -938,9 +938,9 @@ toggleCollapseNewItem(){
       image: "",
     })
 
-    this.modelTitle = "Add New Item"
+    this.modelTitle = "Add New Product"
     this.imgSrc = '/assets/imgplaceholder.jpg';
-    this.actionButton = "Add New Item"
+    this.actionButton = "Add New Product"
     this.closeModalAdd = true;
     this.closeModalUpdate = false;
 
@@ -1188,8 +1188,8 @@ toggleCollapseNewItem(){
   editProduct(id: number) {
     console.log("modelTitle before "+ this.modelTitle);
 
-    this.modelTitle="Update Item"
-    this.actionButton="Update Item"
+    this.modelTitle="Update Product"
+    this.actionButton="Update Product"
 
    console.log("modelTitle after "+ this.modelTitle);
 

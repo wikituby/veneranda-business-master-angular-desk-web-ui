@@ -1,18 +1,18 @@
 <section class="book-page">
   <div class="book-hero">
     <div class="book-hero-inner">
-      <span class="book-eyebrow">Appointments</span>
-      <h1>Book an appointment</h1>
+      <span class="book-eyebrow">Get started</span>
+      <h1>Request a demo</h1>
       <p>
-        Request a visit with our full-time doctor, dentist, or another available service.
-        We will confirm your preferred time by phone or email.
+        Tell us about your shop or business. The Veneranda Business Master team will confirm a time
+        by phone or email.
       </p>
     </div>
   </div>
 
   <div class="book-body">
     <form class="book-form" (ngSubmit)="submitRequest()" #apptForm="ngForm">
-      <h2>Appointment request</h2>
+      <h2>Demo / support request</h2>
       <p class="book-form-lead">
         Fill in your details below. Required fields are marked with *.
       </p>
@@ -46,7 +46,7 @@
         </label>
 
         <label>
-          Service *
+          Request type *
           <select name="serviceType" [(ngModel)]="form.serviceType" required>
             <option *ngFor="let option of serviceOptions" [value]="option">{{ option }}</option>
           </select>
@@ -64,17 +64,17 @@
       </div>
 
       <label class="book-notes">
-        Notes for the clinic
+        Notes for the team
         <textarea
           name="notes"
           rows="4"
           [(ngModel)]="form.notes"
-          placeholder="Symptoms, preferred clinician, or anything we should know"></textarea>
+          placeholder="Business type, number of stores, or anything we should know"></textarea>
       </label>
 
       <div class="book-actions">
         <button type="submit" class="book-submit" [disabled]="!form.fullName.trim() || !form.phone.trim()">
-          Submit appointment request
+          Submit request
         </button>
         <p class="book-hint" *ngIf="submitted">
           Your email app should open with the request ready to send. You can also call us directly.
@@ -84,7 +84,7 @@
 
     <aside class="book-aside">
       <h3>Prefer to call?</h3>
-      <p>Speak with the hospital team to book or confirm your visit.</p>
+      <p>Speak with the Veneranda Business Master team to schedule a demo or get support.</p>
       <a class="book-call" [href]="contact.phoneLinks[0]">{{ contact.phones[0] }}</a>
       <a class="book-call" [href]="contact.phoneLinks[1]">{{ contact.phones[1] }}</a>
       <a class="book-mail" [href]="'mailto:' + contact.email">{{ contact.email }}</a>

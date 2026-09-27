@@ -1,225 +1,224 @@
-<section class="vh-100" style="background-color: #405b8d;">
-    <div class="container py-1 h-100" style="border-radius: 24px;">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col col-xl-12">
-                <div class="card" style="border-radius: 5rem;">
-                    <div class="row g-0">
+<section class="login-page">
+  <div class="login-split">
+    <!-- Left: form -->
+    <div class="login-form-col">
+      <div class="login-form-inner">
+        <a class="login-brand" routerLink="/landingpage">
+          <img [src]="facilityLogoUrl" [alt]="facilityName" class="login-brand-mark" />
+          <span class="login-brand-name">{{ facilityName }}</span>
+        </a>
 
-                        <div class="col-md-6 col-lg-5 d-none d-md-block login-side-image-wrap">
-                            <img src="assets/images/bro.png" alt="login form" class="img-fluid login-side-image" />
-                        </div>
+        <header class="login-head">
+          <h1>
+            {{
+              authMode === 'login'
+                ? 'Welcome back'
+                : authMode === 'signup'
+                  ? 'Create account'
+                  : 'Reset password'
+            }}
+          </h1>
+          <p>
+            {{
+              authMode === 'login'
+                ? 'Please enter your details'
+                : authMode === 'signup'
+                  ? 'Register to get started with ' + facilityName
+                  : 'A temporary password will be sent to your email'
+            }}
+          </p>
+        </header>
 
-                        <div class="col-md-6 col-lg-7 d-flex align-items-center">
-
-                            <div class="card-body p-3 p-lg-5 text-black">
-
-
-                                <form [formGroup]="loginForm" #usersForm="ngForm" (ngSubmit)="getUserFormData(usersForm.value)">
-
-                                    <div class="d-flex align-items-center mb-3 pb-1 login-brand-row">
-                                        <img [src]="facilityLogoUrl" [alt]="facilityName + ' logo'" class="login-brand-logo" />
-                                        <span class="login-brand-title">{{ facilityName }}</span>
-                                    </div>
-
-                                    <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;font-size: 20px;">Sign
-                                        into your {{ facilityName }} account</h5>
-
-                                    <div class="login-server-row">
-                                        <span class="login-server-label">Server:</span>
-                                        <span class="login-server-value" [title]="connectedServerLabel">{{ connectedServerLabel }}</span>
-                                        <button type="button" class="login-change-server" (click)="changeServer()">Change server</button>
-                                    </div>
-
-                                    <div class="form-group input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="bi bi-envelope-fill"
-                                                    style="font-size:20px; color: #5181da;"></i>
-                                            </span>
-                                        </div>
-                                        <input formControlName="email" class="form-control form-control-lg" placeholder="Enter email" type="email" required email />
-                                    </div>
-
-                                    <h3 *ngIf="loginForm.controls['email'].dirty && loginForm.hasError('required','email')" class="text-danger">*email is required</h3>
-                              
-                                
-                                    <div class="form-group input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="bi bi-person-fill-lock"
-                                                    style="font-size:20px; color: #5181da;"></i>
-                                            </span>
-                                        </div>
-                                        <input formControlName="password" class="form-control form-control-lg" placeholder="Enter password"
-                                            [type]="type" />
-                                        <span class="input-group-text">
-                                            <i class="{{eyeIcon}}" style="font-size:20px; color: #5181da;"
-                                                (click)="hideShowPassword()"></i>
-                                        </span>
-                                       
-                                    </div>
-                                    <h3 *ngIf="loginForm.controls['password'].dirty && loginForm.hasError('required','password')" class="text-danger">*password is required</h3>
-                                    
-
-
-                                    <div class="pt-1 mb-4">
-                                        <button [disabled]="loginForm.invalid" class="btn btn-success btn-lg btn-block" type="submit"
-                                            style="background-color: #5181da;border-radius: 24px;border-color: #5181da;">
-                                            Login
-                                        </button>
-                                    </div>
-                                    <h3 *ngIf="loginErrorMessage" class="text-danger" style="font-size: small;">{{ loginErrorMessage }}</h3>
-                                    <h3 *ngIf="notFound && !loginErrorMessage" class="text-danger" style="font-size: small;">Email or password incorrect, Please correct it, check network connection and login again</h3>
-
-
-
-<div *ngIf="showDivUpdatedLoaderDeletePatient" style="align-items: center;padding-left: 250px;">
-
-    <button class="btn btn-sm"
-        style="border-radius: 24px;margin-top: 10px;margin-bottom:20px;height: 50px;width: 50px; background-color: #5181da;">
-
-        <div *ngIf="isLoadingNewPatient" class="simple-loader" style="height: 30px;width: 30px;"></div>
-
-    </button>
-
-</div>
-
-                  
-                                 
-
-
-
-
-
-
-                                    <span style="color: #5181da;">
-                                       <u> <a style="color: #5181da;" [routerLink]="['/sendemail']">Forgot password?</a></u>
-                                    </span>
-
-                                    <span style="color: #656666;margin-left: 20px;">
-                                        Don't have a Medical account?
-                                        <u><a style="color: #5181da;margin-left: 20px;" [routerLink]="['/signup']">Register here</a></u>
-                                    </span><br><br>
-
-                                    <!--<span style="color: #165047;">
-                                        or <span class="finger" style="color: #39a58e;" (click)="noLogin()">Continue
-                                            without Login</span>
-                                    </span>-->
-
-                                    <!--                  
-                                    <div class="row">
-                                        <div class="col">
-                                            <br>
-                                            <a target="_blank" class="text-decoration-none">
-                                                <img src="assets/images/new.png" alt="login form" class="img-fluid"
-                                                style="width: 40px;height: 40px;margin-right: 15px;" />
-                                            </a>
-                                            <a  target="_blank" class="text-decoration-none">
-                                                <img src="assets/images/facebook.png" alt="login form" class="img-fluid"
-                                                style="width: 36px;height: 36px; margin-right: 15px;" />
-                                            </a>
-                                            <a  target="_blank" class="text-decoration-none">
-                                                <img src="assets/images/instagram.png" alt="login form" class="img-fluid"
-                                                style="width: 36px;height: 36px; margin-right: 15px;" />
-                                            </a>
-                                            <a  target="_blank" class="text-decoration-none">
-                                                <img src="assets/images/linkedin.png" alt="login form" class="img-fluid"
-                                                style="width: 36px;height: 36px; margin-right: 15px;" />                                                </a>
-                                       </div>
-                                    </div>-->
-                                    <br>
-
-                                    <a class="small text-muted">Terms of use.</a>
-                                    <a class="small text-muted">Privacy policy</a>
-                                    <a class="small text-muted">Kavuma Medical Clinic</a>
-                                </form>
-                                <br>
-                                
-
-
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+        <div class="login-server-row">
+          <span class="login-server-label">Server</span>
+          <span class="login-server-value" [title]="connectedServerLabel">{{ connectedServerLabel }}</span>
+          <button type="button" class="login-change-server" (click)="changeServer()">Change</button>
         </div>
+
+        <!-- Sign in -->
+        <form
+          *ngIf="authMode === 'login'"
+          class="login-form"
+          [formGroup]="loginForm"
+          (ngSubmit)="getUserFormData(loginForm.value)">
+          <label class="login-label" for="login-email">Email address</label>
+          <input
+            id="login-email"
+            formControlName="email"
+            class="login-input"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="username" />
+          <p *ngIf="loginForm.controls['email'].dirty && loginForm.hasError('required','email')" class="login-field-error">
+            Email is required
+          </p>
+
+          <label class="login-label" for="login-password">Password</label>
+          <div class="login-input-wrap">
+            <input
+              id="login-password"
+              formControlName="password"
+              class="login-input"
+              [type]="type"
+              placeholder="Enter your password"
+              autocomplete="current-password" />
+            <button type="button" class="login-eye" (click)="hideShowPassword()" aria-label="Toggle password">
+              <i [class]="eyeIcon"></i>
+            </button>
+          </div>
+          <p *ngIf="loginForm.controls['password'].dirty && loginForm.hasError('required','password')" class="login-field-error">
+            Password is required
+          </p>
+
+          <div class="login-row">
+            <label class="login-remember">
+              <input type="checkbox" [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}" />
+              <span>Remember for 30 days</span>
+            </label>
+            <button type="button" class="login-forgot" (click)="setAuthMode('forgot')">Forgot password</button>
+          </div>
+
+          <button
+            [disabled]="loginForm.invalid || showDivUpdatedLoaderDeleteClient"
+            class="login-submit"
+            type="submit">
+            {{ showDivUpdatedLoaderDeleteClient ? 'Signing in…' : 'Sign in' }}
+          </button>
+
+          <p *ngIf="loginErrorMessage" class="login-field-error login-field-error--block">{{ loginErrorMessage }}</p>
+          <p *ngIf="notFound && !loginErrorMessage" class="login-field-error login-field-error--block">
+            Email or password incorrect. Check your connection and try again.
+          </p>
+
+          <div *ngIf="showDivUpdatedLoaderDeleteClient" class="login-loader-wrap">
+            <div *ngIf="isLoadingNewClient" class="simple-loader"></div>
+          </div>
+        </form>
+
+        <!-- Register -->
+        <form
+          *ngIf="authMode === 'signup'"
+          class="login-form"
+          [formGroup]="signUpForm"
+          (ngSubmit)="submitSignUp()">
+          <label class="login-label" for="signup-username">Username</label>
+          <input id="signup-username" formControlName="username" class="login-input" type="text" placeholder="Username" />
+          <p *ngIf="signUpForm.controls['username'].dirty && signUpForm.hasError('required','username')" class="login-field-error">
+            Username is required
+          </p>
+
+          <label class="login-label" for="signup-email">Email address</label>
+          <input id="signup-email" formControlName="email" class="login-input" type="email" placeholder="Enter your email" />
+          <p *ngIf="signUpForm.controls['email'].dirty && signUpForm.hasError('required','email')" class="login-field-error">
+            Email is required
+          </p>
+
+          <label class="login-label" for="signup-password">Password</label>
+          <div class="login-input-wrap">
+            <input
+              id="signup-password"
+              formControlName="password"
+              class="login-input"
+              [type]="type"
+              placeholder="Create a password" />
+            <button type="button" class="login-eye" (click)="hideShowPassword()" aria-label="Toggle password">
+              <i [class]="eyeIcon"></i>
+            </button>
+          </div>
+          <p *ngIf="signUpForm.controls['password'].dirty && signUpForm.hasError('required','password')" class="login-field-error">
+            Password is required
+          </p>
+
+          <label class="login-label" for="signup-contact">Contact</label>
+          <input
+            id="signup-contact"
+            formControlName="contact"
+            class="login-input"
+            type="tel"
+            placeholder="Contact (256…)"
+            maxlength="12"
+            inputmode="numeric" />
+          <p *ngIf="signUpForm.controls['contact'].dirty && signUpForm.controls['contact'].invalid" class="login-field-error">
+            Contact must start with 256 and be exactly 12 digits.
+          </p>
+
+          <button [disabled]="signUpForm.invalid || signupBusy" class="login-submit" type="submit">
+            {{ signupBusy ? 'Creating…' : 'Create account' }}
+          </button>
+
+          <p *ngIf="signupErrorMessage" class="login-field-error login-field-error--block">{{ signupErrorMessage }}</p>
+          <p *ngIf="signupSuccessMessage" class="login-field-success">{{ signupSuccessMessage }}</p>
+        </form>
+
+        <!-- Forgot password -->
+        <form
+          *ngIf="authMode === 'forgot'"
+          class="login-form"
+          [formGroup]="forgotForm"
+          (ngSubmit)="submitForgotPassword()">
+          <label class="login-label" for="forgot-email">Email address</label>
+          <input
+            id="forgot-email"
+            formControlName="email"
+            class="login-input"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="email" />
+          <p *ngIf="forgotForm.controls['email'].dirty && forgotForm.hasError('required','email')" class="login-field-error">
+            Email is required
+          </p>
+          <p *ngIf="forgotForm.controls['email'].dirty && forgotForm.hasError('email','email')" class="login-field-error">
+            Enter a valid email
+          </p>
+
+          <button [disabled]="forgotForm.invalid || forgotBusy" class="login-submit" type="submit">
+            {{ forgotBusy ? 'Sending…' : 'Send reset email' }}
+          </button>
+
+          <p *ngIf="forgotErrorMessage" class="login-field-error login-field-error--block">{{ forgotErrorMessage }}</p>
+          <p *ngIf="forgotSuccessMessage" class="login-field-success">{{ forgotSuccessMessage }}</p>
+        </form>
+
+        <p class="login-switch" *ngIf="authMode === 'login'">
+          Don't have an account?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('signup')">Sign up</button>
+        </p>
+        <p class="login-switch" *ngIf="authMode === 'signup'">
+          Already have an account?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('login')">Sign in</button>
+        </p>
+        <p class="login-switch" *ngIf="authMode === 'forgot'">
+          Remember your password?
+          <button type="button" class="login-switch-link" (click)="setAuthMode('login')">Sign in</button>
+        </p>
+      </div>
     </div>
+
+    <!-- Right: visual panel -->
+    <aside
+      class="login-visual-col"
+      (mouseenter)="pauseFeatureSlideshow()"
+      (mouseleave)="resumeFeatureSlideshow()">
+      <div class="login-visual-panel">
+        <img
+          class="login-visual-image"
+          [src]="activeFeatureSlide.image"
+          [alt]="activeFeatureSlide.title"
+          [style.object-position]="activeFeatureSlide.imagePosition || 'center center'" />
+        <div class="login-visual-caption">
+          <strong>{{ activeFeatureSlide.title }}</strong>
+          <span>{{ activeFeatureSlide.description }}</span>
+        </div>
+        <div class="login-visual-dots">
+          <button
+            type="button"
+            class="login-visual-dot"
+            *ngFor="let slide of featureSlides; let i = index"
+            [class.is-active]="i === currentFeatureSlide"
+            (click)="goToFeatureSlide(i)"
+            [attr.aria-label]="'Show slide ' + (i + 1)"></button>
+        </div>
+      </div>
+    </aside>
+  </div>
 </section>
-
-
-
-
-
-
-
-
-
-
-<!--<form #usersForm="ngForm" (ngSubmit)="getUserFormData(usersForm.value)">
-
-    <div class="mb-3">
-
-
-
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="exampleFormControlInput1" class="form-label">Product Number</label>
-
-                <input type="text" ngModel name="number" class="form-control form-control-sm"
-                    id="exampleFormControlInput1" placeholder="Enter product number">
-
-            </div>
-            <div class="form-group col-md-6">
-
-                <label for="exampleFormControlInput1"
-                    class="form-label">Product Title</label>
-                <input type="text" ngModel name="title" class="form-control form-control-sm"
-                    id="exampleFormControlInput1" placeholder="Enter product title">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group col-md-6">
-
-        <label for="exampleFormControlInput1" class="form-label">Product
-            Price</label>
-        <input type="number" ngModel name="price" 
-            class="form-control form-control-sm" id="exampleFormControlInput1"
-            placeholder="Enter product price">
-        </div>
-
-        <div class="form-group col-md-6">
-
-        <label for="exampleFormControlInput1"
-            class="form-label">Category</label>
-        <input type="text" ngModel name="category" 
-            class="form-control form-control-sm" id="exampleFormControlInput1"
-            placeholder="Enter product Category">
-        </div>
-    </div>
-
-    <label  for="exampleFormControlInput1" class="form-label">Product Image
-        Url</label>
-    <input type="text" ngModel name="image" 
-        class="form-control form-control-sm" id="exampleFormControlInput1"
-        placeholder="Enter product Image Url">
-
-
-
-        <label for="exampleFormControlTextarea1" style="margin-top: 10px;"
-            class="form-label">Product Description</label>
-        <textarea class="form-control form-control-sm" ngModel name="description"
-            id="exampleFormControlTextarea1" placeholder="Enter product description" rows="3"></textarea>
-
-
-
-    </div>
-
-
-    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-arrow-up-circle" style="margin-right: 5px;"></i>signup</button>
-
-
-
-
-</form>-->

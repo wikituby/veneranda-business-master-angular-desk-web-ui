@@ -22,7 +22,7 @@
   <label
     *ngIf="showAdministered"
     [attr.for]="inputIdPrefix + '-adm-' + (item?.id || 'x')"
-    [title]="administeredReadonly ? 'Administered on treatment chart (set automatically)' : 'Administered / given to patient'">
+    [title]="administeredReadonly ? 'Administered on treatment chart (set automatically)' : 'Administered / given to client'">
     <input
       type="checkbox"
       [id]="inputIdPrefix + '-adm-' + (item?.id || 'x')"

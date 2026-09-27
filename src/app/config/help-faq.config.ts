@@ -15,23 +15,23 @@ export const HELP_FAQ_ITEMS: HelpFaqItem[] = [
   },
   {
     id: 'queue',
-    question: 'How do I open a patient from the queue?',
+    question: 'How do I open a client from the queue?',
     answer:
-      'Click Queue in the top header. Under Current, click the patient name or the clipboard icon to open their visit. Use Edit (pencil) to change status, destination department, emergency flag, or notes.',
-    tags: ['queue', 'patient', 'visit'],
+      'Click Queue in the top header. Under Current, click the client name or the clipboard icon to open their visit. Use Edit (pencil) to change status, destination department, emergency flag, or notes.',
+    tags: ['queue', 'client', 'visit'],
   },
   {
     id: 'visit-tabs',
-    question: 'What are the main tabs on a patient visit?',
+    question: 'What are the main tabs on a client order?',
     answer:
-      'Patient bio (demographics), Initial vitals, Consultations (clinical notes and documents), Procedures (services), Treatment (pharmacy), Finance (charges and payments), and Printouts. Available tabs depend on your role and subscription modules.',
+      'Client bio (demographics), Initial vitals, Consultations (clinical notes and documents), Procedures (services), Treatment (pharmacy), Finance (charges and payments), and Printouts. Available tabs depend on your role and subscription modules.',
     tags: ['visit', 'consultation', 'vitals'],
   },
   {
     id: 'pharmacy',
     question: 'How do I dispense OTC or complete a pharmacy sale?',
     answer:
-      'Go to Overview → Pharmacy (OTC Counter Sale). Add items to the cart, set quantities, then complete the sale. Use Items sold to review past sales and Doctor prescriptions for Rx lines sent from clinicians.',
+      'Go to Overview → Pharmacy (OTC Counter Sale). Add items to the cart, set quantities, then complete the sale. Use Products sold to review past sales and Doctor prescriptions for Rx lines sent from clinicians.',
     tags: ['pharmacy', 'otc', 'dispense'],
   },
   {
@@ -59,14 +59,14 @@ export const HELP_FAQ_ITEMS: HelpFaqItem[] = [
     id: 'documents',
     question: 'How do I upload consultation documents (PDF or images)?',
     answer:
-      'On the patient visit Consultations tab, open the Uploaded documents accordion at the top. Choose a file (PDF or image), add an optional description, and save. Files are stored on Cloudinary and linked to that visit.',
+      'On the client order Consultations tab, open the Uploaded documents accordion at the top. Choose a file (PDF or image), add an optional description, and save. Files are stored on Cloudinary and linked to that visit.',
     tags: ['documents', 'upload', 'consultation'],
   },
   {
     id: 'billing',
-    question: 'How do I record a payment or check a patient bill?',
+    question: 'How do I record a payment or check a client bill?',
     answer:
-      'Open the patient visit Finance tab, or use Overview → Patient Billing for facility-wide billing. Payments and invoices depend on your role; ask your cashier or admin if you do not see Finance options.',
+      'Open the client order Finance tab, or use Overview → Client Billing for facility-wide billing. Payments and invoices depend on your role; ask your cashier or admin if you do not see Finance options.',
     tags: ['billing', 'payment', 'invoice'],
   },
   {

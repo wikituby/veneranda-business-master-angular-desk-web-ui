@@ -99,47 +99,26 @@ export class AccessControlService {
     if (key === 'consultations-center') {
       return (
         this.allowedPages.has('consultations-center') ||
-        this.allowedPages.has('patient-visit') ||
-        this.allowedPages.has('consultation-v2')
+        this.allowedPages.has('client-visit') ||
+        this.allowedPages.has('consultation-v2') ||
+        this.allowedPages.has('clienttransactions')
       );
     }
-    if (key === 'consultation-v2') {
+    if (key === 'consultation-v2' || key === 'clienttransactions') {
       return (
         this.allowedPages.has('consultation-v2') ||
+        this.allowedPages.has('clienttransactions') ||
         this.allowedPages.has('consultations-center') ||
-        this.allowedPages.has('patient-visit')
+        this.allowedPages.has('client-visit')
       );
     }
-    if (key === 'patient-visit') {
+    if (key === 'client-visit') {
       return (
-        this.allowedPages.has('patient-visit') ||
+        this.allowedPages.has('client-visit') ||
         this.allowedPages.has('consultations-center') ||
-        this.allowedPages.has('consultation-v2')
+        this.allowedPages.has('consultation-v2') ||
+        this.allowedPages.has('clienttransactions')
       );
-    }
-    if (key === 'scan') {
-      return this.allowedPages.has('scan') || this.allowedPages.has('scan-v2');
-    }
-    if (key === 'scan-v2') {
-      return this.allowedPages.has('scan-v2') || this.allowedPages.has('scan');
-    }
-    if (key === 'lab') {
-      return this.allowedPages.has('lab') || this.allowedPages.has('lab-v2');
-    }
-    if (key === 'lab-v2') {
-      return this.allowedPages.has('lab-v2') || this.allowedPages.has('lab');
-    }
-    if (key === 'dental') {
-      return this.allowedPages.has('dental') || this.allowedPages.has('dental-v2');
-    }
-    if (key === 'dental-v2') {
-      return this.allowedPages.has('dental-v2') || this.allowedPages.has('dental');
-    }
-    if (key === 'maternal-child-health-requests') {
-      return this.allowedPages.has('maternal-child-health-requests') || this.allowedPages.has('mch-v2');
-    }
-    if (key === 'mch-v2') {
-      return this.allowedPages.has('mch-v2') || this.allowedPages.has('maternal-child-health-requests');
     }
     return this.allowedPages.has(key);
   }
@@ -173,8 +152,8 @@ export class AccessControlService {
     return this.isPrivilegedRole();
   }
 
-  /** Full patient-visit workspace (all tabs), not pharmacy dispense-only view. */
-  canUseFullPatientVisitWorkspace(): boolean {
+  /** Full client-visit workspace (all tabs), not pharmacy dispense-only view. */
+  canUseFullClientVisitWorkspace(): boolean {
     this.ensureLoaded();
     if (this.isAdminRole()) {
       return true;
@@ -183,12 +162,12 @@ export class AccessControlService {
       return true;
     }
     return (
-      this.allowedPages.has('patient-visit') ||
+      this.allowedPages.has('client-visit') ||
       this.allowedPages.has('consultations-center')
     );
   }
 
-  /** Re-open a closed patient visit. Admin/MD, Access Control key, or Business Settings privilege. */
+  /** Re-open a closed client order. Admin/MD, Access Control key, or Business Settings privilege. */
   canOpenClosedVisit(): boolean {
     this.ensureLoaded();
     if (this.isPrivilegedRole()) {
@@ -200,15 +179,15 @@ export class AccessControlService {
     return this.allowedPages.has('open-closed-visit');
   }
 
-  /** Add / assign patients to debt-permitted groups (incl. Veneranda Hospital). */
-  canAddVenerandaMedicalPatient(): boolean {
+  /** Add / assign clients to debt-permitted groups (incl. Veneranda Hospital). */
+  canAddVenerandaMedicalClient(): boolean {
     if (this.isPrivilegedRole()) {
       return true;
     }
     return this.currentUserHasSpecialPrivilege('venerandaGroup');
   }
 
-  /** Grant patient groups the right to incur debt despite unpaid balances. */
+  /** Grant client groups the right to incur debt despite unpaid balances. */
   canManageCreditGroupRights(): boolean {
     if (this.isPrivilegedRole()) {
       return true;
@@ -216,7 +195,7 @@ export class AccessControlService {
     return this.currentUserHasSpecialPrivilege('creditGroup');
   }
 
-  /** True when the group name is the reserved Veneranda Hospital group. */
+  /** True when the group name is the reserved Veneranda Business group. */
   isVenerandaMedicalGroup(group: { groupName?: string; name?: string } | string | null | undefined): boolean {
     const name =
       typeof group === 'string'
@@ -255,22 +234,22 @@ export class AccessControlService {
     }
   }
 
-  /** Whether the current user may assign a patient to this group. */
-  canAssignPatientToGroup(
+  /** Whether the current user may assign a client to this group. */
+  canAssignClientToGroup(
     group: { id?: number; groupName?: string; name?: string; allowsCreditDespiteUnpaidBalance?: boolean } | null | undefined
   ): boolean {
     if (!group || !this.isDebtPermittedGroup(group)) {
       return true;
     }
-    return this.canAddVenerandaMedicalPatient();
+    return this.canAddVenerandaMedicalClient();
   }
 
   /** Filter out debt-permitted groups when the user lacks that privilege. */
-  filterAssignablePatientGroups<
+  filterAssignableClientGroups<
     T extends { id?: number; groupName?: string; name?: string; allowsCreditDespiteUnpaidBalance?: boolean }
   >(groups: T[] | null | undefined): T[] {
     const list = Array.isArray(groups) ? groups : [];
-    if (this.canAddVenerandaMedicalPatient()) {
+    if (this.canAddVenerandaMedicalClient()) {
       return list;
     }
     return list.filter((g) => !this.isDebtPermittedGroup(g));
@@ -324,7 +303,7 @@ export class AccessControlService {
     }
   }
 
-  /** Pharmacist role limited to dispense-only UI on patient visit. */
+  /** Pharmacist role limited to dispense-only UI on client order. */
   isPharmacistDispenseOnlyMode(): boolean {
     const roles = this.getAllRoles();
     const isPharm = roles.includes('pharmacist') || roles.includes('pharmacy');
@@ -337,7 +316,7 @@ export class AccessControlService {
     if (roles.some((r) => ['doctor', 'clinician', 'nurse', 'md', 'admin'].includes(r))) {
       return false;
     }
-    return !this.canUseFullPatientVisitWorkspace();
+    return !this.canUseFullClientVisitWorkspace();
   }
 
   getManageableComponents(): AppAccessComponent[] {
@@ -396,14 +375,15 @@ export class AccessControlService {
     if (this.isAdminRole()) {
       return true;
     }
-    if (this.restricted && !this.canAccessPage(pageKey)) {
+    const resolvedPageKey = pageKey === 'clienttransactions' ? 'consultation-v2' : pageKey;
+    if (this.restricted && !this.canAccessPage(resolvedPageKey)) {
       return false;
     }
-    const fullKey = componentFullKey(pageKey, componentKey);
+    const fullKey = componentFullKey(resolvedPageKey, componentKey);
     if (!this.hiddenComponents.has(fullKey)) {
       return true;
     }
-    const def = findAppAccessComponent(pageKey, componentKey);
+    const def = findAppAccessComponent(resolvedPageKey, componentKey);
     if (
       def?.hideAfterOrderAgeHours != null &&
       context?.orderAgeHours != null &&

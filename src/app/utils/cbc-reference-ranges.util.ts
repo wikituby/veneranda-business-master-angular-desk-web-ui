@@ -20,7 +20,7 @@ export interface CbcResultField {
   ref: string;
 }
 
-export interface CbcPatientContext {
+export interface CbcClientContext {
   ageYears: number | null;
   ageDays: number | null;
   band: CbcAgeBand;
@@ -168,7 +168,7 @@ function normalizeGender(gender: unknown): CbcGender {
 }
 
 /** Parse free-text / numeric age into years (fractional OK). */
-export function parsePatientAgeYears(age: unknown): number | null {
+export function parseClientAgeYears(age: unknown): number | null {
   if (age == null || age === '') {
     return null;
   }
@@ -256,16 +256,16 @@ export function ageDaysFromDateOfBirth(
   return Math.floor(ms / (24 * 60 * 60 * 1000));
 }
 
-export function resolveCbcPatientContext(
-  patientAge?: unknown,
-  patientDateOfBirth?: unknown,
-  patientGender?: unknown,
+export function resolveCbcClientContext(
+  clientAge?: unknown,
+  clientDateOfBirth?: unknown,
+  clientGender?: unknown,
   asOf: Date = new Date()
-): CbcPatientContext {
-  const gender = normalizeGender(patientGender);
-  const fromDobYears = ageYearsFromDateOfBirth(patientDateOfBirth, asOf);
-  const fromDobDays = ageDaysFromDateOfBirth(patientDateOfBirth, asOf);
-  const fromAgeYears = parsePatientAgeYears(patientAge);
+): CbcClientContext {
+  const gender = normalizeGender(clientGender);
+  const fromDobYears = ageYearsFromDateOfBirth(clientDateOfBirth, asOf);
+  const fromDobDays = ageDaysFromDateOfBirth(clientDateOfBirth, asOf);
+  const fromAgeYears = parseClientAgeYears(clientAge);
 
   // Prefer DOB when available (more precise for neonates).
   const ageYears =
@@ -278,7 +278,7 @@ export function resolveCbcPatientContext(
         : null;
 
   let band: CbcAgeBand = 'adult';
-  let pediatricSub: CbcPatientContext['pediatricSub'] = null;
+  let pediatricSub: CbcClientContext['pediatricSub'] = null;
 
   if (ageDays != null && ageDays <= 28) {
     band = 'neonate';
@@ -311,7 +311,7 @@ export function resolveCbcPatientContext(
   };
 }
 
-function pickRefMap(ctx: CbcPatientContext): RefMap {
+function pickRefMap(ctx: CbcClientContext): RefMap {
   if (ctx.band === 'neonate') {
     return { ...SHARED_NEONATE };
   }
@@ -347,22 +347,22 @@ function pickRefMap(ctx: CbcPatientContext): RefMap {
   return withRedCell(SHARED_ADULT_BASE, '12.0 - 17.5', '4.2 - 5.9', '36 - 50');
 }
 
-export function getCbcFieldsForPatient(
-  patientAge?: unknown,
-  patientDateOfBirth?: unknown,
-  patientGender?: unknown
+export function getCbcFieldsForClient(
+  clientAge?: unknown,
+  clientDateOfBirth?: unknown,
+  clientGender?: unknown
 ): CbcResultField[] {
-  const ctx = resolveCbcPatientContext(patientAge, patientDateOfBirth, patientGender);
+  const ctx = resolveCbcClientContext(clientAge, clientDateOfBirth, clientGender);
   return fieldsFromRefs(pickRefMap(ctx));
 }
 
 export function getCbcReferenceLabel(
-  patientAge?: unknown,
-  patientDateOfBirth?: unknown,
-  patientGender?: unknown
+  clientAge?: unknown,
+  clientDateOfBirth?: unknown,
+  clientGender?: unknown
 ): string {
-  return resolveCbcPatientContext(patientAge, patientDateOfBirth, patientGender).label;
+  return resolveCbcClientContext(clientAge, clientDateOfBirth, clientGender).label;
 }
 
 /** Default / legacy adult combined ranges (sex unknown). */
-export const CBC_RESULT_FIELDS: CbcResultField[] = getCbcFieldsForPatient(null, null, null);
+export const CBC_RESULT_FIELDS: CbcResultField[] = getCbcFieldsForClient(null, null, null);

@@ -16,10 +16,10 @@
       <button type="button" class="pv-standard-dose-close" (click)="closeModal()">&times;</button>
     </div>
 
-    <div class="pv-standard-dose-patient">
-      <span>Patient match</span>
-      <div class="pv-standard-dose-patient-row">
-        <strong>{{ patientSummary() }}</strong>
+    <div class="pv-standard-dose-client">
+      <span>Client match</span>
+      <div class="pv-standard-dose-client-row">
+        <strong>{{ clientSummary() }}</strong>
         <button
           *ngIf="showRecordWeightButton()"
           type="button"
@@ -78,7 +78,7 @@
   <div class="pv-record-weight-overlay" *ngIf="showRecordWeightModal">
     <div class="pv-record-weight-dialog" (click)="$event.stopPropagation()">
       <div class="pv-record-weight-head">
-        <h6>Record patient weight</h6>
+        <h6>Record client weight</h6>
         <button type="button" class="pv-standard-dose-close" (click)="closeRecordWeightDialog()">&times;</button>
       </div>
       <p class="pv-record-weight-help">Weight is saved to vitals and used for mg/kg dosing.</p>

@@ -117,9 +117,9 @@
           Pay all (FIFO)
         </button>
       </div>
-      <div class="loading-inline" *ngIf="loadingDebtVisits">Loading visits…</div>
+      <div class="loading-inline" *ngIf="loadingDebtVisits">Loading orders…</div>
       <div class="empty-state" *ngIf="!loadingDebtVisits && debtVisits.length === 0">
-        No visits with outstanding balance
+        No orders with outstanding balance
       </div>
       <div class="debt-list" *ngIf="!loadingDebtVisits">
         <button
@@ -263,7 +263,7 @@
           <i class="bi bi-search"></i>
           <input
             type="text"
-            placeholder="Search receipt, patient, amount, notes…"
+            placeholder="Search receipt, client, amount, notes…"
             [(ngModel)]="searchQuery"
             (ngModelChange)="currentPage = 1">
         </div>
@@ -326,7 +326,7 @@
                   <button class="btn-icon" title="View receipt" (click)="viewReceipt(item)">
                     <i class="bi bi-receipt"></i>
                   </button>
-                  <button class="btn-icon" title="Open visit" (click)="openPaymentVisit(item)" *ngIf="item.visitId">
+                  <button class="btn-icon" title="Open order" (click)="openPaymentVisit(item)" *ngIf="item.visitId">
                     <i class="bi bi-box-arrow-up-right"></i>
                   </button>
                 </div>
@@ -376,7 +376,7 @@
             <i class="bi bi-search"></i>
             <input
               type="text"
-              placeholder="Search by patient name…"
+              placeholder="Search by client name…"
               [(ngModel)]="visitSearchQuery"
               (keyup.enter)="searchVisits()">
           </div>
@@ -399,7 +399,7 @@
             [class.selected]="selectedVisit?.id === visit.id"
             (click)="selectVisit(visit)">
             <div class="visit-card-main">
-              <div class="visit-patient">{{ visit.patientName || 'Unknown patient' }}</div>
+              <div class="visit-client">{{ visit.clientName || 'Unknown client' }}</div>
               <div class="visit-meta">
                 Visit #{{ visit.visitNumber || visit.id }}
                 <span *ngIf="visit.visitDate"> · {{ visit.visitDate }}</span>
@@ -413,7 +413,7 @@
 
           <div class="empty-state compact" *ngIf="visitResults.length === 0">
             <i class="bi bi-person-lines-fill"></i>
-            <p>No visits found. Try another name or check recent visits.</p>
+            <p>No orders found. Try another name or check recent visits.</p>
           </div>
         </div>
       </div>
@@ -432,7 +432,7 @@
         <div *ngIf="selectedVisit; else noVisitSelected" class="payment-form-wrap">
           <div class="selected-visit-banner">
             <div>
-              <div class="banner-name">{{ selectedVisit.patientName }}</div>
+              <div class="banner-name">{{ selectedVisit.clientName }}</div>
               <div class="banner-meta">
                 Visit #{{ selectedVisit.visitNumber || selectedVisit.id }}
                 <span *ngIf="selectedVisit.visitDate"> · {{ selectedVisit.visitDate }}</span>
@@ -440,7 +440,7 @@
             </div>
             <button class="btn-sm btn-secondary" (click)="openVisit(selectedVisit)">
               <i class="bi bi-box-arrow-up-right"></i>
-              Open Visit
+              Open Order
             </button>
           </div>
 
@@ -503,7 +503,7 @@
           <div class="empty-state">
             <i class="bi bi-person-check"></i>
             <h3>Select a visit</h3>
-            <p>Search and pick a patient visit to record a payment.</p>
+            <p>Search and pick a client order to record a payment.</p>
           </div>
         </ng-template>
       </div>

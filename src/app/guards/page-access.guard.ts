@@ -52,6 +52,6 @@ function checkPageAccess(url: string): boolean | ReturnType<Router['createUrlTre
 export const pageAccessGuard: CanActivateChildFn = (_route, state) =>
   checkPageAccess(state.url);
 
-/** Blocks top-level clinical routes (e.g. /patient-visit) when access is restricted. */
+/** Blocks top-level clinical routes (e.g. /client-visit) when access is restricted. */
 export const topLevelPageAccessGuard: CanActivateFn = (_route, state) =>
   checkPageAccess(state.url);

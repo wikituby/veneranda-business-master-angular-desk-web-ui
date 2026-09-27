@@ -68,6 +68,9 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
   editingServiceId: number | null = null;
   selectedUnitSellingModelId: number | null = null;
   selectedUnitSellingModel: any = null;
+  /** ON = unit sell model; OFF = open price at sale. */
+  serviceUseUnitSellingModel = true;
+  serviceFreeSellingPrice: number | null = null;
   
   // Delete confirmation modal properties
   showDeleteConfirmModal: boolean = false;
@@ -1095,6 +1098,8 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
     };
     this.selectedUnitSellingModelId = null;
     this.selectedUnitSellingModel = null;
+    this.serviceUseUnitSellingModel = true;
+    this.serviceFreeSellingPrice = null;
     this.selectedCategory = null;
     this.currentCategoryName = 'Select category';
     this.currentCategoryId = null;
@@ -1134,6 +1139,11 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
     };
     this.selectedUnitSellingModelId = service.unitSellingModelId ?? null;
     this.selectedUnitSellingModel = null;
+    this.serviceUseUnitSellingModel = service.useUnitSellingModel !== false;
+    this.serviceFreeSellingPrice =
+      service.unitSellingPrice != null && service.unitSellingPrice !== ''
+        ? Number(service.unitSellingPrice)
+        : null;
 
     const ids = this.getServiceCategoryIds(service);
     if (serviceCategoryName && serviceCategoryName !== 'N/A') {
@@ -1426,9 +1436,22 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.selectedUnitSellingModelId == null) {
+    if (this.serviceUseUnitSellingModel && this.selectedUnitSellingModelId == null) {
       this.responseColor = "#dc2626";
-      this.responseMessage = "Please select a unit selling model.";
+      this.responseMessage = "Please select a unit selling model, or turn off fixed price.";
+      this.showDivAddToDataBaseNewService = true;
+      setTimeout(() => {
+        this.showDivAddToDataBaseNewService = false;
+      }, 4000);
+      return;
+    }
+
+    if (
+      !this.serviceUseUnitSellingModel &&
+      !(Number(this.serviceFreeSellingPrice ?? this.currentService.unitSellingPrice) > 0)
+    ) {
+      this.responseColor = "#dc2626";
+      this.responseMessage = "Enter a selling price, or turn on unit sell model pricing.";
       this.showDivAddToDataBaseNewService = true;
       setTimeout(() => {
         this.showDivAddToDataBaseNewService = false;
@@ -1440,6 +1463,7 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
     this.isButtonDisabled = true;
     this.showDivAddToDataBaseNewService = false;
 
+    const openPrice = Number(this.serviceFreeSellingPrice ?? this.currentService.unitSellingPrice) || 0;
     const serviceData: any = {
       procedureName: this.currentService.procedureName || '',
       category: this.getServiceCategoryName(this.currentService) || this.currentService.category || '',
@@ -1449,12 +1473,15 @@ export class ServicesManagementComponent implements OnInit, OnDestroy {
         Number.isFinite(Number(this.currentService.parentCategoryId))
           ? Number(this.currentService.parentCategoryId)
           : null,
-      unitSellingPrice: this.currentService.unitSellingPrice ? Number(this.currentService.unitSellingPrice) : 0,
+      unitSellingPrice: this.serviceUseUnitSellingModel
+        ? (this.currentService.unitSellingPrice ? Number(this.currentService.unitSellingPrice) : 0)
+        : openPrice,
       unitCostPrice: this.currentService.unitCostPrice ? Number(this.currentService.unitCostPrice) : 0,
-      description: this.currentService.description || ''
+      description: this.currentService.description || '',
+      useUnitSellingModel: this.serviceUseUnitSellingModel !== false,
     };
 
-    if (this.selectedUnitSellingModelId > 0) {
+    if (this.serviceUseUnitSellingModel && this.selectedUnitSellingModelId != null && this.selectedUnitSellingModelId > 0) {
       serviceData.unitSellingModelId = this.selectedUnitSellingModelId;
     }
     const initialModel = this.buildInitialUnitSellingModelPayload();

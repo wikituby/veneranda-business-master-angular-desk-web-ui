@@ -19,8 +19,12 @@
           <app-unit-selling-model-picker
             [shopItemId]="form.id"
             [unitCostPrice]="form.costPrice"
-            [selectedModelId]="form.unitSellingModelId"
-            (selectedModelIdChange)="form.unitSellingModelId = $event">
+            [(selectedModelId)]="form.unitSellingModelId"
+            [showPriceModeSwitch]="true"
+            [(useUnitSellingModel)]="form.useUnitSellingModel"
+            [(freeSellingPrice)]="form.sellingPrice"
+            (unitSellingPriceChange)="form.sellingPrice = $event"
+            label="Selling price">
           </app-unit-selling-model-picker>
         </div>
         <div class="category-row">
@@ -89,10 +93,6 @@
           <div class="form-field">
             <label>Cost price</label>
             <input type="number" name="costPrice" [(ngModel)]="form.costPrice" min="0" />
-          </div>
-          <div class="form-field">
-            <label>Selling price</label>
-            <input type="number" name="sellingPrice" [(ngModel)]="form.sellingPrice" min="0" />
           </div>
         </div>
       </div>
@@ -209,7 +209,7 @@
         Item management
       </h2>
       <p class="page-subtitle">
-        Create, update, and retire shop items used when inventory type is set to <strong>item</strong>.
+        Create, update, and retire shop products used when inventory type is set to <strong>item</strong>.
       </p>
     </div>
     <div class="header-right">
@@ -241,7 +241,7 @@
       <thead>
         <tr>
           <th class="no-sort">SN</th>
-          <th class="no-sort">Item</th>
+          <th class="no-sort">Product</th>
           <th class="no-sort">Parent category</th>
           <th class="no-sort">Category</th>
           <th class="no-sort">UOM</th>
@@ -276,7 +276,7 @@
         <tr *ngIf="filteredItems.length === 0">
           <td colspan="10" class="no-data">
             <i class="bi bi-inbox"></i>
-            <p>No shop items found.</p>
+            <p>No shop products found.</p>
           </td>
         </tr>
       </tbody>

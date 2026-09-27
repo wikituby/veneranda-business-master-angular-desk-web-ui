@@ -24,7 +24,7 @@ export class PrescriptionsComponent implements OnInit {
   prescriptions = [
     {
       id: '001',
-      patient: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
+      client: { name: 'John Doe', initials: 'JD', fileNo: 'P001234' },
       doctor: 'Dr. Smith',
       department: 'General Medicine',
       medicationCount: 3,
@@ -35,7 +35,7 @@ export class PrescriptionsComponent implements OnInit {
     },
     {
       id: '002',
-      patient: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
+      client: { name: 'Jane Smith', initials: 'JS', fileNo: 'P001235' },
       doctor: 'Dr. Johnson',
       department: 'Cardiology',
       medicationCount: 2,
@@ -46,7 +46,7 @@ export class PrescriptionsComponent implements OnInit {
     },
     {
       id: '003',
-      patient: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
+      client: { name: 'Michael Johnson', initials: 'MJ', fileNo: 'P001236' },
       doctor: 'Dr. Williams',
       department: 'Pediatrics',
       medicationCount: 4,
@@ -60,7 +60,7 @@ export class PrescriptionsComponent implements OnInit {
   get filteredPrescriptions(): any[] {
     return this.prescriptions.filter(prescription => {
       const matchesSearch = !this.searchQuery || 
-        prescription.patient.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        prescription.client.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         prescription.id.toLowerCase().includes(this.searchQuery.toLowerCase());
       
       const matchesStatus = !this.statusFilter || prescription.status === this.statusFilter;

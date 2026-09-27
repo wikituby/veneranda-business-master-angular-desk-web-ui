@@ -37,8 +37,8 @@ body.app-overview-shell {
   overscroll-behavior: none;
 }
 
-/* Patient visit: fill viewport below header; tab area scrolls, billing totals stay visible */
-body.app-patient-visit-shell {
+/* Client visit: fill viewport below header; tab area scrolls, billing totals stay visible */
+body.app-client-visit-shell {
   overflow: hidden;
   overscroll-behavior: none;
 }
@@ -180,6 +180,27 @@ table thead tr {
   border-color: #e2e8f0 !important;
 }
 
+/* POS / commercial docs: keep white text on Total-bar cyan (#00aeef) */
+table.otc-pos-totals-table thead,
+table.otc-pos-totals-table thead tr,
+table.otc-pos-totals-table thead th,
+table.otc-doc-table thead,
+table.otc-doc-table thead tr,
+table.otc-doc-table thead th {
+  background: #00aeef !important;
+  background-color: #00aeef !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+table.otc-pos-totals-table thead th:not(.no-sort)::before,
+table.otc-pos-totals-table thead th:not(.no-sort)::after,
+table.otc-doc-table thead th:not(.no-sort)::before,
+table.otc-doc-table thead th:not(.no-sort)::after {
+  content: none !important;
+  display: none !important;
+}
+
 /* Remove old blue background from table body - override inline styles */
 table.table tbody,
 table.table,
@@ -299,6 +320,18 @@ table td[style*="background-color"] {
   border-color: #334155 !important;
 }
 
+.dark table.otc-pos-totals-table thead,
+.dark table.otc-pos-totals-table thead tr,
+.dark table.otc-pos-totals-table thead th,
+.dark table.otc-doc-table thead,
+.dark table.otc-doc-table thead tr,
+.dark table.otc-doc-table thead th {
+  background: #00aeef !important;
+  background-color: #00aeef !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
 .dark table.table tbody,
 .dark table.table,
 .dark table.modern-table tbody,
@@ -320,7 +353,7 @@ table td[style*="background-color"] {
   background-color: transparent !important;
 }
 
-/* Create New Patient Visit modal — save button label must stay visible */
+/* Create New Client Visit modal — save button label must stay visible */
 #createVisitModal #createVisitSaveBtn.create-visit-save-btn {
   display: inline-flex;
   align-items: center;
@@ -648,7 +681,7 @@ app-root {
 }
 
 body.app-overview-shell,
-body.app-patient-visit-shell {
+body.app-client-visit-shell {
   height: 100%;
   height: 100dvh;
 }

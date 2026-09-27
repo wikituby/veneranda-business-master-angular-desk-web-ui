@@ -1,0 +1,48 @@
+<div class="client-visit-container">
+  <!-- Error Display -->
+  <div class="alert alert-danger" *ngIf="hasError$ | async" role="alert">
+    <h4 class="alert-heading">Error!</h4>
+    <ul class="mb-0" *ngIf="errors$ | async as errors">
+      <li *ngFor="let error of errors">{{ error }}</li>
+    </ul>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="loading-overlay" *ngIf="isLoading$ | async">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div class="row" >
+    <!-- Client Information Column -->
+    <div class="col-md-4">
+      <app-client-info
+        [client]="currentClient$ | async"
+        [isLoading]="false"
+        (clientSelected)="onClientSelected($event)"
+        (editClient)="onEditClient($event)"
+        (deleteClient)="onDeleteClient($event)">
+      </app-client-info>
+    </div>
+
+    <!-- Main Content Column -->
+    <div class="col-md-8">
+      <div class="visit-content">
+        <!-- Vital Signs Section -->
+        <app-vital-signs
+          [vitals]="(vitals$ | async) || []"
+          [visitId]="(currentVisit$ | async)?.id || null"
+          [isLoading]="false"
+          [isUpdating]="false"
+          (addVitals)="onAddVitals($event)"
+          (updateVitals)="onUpdateVitals($event)"
+          (deleteVitals)="onDeleteVitals($event)">
+        </app-vital-signs>
+
+        <!-- Additional sections can be added here -->
+        <!-- Lab Tests, Scans, Procedures, etc. -->
+      </div>
+    </div>
+  </div>
+</div>

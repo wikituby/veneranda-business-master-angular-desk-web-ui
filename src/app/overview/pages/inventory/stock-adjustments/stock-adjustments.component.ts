@@ -17,7 +17,7 @@ type AdjustmentsTab = 'adjustments' | 'types';
 })
 export class StockAdjustmentsComponent implements OnInit {
   isDarkMode = false;
-  /** True = stock batches; false = shop items (business setting). */
+  /** True = stock batches; false = shop products (business setting). */
   inventoryIsStockBatch = true;
   activeTab: AdjustmentsTab = 'adjustments';
 

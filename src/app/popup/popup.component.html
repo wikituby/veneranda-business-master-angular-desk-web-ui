@@ -3,7 +3,7 @@
     <div class="modal-dialog" role="document" style="min-width: 800px;" >
         <div class="modal-content">
             <div class="modal-header" style="background-color: rgb(25, 136, 90);">
-                <h5 class="modal-title" id="myModalLabel" style="color: white;font-size: 25px;"><i class="bi bi-arrow-up-circle" style="font-size: 25px;margin-right: 7px;"></i>{{editModal ? 'Update Item' : 'Add New Item'}}</h5>
+                <h5 class="modal-title" id="myModalLabel" style="color: white;font-size: 25px;"><i class="bi bi-arrow-up-circle" style="font-size: 25px;margin-right: 7px;"></i>{{editModal ? 'Update Product' : 'Add New Product'}}</h5>
                 <button (click)="closeModal()" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -85,14 +85,14 @@
                     <input type="text" ngModel name="image" placeholder="Enter image url">
                     <br><br>
 
-                    <button type="submit" value="">{{editModal ? 'Update Item' : 'Add Item'}}</button>-->
-                    <button type="submit" class="btn btn-success btn-sm" [disabled]="isButtonDisabled"><i class="bi bi-arrow-up-circle" style="margin-right: 5px;"></i>{{editModal ? 'Update Item' : 'Add New Item'}}</button>
+                    <button type="submit" value="">{{editModal ? 'Update Product' : 'Add Product'}}</button>-->
+                    <button type="submit" class="btn btn-success btn-sm" [disabled]="isButtonDisabled"><i class="bi bi-arrow-up-circle" style="margin-right: 5px;"></i>{{editModal ? 'Update Product' : 'Add New Product'}}</button>
 
 
                     <br><br>
                     <div *ngIf="showDivAddToDataBase"
                         style="font-size: 15px;background-color: rgb(11, 155, 112);padding: 30px;border-radius: 12px;">
-                        <h5 style="color: white;font-size: 20px;">Item Saved successfully</h5>
+                        <h5 style="color: white;font-size: 20px;">Product Saved successfully</h5>
                         <h5 style="color: white;font-size: 20px;">click save changes below to update</h5>
 
                         <!-- Content of the div you want to show -->
@@ -100,7 +100,7 @@
 
                     <div *ngIf="showDivUpdated"
                         style="background-color: rgb(10, 152, 100);padding-top: 10px;border-radius: 8px; padding-bottom: 1px;padding-right: 10px;padding-left: 10px">
-                        <h4 style="color: white;font-size: 20px;">Item Updated successfully, click save changes below to update</h4>
+                        <h4 style="color: white;font-size: 20px;">Product Updated successfully, click save changes below to update</h4>
 
                         <!-- Content of the div you want to show -->
                     </div>

@@ -8,13 +8,13 @@ import { FacilityBrandingService } from '../../../services/facility-branding.ser
 import {
   ensureFromModuleInList,
   isQueueDischargeDestination,
-  normalizeHospitalModules,
+  normalizeBusinessModules,
   pickDefaultFromModuleId,
   QUEUE_DISCHARGE_DESTINATION_ID,
   queueDestinationOptions,
 } from '../../../utils/queue-module.util';
 import { formatTreatmentPeriodUnit, parseTreatmentPeriodUnitToDayFraction, resolveStockPrescribingSource, DOSAGE_UNIT_SELECT_OPTIONS, applyPrescribingPrefillToTreatmentForm, normalizeDosageUnitForSelect, isStandardDosageUnit } from '../../../utils/prescribing-prefill.util';
-import { patientGroupUsesCompassionPricing, findUnitSellingModelByNameKeyword } from '../../../shared/unit-selling-model-picker/unit-selling-model.interface';
+import { clientGroupUsesCompassionPricing, findUnitSellingModelByNameKeyword } from '../../../shared/unit-selling-model-picker/unit-selling-model.interface';
 import { formatMoneyWholeDisplay } from '../../../utils/ugx-money.util';
 import {
   computePulsePressure,
@@ -22,7 +22,12 @@ import {
 } from '../../../utils/vitals-calculations.util';
 import { BatchSellingModel, extractBatchLinePricing } from '../../../utils/stock-batch-pricing.util';
 import { StandardDosageOption } from '../../../utils/standard-dosage.util';
-import { downloadPaymentReceiptPdf } from '../../../utils/payment-receipt-pdf.util';
+import { buildCommercialDocumentPdf,
+  commercialDocFilename,
+  mapSaleToCommercialDoc,
+  normalizeCommercialDocType,
+} from '../../../utils/commercial-document-pdf.util';
+import jsPDF from 'jspdf';
 import {
   applyTreatmentLifecycleFlags,
   TreatmentLifecycleFlag,
@@ -40,12 +45,20 @@ import {
 } from '../../../utils/lab-results-docx.util';
 import {
   CbcResultField,
-  getCbcFieldsForPatient,
+  getCbcFieldsForClient,
   getCbcReferenceLabel,
 } from '../../../utils/cbc-reference-ranges.util';
 
 type ConsultationTab =
-  | 'patient'
+  | 'client'
+  | 'quotation'
+  | 'proforma'
+  | 'sales_invoice'
+  | 'payment'
+  | 'receipt'
+  | 'delivered'
+  | 'returned'
+  /** @deprecated clinical tabs kept for existing panel markup */
   | 'vitals'
   | 'consultation'
   | 'services'
@@ -77,9 +90,9 @@ interface CreateVisitFormModel {
   visitStatus: string;
   visitType: string;
   visitReason: string;
-  patientAge: string;
-  patientContact: string;
-  patientAddress: string;
+  clientAge: string;
+  clientContact: string;
+  clientAddress: string;
   nextOfKinName: string;
   nextOfKinAddress: string;
   nextOfKinContact: string;
@@ -94,31 +107,52 @@ interface CreateVisitFormModel {
 })
 export class ConsultationV2Component implements OnInit, OnDestroy {
   readonly tabs: { id: ConsultationTab; label: string; icon: string }[] = [
-    { id: 'patient', label: 'Patient Data', icon: 'bi-person-vcard' },
-    { id: 'vitals', label: 'Vitals', icon: 'bi-heart-pulse' },
-    { id: 'consultation', label: 'Consultation', icon: 'bi-journal-medical' },
-    { id: 'services', label: 'Services', icon: 'bi-clipboard2-pulse' },
-    { id: 'pharmacy', label: 'Prescriptions', icon: 'bi-capsule' },
-    { id: 'billing', label: 'Invoice & Payment', icon: 'bi-receipt' },
-    { id: 'reports', label: 'Printouts', icon: 'bi-printer' },
+    { id: 'client', label: 'Client Data', icon: 'bi-person-vcard' },
   ];
 
-  activeTab: ConsultationTab = 'patient';
+  /** Sales transaction progress after Client Data. */
+  readonly progressTabs: { id: ConsultationTab; label: string; icon: string }[] = [
+    { id: 'quotation', label: 'Quotation', icon: 'bi-file-earmark-text' },
+    { id: 'proforma', label: 'Proforma Invoice', icon: 'bi-file-earmark-ruled' },
+    { id: 'sales_invoice', label: 'Sales Invoice', icon: 'bi-receipt-cutoff' },
+    { id: 'payment', label: 'Payment', icon: 'bi-cash-coin' },
+    { id: 'receipt', label: 'Receipt', icon: 'bi-receipt' },
+    { id: 'delivered', label: 'Delivered', icon: 'bi-box-seam' },
+    { id: 'returned', label: 'Returned', icon: 'bi-arrow-return-left' },
+  ];
 
-  // Patient
-  patientId: number | null = null;
-  patientFirstName = '';
-  patientSecondName = '';
-  patientFileNo = '';
-  patientProfilePic = 'assets/images/vector.jpeg';
-  patientGender = '';
-  patientAge = '';
-  patientContact = '';
-  patientAddress = '';
-  patientDateOfBirth = '';
-  patientOccupation = '';
-  patientGroupName = '';
-  patientGroupId: number | null = null;
+  activeTab: ConsultationTab = 'client';
+  /**
+   * Per-stage completion for the progress track.
+   * Delivery can mark quotation/proforma/sales invoice without marking payment.
+   * Receipt marks quotation → payment → receipt (leaves delivery for seller).
+   */
+  progressStageDone: Record<string, boolean> = {
+    quotation: false,
+    proforma: false,
+    sales_invoice: false,
+    payment: false,
+    receipt: false,
+    delivered: false,
+    returned: false,
+  };
+  isConfirmingDelivery = false;
+  deliveryNoteDraft = '';
+
+  // Client
+  clientId: number | null = null;
+  clientFirstName = '';
+  clientSecondName = '';
+  clientFileNo = '';
+  clientProfilePic = 'assets/images/vector.jpeg';
+  clientGender = '';
+  clientAge = '';
+  clientContact = '';
+  clientAddress = '';
+  clientDateOfBirth = '';
+  clientOccupation = '';
+  clientGroupName = '';
+  clientGroupId: number | null = null;
   nextOfKinName = '';
   nextOfKinContact = '';
   nextOfKinAddress = '';
@@ -127,7 +161,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   mdUser = false;
 
   // Visit
-  patientVisitList: any[] = [];
+  clientVisitList: any[] = [];
   visitSearchQuery = '';
   isLoadingVisits = false;
   isCreatingVisit = false;
@@ -137,13 +171,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   isOpenVisit = false;
   isClosedVisit = false;
   hasNoVisit = true;
-  isUpdatingPatientVisit = false;
+  isUpdatingClientVisit = false;
 
   // Modals
   showCreateVisitModal = false;
   showChooseVisitModal = false;
   showEditVisitModal = false;
-  showEditPatientModal = false;
+  showEditClientModal = false;
   showQueueClientModal = false;
   showPayAllDebtModal = false;
   showCloseVisitModal = false;
@@ -153,9 +187,9 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
   createVisitFormData: CreateVisitFormModel = this.emptyCreateVisitForm();
   editVisitFormData: CreateVisitFormModel = this.emptyCreateVisitForm();
-  editPatientFormData: any = {};
-  editPatientError = '';
-  isUpdatingPatientData = false;
+  editClientFormData: any = {};
+  editClientError = '';
+  isUpdatingClientData = false;
   editingVisitId: number | null = null;
   editingVisitNumber = '';
   isUpdatingVisitDetails = false;
@@ -163,13 +197,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   isDeletingVisit = false;
 
   // Queue client
-  patientGroupList: any[] = [];
+  clientGroupList: any[] = [];
   queueClientModules: any[] = [];
   queueClientClinics: any[] = [];
   queueClientError = '';
   queueClientSaving = false;
   closeVisitForm = {
-    outcome: 'DISCHARGED',
+    outcome: 'COMPLETED',
     note: '',
   };
   queueClientForm = {
@@ -178,7 +212,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     clinicId: null as number | null,
     note: '',
     visitDefaultScheme: '',
-    patientGroupId: null as number | null,
+    clientGroupId: null as number | null,
     emergency: false,
     revisit: false,
     printQueueTicket: false,
@@ -190,7 +224,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   payAllDebtForm: { amountToPay: number | null; paymentForm: string; notes: string } = {
     amountToPay: null,
     paymentForm: 'Cash At Hand',
-    notes: 'Pay all patient debt',
+    notes: 'Pay all client debt',
   };
   payAllDebtVisits: any[] = [];
   payAllDebtAllocation: {
@@ -388,7 +422,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   } = { indication: '', findings: '', impression: '', exam: '' };
   cbcResult: Record<string, string> = {};
   cbcInterpretation: Record<string, string> = {};
-  cbcResultFields: CbcResultField[] = getCbcFieldsForPatient(null, null, null);
+  cbcResultFields: CbcResultField[] = getCbcFieldsForClient(null, null, null);
   cbcRefCohortLabel = getCbcReferenceLabel(null, null, null);
   @ViewChild('serviceSearchInput') serviceSearchInput?: ElementRef<HTMLInputElement>;
 
@@ -493,6 +527,21 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   summaryBalanceDue: any = '0.00';
   paymentsList: any[] = [];
   isLoadingPayments = false;
+  /** Commercial documents (quotations, etc.) for the current order/client. */
+  orderQuotations: any[] = [];
+  isLoadingOrderQuotations = false;
+  /** Proforma / sales invoice / receipt lists keyed by documentType. */
+  orderProformas: any[] = [];
+  orderSalesInvoices: any[] = [];
+  orderReceipts: any[] = [];
+  isLoadingOrderProformas = false;
+  isLoadingOrderSalesInvoices = false;
+  isLoadingOrderReceipts = false;
+  orderDocActionMenuId: number | string | null = null;
+  orderDocActionMenuDoc: any = null;
+  orderDocActionMenuStyle: Record<string, string> = {};
+  @ViewChild('orderDocActionMenuPop') orderDocActionMenuPop?: ElementRef<HTMLElement>;
+  isPrintingOrderDoc = false;
   showPaymentModal = false;
   showTaxDiscountModal = false;
   editingPaymentId: number | null = null;
@@ -535,39 +584,39 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   statementExportDocumentType: 'MEDICAL_REPORT' | 'DISCHARGE_FORM' | 'MEDICAL_FORM' = 'MEDICAL_REPORT';
   statementExportSelectedTreatmentIds: number[] = [];
   statementExportSelectedProcedureIds: number[] = [];
-  readonly statementExportPatientFieldOptions: Array<{
+  readonly statementExportClientFieldOptions: Array<{
     key:
-      | 'includePatientName'
-      | 'includePatientAddress'
-      | 'includePatientGender'
-      | 'includePatientAge'
-      | 'includePatientContact'
+      | 'includeClientName'
+      | 'includeClientAddress'
+      | 'includeClientGender'
+      | 'includeClientAge'
+      | 'includeClientContact'
       | 'includeVisitDate'
       | 'includeBalanceDue';
     label: string;
   }> = [
-    { key: 'includePatientName', label: 'Full name' },
-    { key: 'includePatientAddress', label: 'Address' },
-    { key: 'includePatientGender', label: 'Gender' },
-    { key: 'includePatientAge', label: 'Age' },
-    { key: 'includePatientContact', label: 'Contact' },
+    { key: 'includeClientName', label: 'Full name' },
+    { key: 'includeClientAddress', label: 'Address' },
+    { key: 'includeClientGender', label: 'Gender' },
+    { key: 'includeClientAge', label: 'Age' },
+    { key: 'includeClientContact', label: 'Contact' },
     { key: 'includeVisitDate', label: 'Visit date' },
     { key: 'includeBalanceDue', label: 'Balance due' },
   ];
-  statementExportPatientFields = {
-    includePatientName: true,
-    includePatientAddress: true,
-    includePatientGender: true,
-    includePatientAge: true,
-    includePatientContact: true,
+  statementExportClientFields = {
+    includeClientName: true,
+    includeClientAddress: true,
+    includeClientGender: true,
+    includeClientAge: true,
+    includeClientContact: true,
     includeVisitDate: true,
     includeBalanceDue: true,
   };
   statementExportAccordion: Record<
-    'patient' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer',
+    'client' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer',
     boolean
   > = {
-    patient: true,
+    client: true,
     document: false,
     services: false,
     treatments: false,
@@ -683,15 +732,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     document.body.style.overflow = '';
   }
 
-  get patientFullName(): string {
-    const first = this.patientFirstName || '';
-    const second = this.patientSecondName || '';
-    return `${first} ${second}`.trim() || 'No patient selected';
+  get clientFullName(): string {
+    const first = this.clientFirstName || '';
+    const second = this.clientSecondName || '';
+    return `${first} ${second}`.trim() || 'No client selected';
   }
 
   get filteredVisits(): any[] {
     const q = this.visitSearchQuery.trim().toLowerCase();
-    let list = this.patientVisitList;
+    let list = this.clientVisitList;
     if (q) {
       list = list.filter((visit) => {
         const label = this.formatVisitLabel(visit).toLowerCase();
@@ -705,14 +754,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
   get selectedVisitLabel(): string {
     if (!this.visit) {
-      return 'Choose a visit';
+      return 'Select order';
     }
     return this.formatVisitLabel(this.visit);
   }
 
   get visitStatusLabel(): string {
     if (this.hasNoVisit) {
-      return 'No visit';
+      return 'No order';
     }
     return (this.visitStatus || 'unknown').toString();
   }
@@ -721,7 +770,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return queueDestinationOptions(this.queueClientModules);
   }
 
-  get canApplyPayAllPatientDebt(): boolean {
+  get canApplyPayAllClientDebt(): boolean {
     if (this.payAllDebtSaving || this.payAllDebtLoading) {
       return false;
     }
@@ -779,47 +828,388 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   setActiveTab(tab: ConsultationTab): void {
     this.closeServiceActionMenu();
     this.activeTab = tab;
-    if (!this.visitId) {
+    if (!this.visitId && !this.clientId) {
       return;
     }
-    if (tab === 'vitals') {
-      this.loadVitals();
+    if (tab === 'quotation') {
+      this.loadOrderQuotations();
     }
-    if (tab === 'consultation') {
-      this.loadConsultation();
+    if (tab === 'proforma') {
+      this.loadOrderProformas();
     }
-    if (tab === 'services') {
-      this.loadProcedureCatalog();
-      this.loadServices();
+    if (tab === 'sales_invoice') {
+      this.loadOrderSalesInvoices();
     }
-    if (tab === 'pharmacy') {
-      this.loadPharmacyTreatmentSource();
-      this.loadPharmacy();
-    }
-    if (tab === 'billing') {
+    if (tab === 'payment' || tab === 'sales_invoice' || tab === 'receipt') {
       this.loadInvoice();
       this.loadPayments();
     }
+    if (tab === 'payment') {
+      // So Payment-tab print/share can reuse the same POS receipt documents.
+      this.loadOrderReceipts();
+    }
+    if (tab === 'receipt') {
+      this.loadOrderReceipts();
+    }
+    if (tab === 'delivered' || tab === 'returned') {
+      this.refreshTransactionProgress();
+    }
+  }
+
+  progressTabState(index: number): 'done' | 'current' | 'upcoming' {
+    const tab = this.progressTabs[index];
+    if (!tab) {
+      return 'upcoming';
+    }
+    if (this.activeTab === tab.id) {
+      return 'current';
+    }
+    if (this.progressStageDone[tab.id]) {
+      return 'done';
+    }
+    return 'upcoming';
+  }
+
+  isProgressTabDone(index: number): boolean {
+    const tab = this.progressTabs[index];
+    return !!tab && !!this.progressStageDone[tab.id];
+  }
+
+  isProgressTabCurrent(index: number): boolean {
+    return this.progressTabs[index]?.id === this.activeTab;
+  }
+
+  /** Recalculate progress checks from order documents, payments, and delivery flag. */
+  refreshTransactionProgress(): void {
+    if (!this.visitId) {
+      this.resetProgressStageDone();
+      return;
+    }
+    const goodsDelivered = Boolean(this.visit?.goodsDelivered);
+    this.api.listOtcSaleDocuments({ visitId: this.visitId }).subscribe({
+      next: (rows) => {
+        const docs = Array.isArray(rows) ? rows : [];
+        const types = new Set(
+          docs.map((d) => String(d?.documentType || '').trim().toLowerCase())
+        );
+        const hasQuotation = types.has('quotation') || types.has('quote');
+        const hasProforma = types.has('proforma') || types.has('proforma_invoice');
+        const hasSalesInvoice = types.has('sales_invoice') || types.has('invoice');
+        const hasReceipt = types.has('receipt');
+        const hasPayment =
+          (this.paymentsList || []).some((p) => !this.isPaymentReversed(p)) || hasReceipt;
+
+        // Receipt auto-fills commercial + payment stages; delivery is separate.
+        this.progressStageDone = {
+          quotation: hasQuotation || hasProforma || hasSalesInvoice || hasReceipt || goodsDelivered,
+          proforma: hasProforma || hasSalesInvoice || hasReceipt || goodsDelivered,
+          sales_invoice: hasSalesInvoice || hasReceipt || goodsDelivered,
+          // Delivery must NOT auto-check payment.
+          payment: hasPayment,
+          receipt: hasReceipt,
+          delivered: goodsDelivered,
+          returned: false,
+        };
+      },
+      error: () => {
+        const goodsDelivered = Boolean(this.visit?.goodsDelivered);
+        const hasPayment = (this.paymentsList || []).some((p) => !this.isPaymentReversed(p));
+        this.progressStageDone = {
+          ...this.progressStageDone,
+          payment: hasPayment,
+          delivered: goodsDelivered,
+          quotation: this.progressStageDone['quotation'] || goodsDelivered,
+          proforma: this.progressStageDone['proforma'] || goodsDelivered,
+          sales_invoice: this.progressStageDone['sales_invoice'] || goodsDelivered,
+        };
+      },
+    });
+  }
+
+  private resetProgressStageDone(): void {
+    this.progressStageDone = {
+      quotation: false,
+      proforma: false,
+      sales_invoice: false,
+      payment: false,
+      receipt: false,
+      delivered: false,
+      returned: false,
+    };
+  }
+
+  confirmOrderDelivered(): void {
+    if (!this.visitId || this.isConfirmingDelivery) {
+      return;
+    }
+    if (Boolean(this.visit?.goodsDelivered)) {
+      this.showStatusMessage('Delivery was already confirmed for this order.', 'info');
+      return;
+    }
+    const note = String(this.deliveryNoteDraft || '').trim();
+    if (!note) {
+      this.showStatusMessage('Enter a delivery note before confirming goods delivered.', 'error');
+      return;
+    }
+    this.isConfirmingDelivery = true;
+    this.api.confirmOtcGoodsDelivery(this.visitId, note).subscribe({
+      next: (res: any) => {
+        this.isConfirmingDelivery = false;
+        const updated = res?.data ?? res;
+        if (this.visit && typeof this.visit === 'object') {
+          this.visit = {
+            ...this.visit,
+            goodsDelivered: true,
+            deliveryNote: note,
+            ...(updated || {}),
+          };
+        } else {
+          this.visit = { id: this.visitId, goodsDelivered: true, deliveryNote: note };
+        }
+        this.deliveryNoteDraft = '';
+        // Delivery confirms quotation → sales invoice path, not payment.
+        this.progressStageDone = {
+          ...this.progressStageDone,
+          quotation: true,
+          proforma: true,
+          sales_invoice: true,
+          delivered: true,
+        };
+        this.showStatusMessage('Delivery confirmed. Payment remains separate until received.', 'success');
+        this.refreshTransactionProgress();
+      },
+      error: (err) => {
+        this.isConfirmingDelivery = false;
+        this.showStatusMessage(
+          err?.error?.message || 'Could not confirm delivery.',
+          'error'
+        );
+      },
+    });
+  }
+
+  progressStageTitle(tab: ConsultationTab): string {
+    return this.progressTabs.find((t) => t.id === tab)?.label || 'Transaction';
+  }
+
+  progressStageIcon(tab: ConsultationTab): string {
+    return this.progressTabs.find((t) => t.id === tab)?.icon || 'bi-file-earmark';
+  }
+
+  loadOrderQuotations(): void {
+    this.loadOrderCommercialDocuments('quotation');
+  }
+
+  loadOrderProformas(): void {
+    this.loadOrderCommercialDocuments('proforma');
+  }
+
+  loadOrderSalesInvoices(): void {
+    this.loadOrderCommercialDocuments('sales_invoice');
+  }
+
+  loadOrderReceipts(): void {
+    this.loadOrderCommercialDocuments('receipt');
+  }
+
+  private loadOrderCommercialDocuments(
+    documentType: 'quotation' | 'proforma' | 'sales_invoice' | 'receipt'
+  ): void {
+    if (!this.visitId && !this.clientId) {
+      this.setOrderDocsForType(documentType, []);
+      return;
+    }
+    this.setOrderDocsLoading(documentType, true);
+    this.api
+      .listOtcSaleDocuments({
+        // Prefer this order when selected so tabs only show docs for the visit.
+        visitId: this.visitId,
+        patientId: this.visitId ? null : this.clientId,
+        documentType,
+      })
+      .subscribe({
+        next: (rows) => {
+          this.setOrderDocsForType(documentType, Array.isArray(rows) ? rows : []);
+          this.setOrderDocsLoading(documentType, false);
+        },
+        error: () => {
+          this.setOrderDocsForType(documentType, []);
+          this.setOrderDocsLoading(documentType, false);
+          this.showStatusMessage(
+            `Could not load ${this.progressStageTitle(documentType).toLowerCase()}s for this order.`,
+            'error'
+          );
+        },
+      });
+  }
+
+  private setOrderDocsForType(
+    documentType: 'quotation' | 'proforma' | 'sales_invoice' | 'receipt',
+    rows: any[]
+  ): void {
+    switch (documentType) {
+      case 'quotation':
+        this.orderQuotations = rows;
+        break;
+      case 'proforma':
+        this.orderProformas = rows;
+        break;
+      case 'sales_invoice':
+        this.orderSalesInvoices = rows;
+        break;
+      case 'receipt':
+        this.orderReceipts = rows;
+        break;
+    }
+  }
+
+  private setOrderDocsLoading(
+    documentType: 'quotation' | 'proforma' | 'sales_invoice' | 'receipt',
+    loading: boolean
+  ): void {
+    switch (documentType) {
+      case 'quotation':
+        this.isLoadingOrderQuotations = loading;
+        break;
+      case 'proforma':
+        this.isLoadingOrderProformas = loading;
+        break;
+      case 'sales_invoice':
+        this.isLoadingOrderSalesInvoices = loading;
+        break;
+      case 'receipt':
+        this.isLoadingOrderReceipts = loading;
+        break;
+    }
+  }
+
+  orderDocsForActiveCommercialTab(): any[] {
+    switch (this.activeTab) {
+      case 'quotation':
+        return this.orderQuotations;
+      case 'proforma':
+        return this.orderProformas;
+      case 'sales_invoice':
+        return this.orderSalesInvoices;
+      case 'receipt':
+        return this.orderReceipts;
+      default:
+        return [];
+    }
+  }
+
+  isLoadingOrderDocsForActiveCommercialTab(): boolean {
+    switch (this.activeTab) {
+      case 'quotation':
+        return this.isLoadingOrderQuotations;
+      case 'proforma':
+        return this.isLoadingOrderProformas;
+      case 'sales_invoice':
+        return this.isLoadingOrderSalesInvoices;
+      case 'receipt':
+        return this.isLoadingOrderReceipts;
+      default:
+        return false;
+    }
+  }
+
+  refreshOrderDocsForActiveCommercialTab(): void {
+    switch (this.activeTab) {
+      case 'quotation':
+        this.loadOrderQuotations();
+        break;
+      case 'proforma':
+        this.loadOrderProformas();
+        break;
+      case 'sales_invoice':
+        this.loadOrderSalesInvoices();
+        break;
+      case 'receipt':
+        this.loadOrderReceipts();
+        break;
+      default:
+        break;
+    }
+  }
+
+  orderDocumentTypeBadgeClass(doc: any): string {
+    const type = String(doc?.documentType || this.activeTab || 'quotation')
+      .trim()
+      .toLowerCase();
+    if (type === 'proforma' || type === 'proforma_invoice') {
+      return 'otc-doc-status--proforma';
+    }
+    if (type === 'sales_invoice' || type === 'invoice') {
+      return 'otc-doc-status--sales-invoice';
+    }
+    if (type === 'receipt') {
+      return 'otc-doc-status--receipt';
+    }
+    return 'otc-doc-status--quotation';
+  }
+
+  orderDocumentTypeLabel(doc: any): string {
+    const type = String(doc?.documentType || this.activeTab || 'quotation')
+      .trim()
+      .toLowerCase();
+    if (type === 'proforma' || type === 'proforma_invoice') {
+      return 'Proforma';
+    }
+    if (type === 'sales_invoice' || type === 'invoice') {
+      return 'Sales invoice';
+    }
+    if (type === 'receipt') {
+      return 'Receipt';
+    }
+    return 'Quotation';
+  }
+
+  orderDocumentLineCount(doc: any): number {
+    const lines = doc?.lines;
+    return Array.isArray(lines) ? lines.length : 0;
+  }
+
+  orderDocumentStatusLabel(doc: any): string {
+    const type = String(doc?.documentType || 'quotation').toLowerCase();
+    if (type === 'receipt') {
+      return 'Paid';
+    }
+    if (type === 'sales_invoice' || type === 'invoice') {
+      return 'Invoiced';
+    }
+    if (type === 'proforma' || type === 'proforma_invoice') {
+      return 'Proforma';
+    }
+    return 'Processing';
+  }
+
+  formatOrderDocumentDate(doc: any): string {
+    const date = doc?.saleDate || '';
+    const time = doc?.saleTime || '';
+    if (date && time) {
+      return `${date} · ${String(time).slice(0, 8)}`;
+    }
+    return date || time || '—';
   }
 
   // ── Create visit modal ──────────────────────────────────────────────
 
   openCreateVisitModal(): void {
-    if (!this.patientId) {
-      this.showStatusMessage('Select a patient first.', 'error');
+    if (!this.clientId) {
+      this.showStatusMessage('Select a client first.', 'error');
       return;
     }
-    this.fillCreateVisitFormFromPatient();
+    this.fillCreateVisitFormFromClient();
     this.showCreateVisitModal = true;
     this.openCv2ModalLayer();
 
-    this.api.getPatientById(this.patientId).subscribe({
-      next: (patient) => {
-        if (patient && typeof patient === 'object') {
-          const normalized = this.normalizePatientRecord(patient);
-          this.applyPatient(normalized);
+    this.api.getClientById(this.clientId).subscribe({
+      next: (client) => {
+        if (client && typeof client === 'object') {
+          const normalized = this.normalizeClientRecord(client);
+          this.applyClient(normalized);
           sessionStorage.setItem('item', JSON.stringify(normalized));
-          this.fillCreateVisitFormPatientFields();
+          this.fillCreateVisitFormClientFields();
         }
       },
       error: () => undefined,
@@ -833,18 +1223,18 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   resetCreateVisitForm(): void {
-    this.fillCreateVisitFormFromPatient();
+    this.fillCreateVisitFormFromClient();
   }
 
   submitCreateVisit(): void {
-    if (!this.patientId || this.isCreatingVisit) {
+    if (!this.clientId || this.isCreatingVisit) {
       return;
     }
 
     this.isCreatingVisit = true;
     const payload = this.buildNewVisitPayload(this.createVisitFormData);
 
-    this.api.createNewVisit(this.patientId, payload).subscribe({
+    this.api.createNewVisit(this.clientId, payload).subscribe({
       next: (response: any) => {
         this.isCreatingVisit = false;
         this.showStatusMessage(response?.message || 'Visit created successfully.', 'success');
@@ -852,10 +1242,10 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
         const created = response?.data ?? response;
         if (created?.id) {
-          sessionStorage.setItem('initialPatientVisit', JSON.stringify(created));
-          this.loadPatientVisits(this.patientId!, created);
-        } else if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+          sessionStorage.setItem('initialClientVisit', JSON.stringify(created));
+          this.loadClientVisits(this.clientId!, created);
+        } else if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
       },
       error: (err) => {
@@ -871,14 +1261,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   // ── Choose visit modal ──────────────────────────────────────────────
 
   openChooseVisitModal(): void {
-    if (!this.patientId) {
-      this.showStatusMessage('Select a patient first.', 'error');
+    if (!this.clientId) {
+      this.showStatusMessage('Select a client first.', 'error');
       return;
     }
     this.visitSearchQuery = '';
     this.showChooseVisitModal = true;
     this.openCv2ModalLayer();
-    this.loadPatientVisits(this.patientId);
+    this.loadClientVisits(this.clientId);
   }
 
   closeChooseVisitModal(): void {
@@ -934,7 +1324,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.isLoadingEditVisitDetails = true;
     this.openCv2ModalLayer();
 
-    this.api.getPatientVisitByVisitId(visit.id).subscribe({
+    this.api.getClientVisitByVisitId(visit.id).subscribe({
       next: (detail: any) => {
         this.applyEditVisitFormFromVisitSource(detail && typeof detail === 'object' ? detail : visit, visit);
         this.isLoadingEditVisitDetails = false;
@@ -966,9 +1356,9 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       visitStatus: this.editVisitFormData.visitStatus,
       visitType: this.editVisitFormData.visitType || null,
       visitReason: this.editVisitFormData.visitReason || null,
-      patientAge: this.editVisitFormData.patientAge || null,
-      patientContact: this.editVisitFormData.patientContact || null,
-      patientAddress: this.editVisitFormData.patientAddress || null,
+      clientAge: this.editVisitFormData.clientAge || null,
+      clientContact: this.editVisitFormData.clientContact || null,
+      clientAddress: this.editVisitFormData.clientAddress || null,
       nextOfKinName: this.editVisitFormData.nextOfKinName || null,
       nextOfKinAddress: this.editVisitFormData.nextOfKinAddress || null,
       nextOfKinContact: this.editVisitFormData.nextOfKinContact || null,
@@ -982,8 +1372,8 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.isUpdatingVisitDetails = false;
         this.showStatusMessage(res?.message || 'Visit updated successfully.', 'success');
         this.closeEditVisitModal();
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
         if (this.visitId === editedId) {
           this.loadVisit(res?.data ?? { ...this.visit, ...payload, id: editedId });
@@ -1011,15 +1401,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
     this.isDeletingVisit = true;
     const userRole = sessionStorage.getItem('userRole') || '';
-    this.api.deletePatientVisit(id, userRole).subscribe({
+    this.api.deleteClientVisit(id, userRole).subscribe({
       next: (res: any) => {
         this.isDeletingVisit = false;
         this.showStatusMessage(res?.message || 'Visit deleted.', 'success');
         if (this.visitId === id) {
           this.clearVisitState();
         }
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
       },
       error: (err) => {
@@ -1029,11 +1419,11 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     });
   }
 
-  // ── Edit patient modal ──────────────────────────────────────────────
+  // ── Edit client modal ──────────────────────────────────────────────
 
-  openEditPatientModal(): void {
-    if (!this.patientId) {
-      this.showStatusMessage('Select a patient first.', 'error');
+  openEditClientModal(): void {
+    if (!this.clientId) {
+      this.showStatusMessage('Select a client first.', 'error');
       return;
     }
 
@@ -1045,108 +1435,108 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     }
 
     const groupId =
-      stored.patientGroupId ??
-      stored.patientGroup?.id ??
-      (this.patientGroupList || []).find(
+      stored.clientGroupId ??
+      stored.clientGroup?.id ??
+      (this.clientGroupList || []).find(
         (g: any) =>
-          g.groupName === this.patientGroupName || g.groupNameShortForm === this.patientGroupName
+          g.groupName === this.clientGroupName || g.groupNameShortForm === this.clientGroupName
       )?.id ??
       null;
 
-    this.editPatientFormData = {
-      patientFirstName: this.patientFirstName || '',
-      patientSecondName: this.patientSecondName || '',
-      patientFileNo: this.patientFileNo || '',
-      patientContact: this.patientContact || '',
-      patientAge: this.coercePatientAgeForEdit(this.patientAge),
-      patientDateOfBirth: this.normalizeDateForInput(this.patientDateOfBirth),
-      patientGender: this.normalizePatientGenderForEdit(this.patientGender),
-      patientAddress: this.patientAddress || '',
-      patientOccupation: this.patientOccupation || '',
-      patientGroupId: groupId,
+    this.editClientFormData = {
+      clientFirstName: this.clientFirstName || '',
+      clientSecondName: this.clientSecondName || '',
+      clientFileNo: this.clientFileNo || '',
+      clientContact: this.clientContact || '',
+      clientAge: this.coerceClientAgeForEdit(this.clientAge),
+      clientDateOfBirth: this.normalizeDateForInput(this.clientDateOfBirth),
+      clientGender: this.normalizeClientGenderForEdit(this.clientGender),
+      clientAddress: this.clientAddress || '',
+      clientOccupation: this.clientOccupation || '',
+      clientGroupId: groupId,
       nextOfKinName: this.nextOfKinName || '',
       nextOfKinContact: this.nextOfKinContact || '',
       nextOfKinAddress: this.nextOfKinAddress || '',
       relationship: this.relationship || '',
     };
 
-    if (!this.patientGroupList?.length) {
-      this.loadPatientGroups();
+    if (!this.clientGroupList?.length) {
+      this.loadClientGroups();
     }
 
-    this.isUpdatingPatientData = false;
-    this.editPatientError = '';
-    this.showEditPatientModal = true;
+    this.isUpdatingClientData = false;
+    this.editClientError = '';
+    this.showEditClientModal = true;
     this.openCv2ModalLayer();
   }
 
-  closeEditPatientModal(): void {
-    this.showEditPatientModal = false;
-    this.isUpdatingPatientData = false;
-    this.editPatientError = '';
+  closeEditClientModal(): void {
+    this.showEditClientModal = false;
+    this.isUpdatingClientData = false;
+    this.editClientError = '';
     this.restoreBodyScrollUnlessModalOpen();
   }
 
-  submitEditPatient(): void {
-    if (!this.patientId || this.isUpdatingPatientData) {
+  submitEditClient(): void {
+    if (!this.clientId || this.isUpdatingClientData) {
       return;
     }
 
-    const firstName = (this.editPatientFormData.patientFirstName || '').trim();
-    const secondName = (this.editPatientFormData.patientSecondName || '').trim();
+    const firstName = (this.editClientFormData.clientFirstName || '').trim();
+    const secondName = (this.editClientFormData.clientSecondName || '').trim();
 
     if (!firstName || !secondName) {
-      this.editPatientError = 'First name and second name are required.';
+      this.editClientError = 'First name and second name are required.';
       return;
     }
 
     if (firstName.toLowerCase() === secondName.toLowerCase()) {
-      this.editPatientError = 'First name and second name cannot be the same.';
+      this.editClientError = 'First name and second name cannot be the same.';
       return;
     }
 
-    this.isUpdatingPatientData = true;
-    this.editPatientError = '';
+    this.isUpdatingClientData = true;
+    this.editClientError = '';
 
-    const ageVal = this.coercePatientAgeForEdit(this.editPatientFormData.patientAge);
+    const ageVal = this.coerceClientAgeForEdit(this.editClientFormData.clientAge);
     const userRole = sessionStorage.getItem('userRole') || '';
     const requestData = {
-      patientFirstName: firstName,
-      patientSecondName: secondName,
-      patientContact: (this.editPatientFormData.patientContact || '').trim(),
-      patientAge: ageVal != null ? Number(ageVal).toFixed(2) : null,
-      patientDateOfBirth: this.formatPatientDateForApi(this.editPatientFormData.patientDateOfBirth),
-      patientGender: this.editPatientFormData.patientGender || null,
-      patientAddress: (this.editPatientFormData.patientAddress || '').trim(),
-      occupation: (this.editPatientFormData.patientOccupation || '').trim(),
-      patientGroupId: this.editPatientFormData.patientGroupId ?? null,
-      nextOfKinName: (this.editPatientFormData.nextOfKinName || '').trim(),
-      nextOfKinContact: (this.editPatientFormData.nextOfKinContact || '').trim(),
-      nextOfKinAddress: (this.editPatientFormData.nextOfKinAddress || '').trim(),
-      relationship: (this.editPatientFormData.relationship || '').trim(),
+      clientFirstName: firstName,
+      clientSecondName: secondName,
+      clientContact: (this.editClientFormData.clientContact || '').trim(),
+      clientAge: ageVal != null ? Number(ageVal).toFixed(2) : null,
+      clientDateOfBirth: this.formatClientDateForApi(this.editClientFormData.clientDateOfBirth),
+      clientGender: this.editClientFormData.clientGender || null,
+      clientAddress: (this.editClientFormData.clientAddress || '').trim(),
+      occupation: (this.editClientFormData.clientOccupation || '').trim(),
+      clientGroupId: this.editClientFormData.clientGroupId ?? null,
+      nextOfKinName: (this.editClientFormData.nextOfKinName || '').trim(),
+      nextOfKinContact: (this.editClientFormData.nextOfKinContact || '').trim(),
+      nextOfKinAddress: (this.editClientFormData.nextOfKinAddress || '').trim(),
+      relationship: (this.editClientFormData.relationship || '').trim(),
       userRole,
     };
 
-    this.api.updateItem(this.patientId, requestData).subscribe({
+    this.api.updateItem(this.clientId, requestData).subscribe({
       next: (response: any) => {
-        this.isUpdatingPatientData = false;
-        this.showStatusMessage(response?.message || 'Patient data updated successfully.', 'success');
-        this.closeEditPatientModal();
-        this.api.getPatientById(this.patientId!).subscribe({
+        this.isUpdatingClientData = false;
+        this.showStatusMessage(response?.message || 'Client data updated successfully.', 'success');
+        this.closeEditClientModal();
+        this.api.getClientById(this.clientId!).subscribe({
           next: (res: any) => {
-            const fresh = this.normalizePatientRecord(res?.data ?? res);
+            const fresh = this.normalizeClientRecord(res?.data ?? res);
             sessionStorage.setItem('item', JSON.stringify(fresh));
-            this.applyPatient(fresh);
+            this.applyClient(fresh);
           },
         });
       },
       error: (err: any) => {
-        this.isUpdatingPatientData = false;
-        this.editPatientError =
+        this.isUpdatingClientData = false;
+        this.editClientError =
           err?.error?.message ||
           err?.error?.error ||
           (typeof err?.error === 'string' ? err.error : null) ||
-          'Failed to update patient data.';
+          'Failed to update client data.';
       },
     });
   }
@@ -1154,14 +1544,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   // ── Queue client modal ──────────────────────────────────────────────
 
   openQueueClientModal(): void {
-    if (!this.patientId) {
-      this.showStatusMessage('No patient loaded. Open a patient visit first.', 'error');
+    if (!this.clientId) {
+      this.showStatusMessage('No client loaded. Open a client order first.', 'error');
       return;
     }
     this.queueClientError = '';
     this.queueClientClinics = [];
-    const schemeName = (this.patientGroupName || this.visit?.visitDefaultScheme || '').toString();
-    const matchedGroup = (this.patientGroupList || []).find(
+    const schemeName = (this.clientGroupName || this.visit?.visitDefaultScheme || '').toString();
+    const matchedGroup = (this.clientGroupList || []).find(
       (g: any) => g?.groupName === schemeName || g?.groupNameShortForm === schemeName
     );
     this.queueClientForm = {
@@ -1170,13 +1560,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       clinicId: null,
       note: '',
       visitDefaultScheme: schemeName,
-      patientGroupId: matchedGroup?.id ?? null,
+      clientGroupId: matchedGroup?.id ?? null,
       emergency: false,
       revisit: false,
       printQueueTicket: false,
     };
-    if (!this.patientGroupList?.length) {
-      this.loadPatientGroups();
+    if (!this.clientGroupList?.length) {
+      this.loadClientGroups();
     }
     this.loadQueueClientModules();
     this.showQueueClientModal = true;
@@ -1200,7 +1590,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       this.queueClientClinics = [];
       return;
     }
-    this.api.getHospitalClinics(this.queueClientForm.toModuleId).subscribe({
+    this.api.getBusinessClinics(this.queueClientForm.toModuleId).subscribe({
       next: (res: any) => {
         const all = Array.isArray(res) ? res : [];
         this.queueClientClinics = all.filter((c: any) => c.active !== false);
@@ -1212,15 +1602,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   onQueueClientSchemeChange(): void {
-    const g = (this.patientGroupList || []).find((x: any) => x.id === this.queueClientForm.patientGroupId);
+    const g = (this.clientGroupList || []).find((x: any) => x.id === this.queueClientForm.clientGroupId);
     this.queueClientForm.visitDefaultScheme = g?.groupName || '';
   }
 
   submitQueueClient(): void {
-    const patientId = Number(this.patientId);
+    const clientId = Number(this.clientId);
     const isDischarge = isQueueDischargeDestination(this.queueClientForm.toModuleId);
-    if (!patientId) {
-      this.queueClientError = 'Select a patient first.';
+    if (!clientId) {
+      this.queueClientError = 'Select a client first.';
       return;
     }
     if (!isDischarge && !this.queueClientForm.fromModuleId) {
@@ -1238,20 +1628,20 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
     if (isDischarge) {
       this.api
-        .dischargePatientFromQueue({
-          patientId,
+        .dischargeClientFromQueue({
+          clientId,
           note: this.queueClientForm.note,
           dischargedBy: username,
         })
         .subscribe({
           next: () => {
             this.queueClientSaving = false;
-            this.showStatusMessage('Patient discharged from queue.', 'success');
+            this.showStatusMessage('Client discharged from queue.', 'success');
             this.closeQueueClientModal();
           },
           error: (err: any) => {
             this.queueClientSaving = false;
-            this.queueClientError = err?.error?.message || 'Failed to discharge patient.';
+            this.queueClientError = err?.error?.message || 'Failed to discharge client.';
           },
         });
       return;
@@ -1259,7 +1649,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
     const scheme =
       this.queueClientForm.visitDefaultScheme ||
-      (this.patientGroupList || []).find((g: any) => g.id === this.queueClientForm.patientGroupId)?.groupName ||
+      (this.clientGroupList || []).find((g: any) => g.id === this.queueClientForm.clientGroupId)?.groupName ||
       '';
     const fromModuleId = this.queueClientForm.fromModuleId;
     const toModuleId = this.queueClientForm.toModuleId;
@@ -1269,15 +1659,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       return;
     }
     this.api
-      .queuePatient({
-        patientId,
-        patientVisitId: visitId != null ? Number(visitId) : undefined,
+      .queueClient({
+        clientId,
+        clientVisitId: visitId != null ? Number(visitId) : undefined,
         fromModuleId,
         toModuleId,
         clinicId: this.queueClientForm.clinicId ?? undefined,
         note: this.queueClientForm.note,
         visitDefaultScheme: scheme,
-        patientGroupId: this.queueClientForm.patientGroupId ?? undefined,
+        clientGroupId: this.queueClientForm.clientGroupId ?? undefined,
         emergency: this.queueClientForm.emergency,
         revisit: this.queueClientForm.revisit,
         queuedBy: username,
@@ -1285,12 +1675,12 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.queueClientSaving = false;
-          this.showStatusMessage('Patient queued successfully.', 'success');
+          this.showStatusMessage('Client queued successfully.', 'success');
           this.closeQueueClientModal();
         },
         error: (err: any) => {
           this.queueClientSaving = false;
-          this.queueClientError = err?.error?.message || 'Failed to queue patient.';
+          this.queueClientError = err?.error?.message || 'Failed to queue client.';
         },
       });
   }
@@ -1302,7 +1692,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       return;
     }
     this.closeVisitForm = {
-      outcome: 'DISCHARGED',
+      outcome: 'COMPLETED',
       note: '',
     };
     this.showCloseVisitModal = true;
@@ -1310,7 +1700,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   closeCloseVisitModal(): void {
-    if (this.isUpdatingPatientVisit) {
+    if (this.isUpdatingClientVisit) {
       return;
     }
     this.showCloseVisitModal = false;
@@ -1321,8 +1711,8 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     if (!this.visitId) {
       return;
     }
-    this.isUpdatingPatientVisit = true;
-    const outcome = String(this.closeVisitForm.outcome || 'DISCHARGED').trim();
+    this.isUpdatingClientVisit = true;
+    const outcome = String(this.closeVisitForm.outcome || 'COMPLETED').trim();
     const note = String(this.closeVisitForm.note || '').trim();
     this.api
       .updateVisitStatus(this.visitId, {
@@ -1333,7 +1723,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       })
       .subscribe({
       next: (response: any) => {
-        this.isUpdatingPatientVisit = false;
+        this.isUpdatingClientVisit = false;
         this.showCloseVisitModal = false;
         this.visit = response?.data ?? this.visit;
         this.visitStatus = this.visit?.visitStatus || 'closed';
@@ -1341,15 +1731,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.isClosedVisit = true;
         this.restoreBodyScrollUnlessModalOpen();
         this.showStatusMessage(response?.message || 'Visit closed.', 'success');
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
         if (response?.data) {
           this.loadVisit(response.data);
         }
       },
       error: (err) => {
-        this.isUpdatingPatientVisit = false;
+        this.isUpdatingClientVisit = false;
         this.showStatusMessage(err?.error?.message || 'Could not close visit.', 'error');
       },
       });
@@ -1364,38 +1754,38 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       this.openCreateVisitModal();
       return;
     }
-    this.isUpdatingPatientVisit = true;
+    this.isUpdatingClientVisit = true;
     this.api.updateVisitStatus(this.visitId, { visitStatus: 'open' }).subscribe({
       next: (response: any) => {
-        this.isUpdatingPatientVisit = false;
+        this.isUpdatingClientVisit = false;
         this.visit = response?.data ?? this.visit;
         this.visitStatus = this.visit?.visitStatus || 'open';
         this.isOpenVisit = true;
         this.isClosedVisit = false;
         this.showStatusMessage(response?.message || 'Visit opened.', 'success');
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
         if (response?.data) {
           this.loadVisit(response.data);
         }
       },
       error: (err) => {
-        this.isUpdatingPatientVisit = false;
+        this.isUpdatingClientVisit = false;
         this.showStatusMessage(err?.error?.message || 'Could not open visit.', 'error');
       },
     });
   }
 
   refreshTotalDebt(): void {
-    this.refreshPatientTotalDebt();
+    this.refreshClientTotalDebt();
   }
 
   // ── Pay all debt modal ──────────────────────────────────────────────
 
-  openPayAllPatientDebtModal(): void {
-    if (!this.patientId) {
-      this.showStatusMessage('Select a patient first.', 'error');
+  openPayAllClientDebtModal(): void {
+    if (!this.clientId) {
+      this.showStatusMessage('Select a client first.', 'error');
       return;
     }
     this.payAllDebtMessage = '';
@@ -1404,14 +1794,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.payAllDebtForm = {
       amountToPay: this.getDefaultPayAllDebtAmount(),
       paymentForm: 'Cash At Hand',
-      notes: 'Pay all patient debt',
+      notes: 'Pay all client debt',
     };
     this.payAllDebtAllocation = [];
     this.payAllDebtLoading = true;
     this.showPayAllDebtModal = true;
     this.openCv2ModalLayer();
 
-    this.api.getInitialTriageVitalsForVisitId(this.patientId).subscribe({
+    this.api.getInitialTriageVitalsForVisitId(this.clientId).subscribe({
       next: (visits) => {
         this.payAllDebtVisits = this.sortVisitsOldestFirst(Array.isArray(visits) ? visits : []);
         this.payAllDebtForm.amountToPay = this.getDefaultPayAllDebtAmount();
@@ -1424,13 +1814,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       },
       error: () => {
         this.payAllDebtLoading = false;
-        this.payAllDebtMessage = 'Could not load patient visits.';
+        this.payAllDebtMessage = 'Could not load client orders.';
         this.payAllDebtMessageOk = false;
       },
     });
   }
 
-  closePayAllPatientDebtModal(): void {
+  closePayAllClientDebtModal(): void {
     this.showPayAllDebtModal = false;
     this.restoreBodyScrollUnlessModalOpen();
   }
@@ -1446,10 +1836,10 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     }, 0);
   }
 
-  submitPayAllPatientDebt(): void {
+  submitPayAllClientDebt(): void {
     const amount = Number(this.payAllDebtForm.amountToPay);
-    if (!this.patientId) {
-      this.payAllDebtMessage = 'Select a patient first.';
+    if (!this.clientId) {
+      this.payAllDebtMessage = 'Select a client first.';
       this.payAllDebtMessageOk = false;
       return;
     }
@@ -1459,7 +1849,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       return;
     }
     if (!this.payAllDebtAllocation.length) {
-      this.payAllDebtMessage = 'No outstanding visit balances found for this patient.';
+      this.payAllDebtMessage = 'No outstanding visit balances found for this client.';
       this.payAllDebtMessageOk = false;
       return;
     }
@@ -1470,11 +1860,11 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       amountToPay: amount,
       paymentForm: this.payAllDebtForm.paymentForm || 'Cash At Hand',
       status: 'Approved',
-      notes: (this.payAllDebtForm.notes || 'Pay all patient debt').trim(),
+      notes: (this.payAllDebtForm.notes || 'Pay all client debt').trim(),
       receivedBy: (this.userName || sessionStorage.getItem('username') || '').trim(),
     };
 
-    this.api.payAllPatientDebt(this.patientId, payload).subscribe({
+    this.api.payAllClientDebt(this.clientId, payload).subscribe({
       next: (res: any) => {
         this.payAllDebtSaving = false;
         this.payAllDebtMessageOk = true;
@@ -1482,12 +1872,12 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.payAllDebtMessage =
           res?.message ||
           `Payment applied across ${this.payAllDebtResult?.allocations?.length ?? 0} visit(s).`;
-        this.refreshPatientTotalDebt();
+        this.refreshClientTotalDebt();
         if (this.visitId) {
           this.loadInvoice();
         }
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
         this.showStatusMessage(this.payAllDebtMessage, 'success');
       },
@@ -1495,7 +1885,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.payAllDebtSaving = false;
         this.payAllDebtMessageOk = false;
         this.payAllDebtMessage =
-          err?.error?.message || err?.error?.data?.message || 'Could not apply patient debt payment.';
+          err?.error?.message || err?.error?.data?.message || 'Could not apply client debt payment.';
         if (this.isPayAllDebtNoOutstandingMessage(this.payAllDebtMessage)) {
           this.payAllDebtAllocation = [];
           this.payAllDebtForm.amountToPay = null;
@@ -1545,8 +1935,8 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.closeVitalsModal();
         this.loadVitals();
         this.loadInvoice();
-        if (this.patientId) {
-          this.loadPatientVisits(this.patientId);
+        if (this.clientId) {
+          this.loadClientVisits(this.clientId);
         }
       },
       error: (err) => {
@@ -1905,7 +2295,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.refreshServiceUnitSellingMode(procedure);
   }
 
-  /** After procedure pick: load unit sell models and prefer Compassion pricing when patient group uses it. */
+  /** After procedure pick: load unit sell models and prefer Compassion pricing when client group uses it. */
   private refreshServiceUnitSellingMode(procedure: any): void {
     const procedureId = Number(procedure?.id);
     const preferredModelId = procedure?.unitSellingModelId ?? null;
@@ -2464,15 +2854,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   private refreshCbcReferenceRangesForView(): void {
-    this.cbcResultFields = getCbcFieldsForPatient(
-      this.patientAge,
-      this.patientDateOfBirth,
-      this.patientGender
+    this.cbcResultFields = getCbcFieldsForClient(
+      this.clientAge,
+      this.clientDateOfBirth,
+      this.clientGender
     );
     this.cbcRefCohortLabel = getCbcReferenceLabel(
-      this.patientAge,
-      this.patientDateOfBirth,
-      this.patientGender
+      this.clientAge,
+      this.clientDateOfBirth,
+      this.clientGender
     );
   }
 
@@ -2872,6 +3262,9 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     if (this.paymentActionMenuId != null && target && !target.closest('.cv2-action-menu-pop')) {
       this.closePaymentActionMenu();
     }
+    if (this.orderDocActionMenuId != null && target && !target.closest('.cv2-action-menu-pop')) {
+      this.closeOrderDocActionMenu();
+    }
     if (this.pharmacyActionMenuId != null && target && !target.closest('.cv2-action-menu-pop')) {
       this.closePharmacyActionMenu();
     }
@@ -3266,27 +3659,27 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     }
   }
 
-  private resolvePatientGroupRecord(): any | null {
+  private resolveClientGroupRecord(): any | null {
     const groupId =
-      this.editPatientFormData?.patientGroupId ??
-      this.queueClientForm?.patientGroupId ??
-      this.patientGroupId ??
-      this.visit?.patientGroupId ??
-      this.visit?.patientGroup?.id ??
+      this.editClientFormData?.clientGroupId ??
+      this.queueClientForm?.clientGroupId ??
+      this.clientGroupId ??
+      this.visit?.clientGroupId ??
+      this.visit?.clientGroup?.id ??
       null;
     if (groupId != null) {
       return (
-        (this.patientGroupList || []).find((g: any) => Number(g?.id) === Number(groupId)) ?? null
+        (this.clientGroupList || []).find((g: any) => Number(g?.id) === Number(groupId)) ?? null
       );
     }
-    const name = String(this.patientGroupName || this.visit?.visitDefaultScheme || '')
+    const name = String(this.clientGroupName || this.visit?.visitDefaultScheme || '')
       .trim()
       .toLowerCase();
     if (!name) {
       return null;
     }
     return (
-      (this.patientGroupList || []).find(
+      (this.clientGroupList || []).find(
         (g: any) =>
           String(g?.groupNameShortForm || '').trim().toLowerCase() === name ||
           String(g?.groupName || '').trim().toLowerCase() === name
@@ -3329,7 +3722,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return models.find((model) => model?.isDefault) ?? models[0] ?? null;
   }
 
-  /** After drug pick: load unit sell models and prefer Compassion pricing when patient group uses it. */
+  /** After drug pick: load unit sell models and prefer Compassion pricing when client group uses it. */
   private refreshPharmacyUnitSellingMode(item: any): void {
     const preferredModelId =
       item?.unitSellingModelId ?? item?.unit_selling_model_id ?? null;
@@ -3420,16 +3813,16 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return Number(this.itemSellingPrice) || 0;
   }
 
-  /** Prefer unit sell models whose name contains "compassion" for Compassion-group patients. */
+  /** Prefer unit sell models whose name contains "compassion" for Compassion-group clients. */
   get unitSellingModelNameKeyword(): string | null {
-    const group = this.resolvePatientGroupRecord();
+    const group = this.resolveClientGroupRecord();
     const fallback =
-      this.patientGroupName ||
+      this.clientGroupName ||
       this.visit?.visitDefaultScheme ||
       group?.groupNameShortForm ||
       group?.groupName ||
       '';
-    return patientGroupUsesCompassionPricing(group, fallback) ? 'compassion' : null;
+    return clientGroupUsesCompassionPricing(group, fallback) ? 'compassion' : null;
   }
 
   pharmacyLineTotal(): number {
@@ -3502,12 +3895,12 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.calculatePharmacyTotal();
   }
 
-  pharmacyStandardDosagePatientAge(): number | null {
-    const n = Number(this.patientAge);
+  pharmacyStandardDosageClientAge(): number | null {
+    const n = Number(this.clientAge);
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
-  pharmacyStandardDosagePatientWeight(): number | null {
+  pharmacyStandardDosageClientWeight(): number | null {
     const latest = (this.vitalsList || [])[0];
     const w = Number(latest?.weight ?? latest?.weightKg);
     return Number.isFinite(w) && w > 0 ? w : null;
@@ -3848,7 +4241,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.closePaymentModal();
         this.loadPayments();
         this.loadInvoice();
-        this.refreshPatientTotalDebt();
+        this.refreshClientTotalDebt();
       },
       error: (err) => {
         this.isSavingPayment = false;
@@ -3875,6 +4268,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       this.paymentActionMenuId === id || String(this.paymentActionMenuId) === String(id);
     this.closePharmacyActionMenu();
     this.closeVitalsActionMenu();
+    this.closeOrderDocActionMenu();
     if (isOpen) {
       this.closePaymentActionMenu();
       return;
@@ -3989,7 +4383,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.showStatusMessage(response?.message || 'Payment deleted.', 'success');
         this.loadPayments();
         this.loadInvoice();
-        this.refreshPatientTotalDebt();
+        this.refreshClientTotalDebt();
       },
       error: (err) => {
         this.isDeletingPayment = false;
@@ -4033,7 +4427,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         this.showStatusMessage(response?.message || 'Payment reversed.', 'success');
         this.loadPayments();
         this.loadInvoice();
-        this.refreshPatientTotalDebt();
+        this.refreshClientTotalDebt();
       },
       error: (err) => {
         this.isReversingPayment = false;
@@ -4047,34 +4441,370 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     if (!payment) {
       return;
     }
-    const deps = {
-      addLogoToPdf: (doc: any, x: number, y: number, w: number, h: number) =>
-        this.facilityBranding.addLogoToJsPdf(doc, x, y, w, h),
+    void this.resolveCommercialReceiptDocForPayment(payment).then((doc) => {
+      if (!doc) {
+        this.showStatusMessage('Could not build receipt for this payment.', 'error');
+        return;
+      }
+      return this.printOrderDocument(doc);
+    });
+  }
+
+  async sharePaymentReceipt(payment?: any): Promise<void> {
+    const target = payment || this.paymentActionMenuPayment;
+    this.closePaymentActionMenu();
+    if (!target) {
+      return;
+    }
+    try {
+      const doc = await this.resolveCommercialReceiptDocForPayment(target);
+      if (!doc) {
+        this.showStatusMessage('Could not build receipt for this payment.', 'error');
+        return;
+      }
+      await this.shareOrderDocument(doc);
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        return;
+      }
+      this.showStatusMessage('Could not share payment receipt.', 'error');
+    }
+  }
+
+  /**
+   * Prefer the POS/order receipt document (same as Receipt tab). Fall back to a
+   * commercial receipt built from visit product lines so layout stays identical.
+   */
+  private async resolveCommercialReceiptDocForPayment(payment: any): Promise<any | null> {
+    await this.ensureOrderReceiptsLoaded();
+    const matched = this.findOrderReceiptMatchingPayment(payment);
+    if (matched) {
+      return matched;
+    }
+    return this.buildCommercialReceiptPayloadFromVisitPayment(payment);
+  }
+
+  private ensureOrderReceiptsLoaded(): Promise<void> {
+    if (!this.visitId) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this.api
+        .listOtcSaleDocuments({
+          visitId: this.visitId,
+          documentType: 'receipt',
+        })
+        .subscribe({
+          next: (rows) => {
+            this.orderReceipts = Array.isArray(rows) ? rows : [];
+            resolve();
+          },
+          error: () => resolve(),
+        });
+    });
+  }
+
+  private findOrderReceiptMatchingPayment(payment: any): any | null {
+    const list = Array.isArray(this.orderReceipts) ? this.orderReceipts : [];
+    if (!list.length) {
+      return null;
+    }
+    const payAmt = Number(payment?.amountToPay ?? payment?.amount ?? 0);
+    const payDate = String(payment?.dateOfPayment || payment?.paymentDate || '')
+      .trim()
+      .slice(0, 10);
+    const notes = String(payment?.notes || '').toLowerCase();
+
+    const ranked = list
+      .map((doc) => {
+        let score = 0;
+        const received = Number(doc?.amountReceived ?? 0);
+        const total = Number(doc?.totalAmount ?? 0);
+        if (payAmt > 0 && Math.abs(received - payAmt) < 0.02) {
+          score += 3;
+        }
+        if (payAmt > 0 && Math.abs(total - payAmt) < 0.02) {
+          score += 2;
+        }
+        const docDate = String(doc?.saleDate || '')
+          .trim()
+          .slice(0, 10);
+        if (payDate && docDate && payDate === docDate) {
+          score += 1;
+        }
+        const saleNo = String(doc?.saleNo || '').toLowerCase();
+        if (saleNo && notes.includes(saleNo)) {
+          score += 4;
+        }
+        if (notes.includes('otc receipt') || notes.includes('otc counter')) {
+          score += 1;
+        }
+        return { doc, score };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    if (ranked[0]?.score > 0) {
+      return ranked[0].doc;
+    }
+    if (list.length === 1) {
+      return list[0];
+    }
+    return list[0] || null;
+  }
+
+  private buildCommercialReceiptPayloadFromVisitPayment(payment: any): any {
+    const payAmt = Number(payment?.amountToPay ?? payment?.amount ?? 0) || 0;
+    type ReceiptLine = {
+      itemName: string;
+      dosage?: string;
+      quantity: number;
+      unitSellingPrice: number;
+      totalAmount: number;
     };
-    void this.facilityBranding.loadLogoDataUrl().then(() => {
-      downloadPaymentReceiptPdf(
-        {
-          facilityName: this.facilityBranding.getFacilityName(),
-          facilityContactLine: this.facilityBranding.getContactInquiryLine(),
-          patientName: `${this.patientFirstName || ''} ${this.patientSecondName || ''}`.trim() || 'Patient',
-          patientFileNo: this.patientFileNo || '',
-          visitNumber: this.visit?.visitNumber ?? this.visitId,
-          visitDate: this.visit?.visitDate || '',
-          receiptNo: payment?.id != null ? `RCP-${payment.id}` : 'RCP',
-          amountPaid: payment?.amountToPay ?? payment?.amount,
-          paymentForm: payment?.paymentForm || '',
-          status: payment?.status || '',
-          notes: payment?.notes || '',
-          dateOfPayment: payment?.dateOfPayment || payment?.paymentDate || '',
-          timeOfPayment: payment?.timeOfPayment || '',
-          paidBy: payment?.paidBy || '',
-          receivedBy: payment?.receivedBy || this.userName || '',
-          invoiceTotal: this.invoice?.totalAmount ?? this.invoice?.grandTotal,
-          invoiceAmountPaid: this.invoice?.amountPaid,
-          balanceDue: this.invoice?.balanceDue,
-        },
-        deps
+    const treatmentLines: ReceiptLine[] = (this.treatmentsList || [])
+      .filter((t) => {
+        const status = String(t?.status || '').trim().toLowerCase();
+        return status !== 'cancelled' && status !== 'canceled';
+      })
+      .map((t) => {
+        const qty = Number(t?.quantity ?? t?.totalUnits ?? 1) || 1;
+        const lineTotal = Number(t?.totalAmount ?? t?.provisionalTotalAmount ?? 0) || 0;
+        const unit = Number(t?.unitSellingPrice ?? 0) || (qty > 0 ? lineTotal / qty : lineTotal);
+        return {
+          itemName: String(t?.itemName || t?.drugName || 'Item'),
+          dosage: t?.dosage ? String(t.dosage) : undefined,
+          quantity: qty,
+          unitSellingPrice: unit,
+          totalAmount: lineTotal > 0 ? lineTotal : unit * qty,
+        };
+      })
+      .filter((l) => (l.totalAmount || 0) > 0 || (l.quantity || 0) > 0);
+
+    const lines: ReceiptLine[] =
+      treatmentLines.length > 0
+        ? treatmentLines
+        : [
+            {
+              itemName: 'Payment received',
+              quantity: 1,
+              unitSellingPrice: payAmt,
+              totalAmount: payAmt,
+            },
+          ];
+
+    const subtotal = lines.reduce((sum, l) => sum + (Number(l.totalAmount) || 0), 0);
+    const total = subtotal > 0 ? subtotal : payAmt;
+    const dateRaw = String(payment?.dateOfPayment || payment?.paymentDate || '').trim();
+    const timeRaw = String(payment?.timeOfPayment || '').trim();
+
+    return {
+      documentType: 'receipt',
+      saleNo: payment?.id != null ? `RCP-${payment.id}` : 'RCP',
+      saleDate: dateRaw.slice(0, 10) || this.todayInputDate() || '',
+      saleTime: timeRaw || undefined,
+      patientName: this.clientFullName || '',
+      receivedBy: payment?.receivedBy || this.userName || '',
+      paymentForm: payment?.paymentForm || '',
+      notes: payment?.notes || '',
+      totalAmount: total,
+      amountReceived: payAmt > 0 ? payAmt : total,
+      changeAmount: Math.max(0, (payAmt > 0 ? payAmt : total) - total),
+      lines,
+    };
+  }
+
+  toggleOrderDocActionMenu(doc: any, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const id = doc?.id ?? doc?.saleNo;
+    if (id == null) {
+      return;
+    }
+    const isOpen =
+      this.orderDocActionMenuId === id || String(this.orderDocActionMenuId) === String(id);
+    this.closePaymentActionMenu();
+    this.closePharmacyActionMenu();
+    this.closeServiceActionMenu();
+    this.closeVitalsActionMenu();
+    if (isOpen) {
+      this.closeOrderDocActionMenu();
+      return;
+    }
+    const trigger = (event.currentTarget as HTMLElement) || null;
+    const rect = trigger?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+    this.orderDocActionMenuId = id;
+    this.orderDocActionMenuDoc = doc;
+    const menuWidth = 180;
+    const left = Math.min(window.innerWidth - menuWidth - 8, Math.max(8, rect.right - menuWidth));
+    const top = Math.min(window.innerHeight - 120, rect.bottom + 4);
+    this.orderDocActionMenuStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      zIndex: '10050',
+    };
+    setTimeout(() => this.attachOrderDocActionMenuToBody(), 0);
+  }
+
+  isOrderDocActionMenuOpen(doc: any): boolean {
+    const id = doc?.id ?? doc?.saleNo;
+    if (id == null || this.orderDocActionMenuId == null) {
+      return false;
+    }
+    return this.orderDocActionMenuId === id || String(this.orderDocActionMenuId) === String(id);
+  }
+
+  private closeOrderDocActionMenu(): void {
+    this.orderDocActionMenuId = null;
+    this.orderDocActionMenuDoc = null;
+    this.orderDocActionMenuStyle = {};
+  }
+
+  private attachOrderDocActionMenuToBody(): void {
+    const menu = this.orderDocActionMenuPop?.nativeElement;
+    if (!menu || !this.orderDocActionMenuDoc) {
+      return;
+    }
+    if (menu.parentElement !== document.body) {
+      document.body.appendChild(menu);
+    }
+    Object.assign(menu.style, this.orderDocActionMenuStyle);
+  }
+
+  async printOrderDocument(doc?: any): Promise<void> {
+    const target = doc || this.orderDocActionMenuDoc;
+    this.closeOrderDocActionMenu();
+    if (!target) {
+      return;
+    }
+    if (this.isPrintingOrderDoc) {
+      return;
+    }
+    const label = this.orderDocumentTypeLabel(target);
+    this.isPrintingOrderDoc = true;
+    try {
+      await this.facilityBranding.loadLogoDataUrl();
+      const pdf = this.buildOrderCommercialDocPdf(target);
+      const filename = commercialDocFilename(
+        normalizeCommercialDocType(target.documentType || this.activeTab || 'receipt'),
+        target.saleNo || 'document'
       );
+      const blobUrl = URL.createObjectURL(pdf.output('blob'));
+      const win = window.open(blobUrl, '_blank');
+      if (!win) {
+        pdf.save(filename);
+        this.showStatusMessage(
+          `${label} saved as PDF. Allow pop-ups to print from the browser.`,
+          'info'
+        );
+        return;
+      }
+      const triggerPrint = () => {
+        try {
+          win.focus();
+          win.print();
+        } catch {
+          /* ignored */
+        }
+      };
+      win.addEventListener('load', triggerPrint);
+      setTimeout(triggerPrint, 600);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 120_000);
+    } catch {
+      this.showStatusMessage(`Could not print ${label.toLowerCase()}.`, 'error');
+    } finally {
+      this.isPrintingOrderDoc = false;
+    }
+  }
+
+  async shareOrderDocument(doc?: any): Promise<void> {
+    const target = doc || this.orderDocActionMenuDoc;
+    this.closeOrderDocActionMenu();
+    if (!target) {
+      return;
+    }
+    const label = this.orderDocumentTypeLabel(target);
+    try {
+      await this.facilityBranding.loadLogoDataUrl();
+      const pdf = this.buildOrderCommercialDocPdf(target);
+      const filename = commercialDocFilename(
+        normalizeCommercialDocType(target.documentType || this.activeTab || 'receipt'),
+        target.saleNo || 'document'
+      );
+      const blob = pdf.output('blob');
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      const title = `${label} ${target.saleNo || ''}`.trim();
+      const navAny = navigator as Navigator & {
+        share?: (data: ShareData & { files?: File[] }) => Promise<void>;
+        canShare?: (data: ShareData & { files?: File[] }) => boolean;
+      };
+      if (typeof navAny.share === 'function') {
+        const payload: ShareData & { files?: File[] } = {
+          title,
+          text: `${title} for ${target.patientName || this.clientFullName || 'client'}`,
+          files: [file],
+        };
+        if (!navAny.canShare || navAny.canShare(payload)) {
+          await navAny.share(payload);
+          return;
+        }
+        await navAny.share({
+          title: payload.title,
+          text: payload.text,
+        });
+        pdf.save(filename);
+        this.showStatusMessage(
+          `${label} PDF downloaded — attach it from your files to share.`,
+          'info'
+        );
+        return;
+      }
+      pdf.save(filename);
+      this.showStatusMessage(`${label} PDF downloaded.`, 'success');
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        return;
+      }
+      this.showStatusMessage(`Could not share ${label.toLowerCase()}.`, 'error');
+    }
+  }
+
+  private buildOrderCommercialDocPdf(doc: any): jsPDF {
+    const lines = Array.isArray(doc?.lines) ? doc.lines : [];
+    const branding = this.facilityBranding.getCached();
+    const total = Number(doc?.totalAmount ?? 0) || 0;
+    const mapped = mapSaleToCommercialDoc({
+      docType: normalizeCommercialDocType(doc?.documentType || 'receipt'),
+      saleNo: String(doc?.saleNo || '—'),
+      saleDateLabel: String(doc?.saleDate || ''),
+      saleTimeLabel: doc?.saleTime ? String(doc.saleTime).slice(0, 8) : undefined,
+      facilityName: this.facilityBranding.getFacilityName(),
+      facilityAddress: branding?.facilityAddress || '',
+      facilityContact: this.facilityBranding.getContactInquiryLine() || '',
+      clientName: doc?.patientName || this.clientFullName || '',
+      receivedBy: doc?.receivedBy || this.userName || '',
+      paymentMethod: doc?.paymentForm || '',
+      notes: doc?.notes || '',
+      thankYouMessage: branding?.thankYouMessage || branding?.thankYouLine,
+      paymentTerms: branding?.invoiceFooterMainLine,
+      lines: lines.map((l: any) => ({
+        itemName: l?.itemName || 'Item',
+        dosage: l?.dosage || undefined,
+        quantity: Number(l?.quantity ?? 0) || 0,
+        unitPrice: Number(l?.unitSellingPrice ?? l?.unitPrice ?? 0) || 0,
+        lineTotal: Number(l?.totalAmount ?? l?.lineTotal ?? 0) || 0,
+        given: true,
+      })),
+      subtotal: total,
+      amountReceived: Number(doc?.amountReceived ?? total) || total,
+      changeDue: Number(doc?.changeAmount ?? doc?.changeDue ?? 0) || 0,
+    });
+    return buildCommercialDocumentPdf(mapped, {
+      addLogoToPdf: (pdf, x, y, w, h) => this.facilityBranding.addLogoToJsPdf(pdf, x, y, w, h),
+      formatMoney: (n) => this.formatMoney(n),
     });
   }
 
@@ -4149,13 +4879,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         forkJoin(labList.map((item) => fetchProcedureReportForPdf$(this.api, item))).subscribe({
           next: (rows) => {
             void buildAndDownloadAllLabResultsDocx({
-              patientName: `${this.patientFirstName || ''} ${this.patientSecondName || ''}`.trim(),
+              clientName: `${this.clientFirstName || ''} ${this.clientSecondName || ''}`.trim(),
               visitId: this.visitId!,
               visitDate: this.visit?.visitDate || '',
               labProcedureRows: rows,
-              patientAge: this.patientAge,
-              patientDateOfBirth: this.patientDateOfBirth,
-              patientGender: this.patientGender,
+              clientAge: this.clientAge,
+              clientDateOfBirth: this.clientDateOfBirth,
+              clientGender: this.clientGender,
             })
               .then(() => {
                 this.isExportingLabResults = false;
@@ -4194,17 +4924,17 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.statementExportIncludeAmountColumns = true;
     this.statementExportIncludeFooter = true;
     this.statementExportDocumentType = 'MEDICAL_REPORT';
-    this.statementExportPatientFields = {
-      includePatientName: true,
-      includePatientAddress: true,
-      includePatientGender: true,
-      includePatientAge: true,
-      includePatientContact: true,
+    this.statementExportClientFields = {
+      includeClientName: true,
+      includeClientAddress: true,
+      includeClientGender: true,
+      includeClientAge: true,
+      includeClientContact: true,
       includeVisitDate: true,
       includeBalanceDue: true,
     };
     this.statementExportAccordion = {
-      patient: true,
+      client: true,
       document: false,
       services: false,
       treatments: false,
@@ -4224,13 +4954,13 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   isStatementExportAccordionOpen(
-    section: 'patient' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer'
+    section: 'client' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer'
   ): boolean {
     return !!this.statementExportAccordion[section];
   }
 
   toggleStatementExportAccordion(
-    section: 'patient' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer'
+    section: 'client' | 'document' | 'services' | 'treatments' | 'nextOfKin' | 'payment' | 'amounts' | 'footer'
   ): void {
     this.statementExportAccordion[section] = !this.statementExportAccordion[section];
   }
@@ -4275,15 +5005,15 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     }
   }
 
-  get allStatementExportPatientFieldsSelected(): boolean {
-    return this.statementExportPatientFieldOptions.every(
-      (field) => this.statementExportPatientFields[field.key]
+  get allStatementExportClientFieldsSelected(): boolean {
+    return this.statementExportClientFieldOptions.every(
+      (field) => this.statementExportClientFields[field.key]
     );
   }
 
-  toggleAllStatementExportPatientFields(checked: boolean): void {
-    for (const field of this.statementExportPatientFieldOptions) {
-      this.statementExportPatientFields[field.key] = checked;
+  toggleAllStatementExportClientFields(checked: boolean): void {
+    for (const field of this.statementExportClientFieldOptions) {
+      this.statementExportClientFields[field.key] = checked;
     }
   }
 
@@ -4378,7 +5108,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     const includePaymentTable = this.statementExportIncludePaymentTable;
     const includeAmountColumns = this.statementExportIncludeAmountColumns;
     const includeFooter = this.statementExportIncludeFooter;
-    const patientFields = { ...this.statementExportPatientFields };
+    const clientFields = { ...this.statementExportClientFields };
     this.isExportingStatement = true;
     this.closeStatementExportModal();
     this.api
@@ -4390,7 +5120,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
         includeAmountColumns,
         includeFooter,
         documentType,
-        ...patientFields,
+        ...clientFields,
       })
       .subscribe({
         next: (res: Blob) => {
@@ -4463,13 +5193,12 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
   formatVisitLabel(visit: any): string {
     if (!visit) {
-      return 'Visit';
+      return 'Select order';
     }
     const number = visit.visitNumber ?? visit.id ?? '';
-    const type = visit.visitType ?? 'Visit';
     const date = visit.visitDate || visit.createdAt || '';
     const dateLabel = date ? ` • ${this.formatVisitDateDayMonthYear(date)}` : '';
-    return `#${this.formatVisitNumberTwoDigits(number)} ${type}${dateLabel}`;
+    return `Order #${this.formatVisitNumberTwoDigits(number)}${dateLabel}`;
   }
 
   formatVisitNumberTwoDigits(value: any): string {
@@ -4615,19 +5344,19 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       stored = {};
     }
 
-    const patient = this.normalizePatientRecord(stored);
-    const id = Number(patient.id ?? patient.patientId);
+    const client = this.normalizeClientRecord(stored);
+    const id = Number(client.id ?? client.clientId);
     if (!Number.isFinite(id) || id <= 0) {
-      this.showStatusMessage('Open a patient from the registry or queue to start consultation.', 'info');
+      this.showStatusMessage('Open a client from the registry or queue to start consultation.', 'info');
       return;
     }
 
-    this.applyPatient(patient);
-    this.api.getPatientById(id).subscribe({
+    this.applyClient(client);
+    this.api.getClientById(id).subscribe({
       next: (res: any) => {
-        const fresh = this.normalizePatientRecord(res?.data ?? res);
-        if (fresh?.id || fresh?.patientId) {
-          this.applyPatient(fresh);
+        const fresh = this.normalizeClientRecord(res?.data ?? res);
+        if (fresh?.id || fresh?.clientId) {
+          this.applyClient(fresh);
         }
       },
       error: () => undefined,
@@ -4635,60 +5364,60 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
     let initialVisit: any = null;
     try {
-      initialVisit = JSON.parse(sessionStorage.getItem('initialPatientVisit') || 'null');
+      initialVisit = JSON.parse(sessionStorage.getItem('initialClientVisit') || 'null');
     } catch {
       initialVisit = null;
     }
 
-    this.loadPatientVisits(id, initialVisit);
-    this.loadPatientGroups();
+    this.loadClientVisits(id, initialVisit);
+    this.loadClientGroups();
   }
 
-  private applyPatient(patient: any): void {
-    this.patientId = Number(patient.id ?? patient.patientId) || null;
-    this.patientFirstName = this.capitalizeNamePart(patient.patientFirstName || '');
-    this.patientSecondName = this.capitalizeNamePart(patient.patientSecondName || '');
-    this.patientFileNo = patient.patientFileNo || '';
-    this.patientProfilePic = patient.patientProfilePic || 'assets/images/vector.jpeg';
-    this.patientGender = patient.patientGender || '';
-    this.patientAge = patient.patientAge || '';
-    this.patientContact = patient.patientContact || '';
-    this.patientAddress = patient.patientAddress || '';
-    this.patientDateOfBirth = patient.patientDateOfBirth || '';
-    this.patientOccupation = patient.patientOccupation || '';
-    this.patientGroupId =
-      patient.patientGroupId ??
-      patient.patientGroup?.id ??
-      patient.group_id ??
+  private applyClient(client: any): void {
+    this.clientId = Number(client.id ?? client.clientId) || null;
+    this.clientFirstName = this.capitalizeNamePart(client.clientFirstName || '');
+    this.clientSecondName = this.capitalizeNamePart(client.clientSecondName || '');
+    this.clientFileNo = client.clientFileNo || '';
+    this.clientProfilePic = client.clientProfilePic || 'assets/images/vector.jpeg';
+    this.clientGender = client.clientGender || '';
+    this.clientAge = client.clientAge || '';
+    this.clientContact = client.clientContact || '';
+    this.clientAddress = client.clientAddress || '';
+    this.clientDateOfBirth = client.clientDateOfBirth || '';
+    this.clientOccupation = client.clientOccupation || '';
+    this.clientGroupId =
+      client.clientGroupId ??
+      client.clientGroup?.id ??
+      client.group_id ??
       null;
-    this.patientGroupName =
-      patient.patientGroupName ||
-      patient.patientGroup?.groupNameShortForm ||
-      patient.patientGroup?.groupName ||
+    this.clientGroupName =
+      client.clientGroupName ||
+      client.clientGroup?.groupNameShortForm ||
+      client.clientGroup?.groupName ||
       '';
-    this.nextOfKinName = patient.nextOfKinName || '';
-    this.nextOfKinContact = patient.nextOfKinContact || '';
-    this.nextOfKinAddress = patient.nextOfKinAddress || '';
-    this.relationship = patient.relationship || '';
+    this.nextOfKinName = client.nextOfKinName || '';
+    this.nextOfKinContact = client.nextOfKinContact || '';
+    this.nextOfKinAddress = client.nextOfKinAddress || '';
+    this.relationship = client.relationship || '';
 
-    this.refreshPatientTotalDebt();
+    this.refreshClientTotalDebt();
   }
 
-  private loadPatientGroups(): void {
-    this.api.getPatientGroupList().subscribe({
+  private loadClientGroups(): void {
+    this.api.getClientGroupList().subscribe({
       next: (res) => {
-        this.patientGroupList = Array.isArray(res) ? res : [];
+        this.clientGroupList = Array.isArray(res) ? res : [];
       },
       error: () => {
-        this.patientGroupList = [];
+        this.clientGroupList = [];
       },
     });
   }
 
   private loadQueueClientModules(): void {
-    this.api.getAllHospitalModules().subscribe({
+    this.api.getAllBusinessModules().subscribe({
       next: (res: any) => {
-        this.queueClientModules = normalizeHospitalModules(res);
+        this.queueClientModules = normalizeBusinessModules(res);
         this.queueClientForm.fromModuleId = ensureFromModuleInList(
           this.queueClientForm.fromModuleId,
           this.queueClientModules
@@ -4703,26 +5432,26 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     });
   }
 
-  private loadPatientVisits(patientId: number, preferredVisit?: any): void {
+  private loadClientVisits(clientId: number, preferredVisit?: any): void {
     this.isLoadingVisits = true;
-    this.api.getInitialTriageVitalsForVisitId(patientId).subscribe({
+    this.api.getInitialTriageVitalsForVisitId(clientId).subscribe({
       next: (res: any) => {
-        this.patientVisitList = this.sortVisitsNewestFirst(Array.isArray(res) ? res : []);
+        this.clientVisitList = this.sortVisitsNewestFirst(Array.isArray(res) ? res : []);
         this.isLoadingVisits = false;
 
         if (preferredVisit?.id) {
-          const match = this.patientVisitList.find((v) => Number(v.id) === Number(preferredVisit.id));
+          const match = this.clientVisitList.find((v) => Number(v.id) === Number(preferredVisit.id));
           this.loadVisit(match || preferredVisit);
           return;
         }
 
-        if (!this.visitId && this.patientVisitList.length) {
-          const openVisit = this.patientVisitList.find((v) => v.visitStatus === 'open');
-          this.loadVisit(openVisit || this.patientVisitList[0]);
+        if (!this.visitId && this.clientVisitList.length) {
+          const openVisit = this.clientVisitList.find((v) => v.visitStatus === 'open');
+          this.loadVisit(openVisit || this.clientVisitList[0]);
         }
       },
       error: () => {
-        this.patientVisitList = [];
+        this.clientVisitList = [];
         this.isLoadingVisits = false;
       },
     });
@@ -4747,6 +5476,17 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.loadPharmacy();
     this.loadInvoice();
     this.loadVisitBillingSummary();
+    this.loadPayments();
+    this.refreshTransactionProgress();
+    if (this.activeTab === 'quotation') {
+      this.loadOrderQuotations();
+    } else if (this.activeTab === 'proforma') {
+      this.loadOrderProformas();
+    } else if (this.activeTab === 'sales_invoice') {
+      this.loadOrderSalesInvoices();
+    } else if (this.activeTab === 'receipt') {
+      this.loadOrderReceipts();
+    }
   }
 
   private clearVisitState(): void {
@@ -4756,6 +5496,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.isOpenVisit = false;
     this.isClosedVisit = false;
     this.hasNoVisit = true;
+    this.resetProgressStageDone();
     this.vitalsList = [];
     this.consultationForm = this.emptyConsultationForm();
     this.presentingComplaintsList = [];
@@ -4773,10 +5514,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.proceduresList = [];
     this.treatmentsList = [];
     this.invoice = null;
+    this.orderQuotations = [];
+    this.orderProformas = [];
+    this.orderSalesInvoices = [];
+    this.orderReceipts = [];
     this.resetVisitBillingSummary();
   }
 
-  private fillCreateVisitFormFromPatient(): void {
+  private fillCreateVisitFormFromClient(): void {
     const now = new Date();
     const defaultTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     this.createVisitFormData = {
@@ -4785,28 +5530,28 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       visitStatus: 'open',
       visitType: 'outpatient',
       visitReason: '',
-      patientAge: this.patientAge != null && this.patientAge !== '' ? String(this.patientAge) : '',
-      patientContact: this.patientContact || '',
-      patientAddress: this.patientAddress || '',
+      clientAge: this.clientAge != null && this.clientAge !== '' ? String(this.clientAge) : '',
+      clientContact: this.clientContact || '',
+      clientAddress: this.clientAddress || '',
       nextOfKinName: this.nextOfKinName || '',
       nextOfKinAddress: this.nextOfKinAddress || '',
       nextOfKinContact: this.nextOfKinContact || '',
       relationship: this.relationship || '',
-      occupation: this.patientOccupation || '',
+      occupation: this.clientOccupation || '',
     };
   }
 
-  private fillCreateVisitFormPatientFields(): void {
+  private fillCreateVisitFormClientFields(): void {
     this.createVisitFormData = {
       ...this.createVisitFormData,
-      patientAge: this.patientAge != null && this.patientAge !== '' ? String(this.patientAge) : '',
-      patientContact: this.patientContact || '',
-      patientAddress: this.patientAddress || '',
+      clientAge: this.clientAge != null && this.clientAge !== '' ? String(this.clientAge) : '',
+      clientContact: this.clientContact || '',
+      clientAddress: this.clientAddress || '',
       nextOfKinName: this.nextOfKinName || '',
       nextOfKinAddress: this.nextOfKinAddress || '',
       nextOfKinContact: this.nextOfKinContact || '',
       relationship: this.relationship || '',
-      occupation: this.patientOccupation || '',
+      occupation: this.clientOccupation || '',
     };
   }
 
@@ -4816,12 +5561,12 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       ...(formValue || {}),
     };
 
-    const ageRaw = merged.patientAge;
-    let patientAge: string | null = null;
+    const ageRaw = merged.clientAge;
+    let clientAge: string | null = null;
     if (ageRaw !== undefined && ageRaw !== null && String(ageRaw).trim() !== '') {
       const n = parseFloat(String(ageRaw).replace(',', '.'));
       if (Number.isFinite(n)) {
-        patientAge = n.toFixed(2);
+        clientAge = n.toFixed(2);
       }
     }
 
@@ -4831,9 +5576,9 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       visitStatus: merged.visitStatus || 'open',
       visitType: merged.visitType || null,
       visitReason: merged.visitReason || null,
-      patientAge,
-      patientContact: merged.patientContact || null,
-      patientAddress: merged.patientAddress || null,
+      clientAge,
+      clientContact: merged.clientContact || null,
+      clientAddress: merged.clientAddress || null,
       nextOfKinName: merged.nextOfKinName || null,
       nextOfKinAddress: merged.nextOfKinAddress || null,
       nextOfKinContact: merged.nextOfKinContact || null,
@@ -4898,11 +5643,11 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.payAllDebtAllocation = rows;
   }
 
-  private refreshPatientTotalDebt(): void {
-    if (!this.patientId) {
+  private refreshClientTotalDebt(): void {
+    if (!this.clientId) {
       return;
     }
-    this.api.getTotalPatientBalanceDue(this.patientId).subscribe({
+    this.api.getTotalClientBalanceDue(this.clientId).subscribe({
       next: (res: any) => {
         this.totalAmountDue = Number(res?.TotalAmountDue ?? res?.totalAmountDue ?? 0) || 0;
       },
@@ -4950,7 +5695,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return raw.includes('T') ? raw.split('T')[0] : raw;
   }
 
-  private normalizePatientGenderForEdit(raw: any): string {
+  private normalizeClientGenderForEdit(raw: any): string {
     if (raw == null || String(raw).trim() === '') {
       return '';
     }
@@ -4967,7 +5712,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return String(raw).trim();
   }
 
-  private coercePatientAgeForEdit(raw: any): number | null {
+  private coerceClientAgeForEdit(raw: any): number | null {
     if (raw === undefined || raw === null || raw === '') {
       return null;
     }
@@ -4982,7 +5727,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     return Number.isFinite(n) ? n : null;
   }
 
-  private formatPatientDateForApi(value: any): string | null {
+  private formatClientDateForApi(value: any): string | null {
     if (!value || String(value).trim() === '') {
       return null;
     }
@@ -5678,7 +6423,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
   }
 
   private plainPharmacyDrugName(batch: any): string {
-    return String(batch?.stockItemName || batch?.itemName || batch?.drugName || 'Item').trim();
+    return String(batch?.stockItemName || batch?.itemName || batch?.drugName || 'Product').trim();
   }
 
   private resolvePharmacyStoreDisplayName(storeId: number, batchFallback?: string): string {
@@ -5812,12 +6557,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
     this.isLoadingPayments = true;
     this.api.getPaymentsMadeByVisit(this.visitId).subscribe({
       next: (res: any) => {
-        this.paymentsList = Array.isArray(res) ? res : [];
+        this.paymentsList = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         this.isLoadingPayments = false;
+        this.refreshTransactionProgress();
       },
       error: () => {
         this.paymentsList = [];
         this.isLoadingPayments = false;
+        this.refreshTransactionProgress();
       },
     });
   }
@@ -7589,14 +8336,14 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       visitStatus: statusRaw === 'closed' ? 'closed' : 'open',
       visitType: String(pick('visitType', 'visit_type') || 'outpatient'),
       visitReason: String(pick('visitReason', 'visit_reason') || ''),
-      patientAge: String(pick('patientAge', 'patient_age') || ''),
-      patientContact: String(pick('patientContact', 'patient_contact') || ''),
-      patientAddress: String(pick('patientAddress', 'patient_address') || ''),
+      clientAge: String(pick('clientAge', 'client_age') || ''),
+      clientContact: String(pick('clientContact', 'client_contact') || ''),
+      clientAddress: String(pick('clientAddress', 'client_address') || ''),
       nextOfKinName: String(pick('nextOfKinName', 'nextOfKinsName', 'next_of_kin_name') || ''),
       nextOfKinAddress: String(pick('nextOfKinAddress', 'nextOfKinsAddress', 'next_of_kin_address') || ''),
       nextOfKinContact: String(pick('nextOfKinContact', 'nextOfKinsContact', 'next_of_kin_contact') || ''),
       relationship: String(pick('relationship') || ''),
-      occupation: String(pick('occupation', 'patientOccupation', 'patient_occupation') || ''),
+      occupation: String(pick('occupation', 'clientOccupation', 'client_occupation') || ''),
     };
   }
 
@@ -7612,11 +8359,11 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       .join(' ');
   }
 
-  private normalizePatientRecord(raw: any): any {
+  private normalizeClientRecord(raw: any): any {
     if (!raw || typeof raw !== 'object') {
       return {};
     }
-    const source = raw.patient ?? raw.data ?? raw;
+    const source = raw.client ?? raw.data ?? raw;
     const pick = (...keys: string[]): string => {
       for (const key of keys) {
         const val = source?.[key];
@@ -7629,20 +8376,20 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
 
     return {
       ...source,
-      id: source?.id ?? source?.patientId ?? null,
-      patientId: source?.patientId ?? source?.id ?? null,
-      patientFirstName: this.capitalizeNamePart(pick('patientFirstName', 'firstName')),
-      patientSecondName: this.capitalizeNamePart(pick('patientSecondName', 'secondName', 'lastName')),
-      patientProfilePic: pick('patientProfilePic', 'profilePic'),
-      patientFileNo: pick('patientFileNo', 'fileNo', 'patientFileNumber'),
-      patientContact: pick('patientContact', 'phone', 'patientPhone'),
-      patientGender: pick('patientGender', 'gender'),
-      patientAddress: pick('patientAddress', 'address'),
-      patientAge: pick('patientAge', 'age'),
-      patientDateOfBirth: pick('patientDateOfBirth', 'dateOfBirth'),
-      patientOccupation: pick('patientOccupation', 'occupation'),
-      patientGroupId: pick('patientGroupId', 'group_id') || source?.patientGroup?.id || null,
-      patientGroupName: pick('patientGroupName', 'groupName', 'groupNameShortForm'),
+      id: source?.id ?? source?.clientId ?? null,
+      clientId: source?.clientId ?? source?.id ?? null,
+      clientFirstName: this.capitalizeNamePart(pick('clientFirstName', 'firstName')),
+      clientSecondName: this.capitalizeNamePart(pick('clientSecondName', 'secondName', 'lastName')),
+      clientProfilePic: pick('clientProfilePic', 'profilePic'),
+      clientFileNo: pick('clientFileNo', 'fileNo', 'clientFileNumber'),
+      clientContact: pick('clientContact', 'phone', 'clientPhone'),
+      clientGender: pick('clientGender', 'gender'),
+      clientAddress: pick('clientAddress', 'address'),
+      clientAge: pick('clientAge', 'age'),
+      clientDateOfBirth: pick('clientDateOfBirth', 'dateOfBirth'),
+      clientOccupation: pick('clientOccupation', 'occupation'),
+      clientGroupId: pick('clientGroupId', 'group_id') || source?.clientGroup?.id || null,
+      clientGroupName: pick('clientGroupName', 'groupName', 'groupNameShortForm'),
       nextOfKinName: pick('nextOfKinName', 'nextOfKinsName'),
       nextOfKinContact: pick('nextOfKinContact', 'nextOfKinsContact'),
       nextOfKinAddress: pick('nextOfKinAddress', 'nextOfKinsAddress'),
@@ -7657,9 +8404,9 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       visitStatus: 'open',
       visitType: 'outpatient',
       visitReason: '',
-      patientAge: '',
-      patientContact: '',
-      patientAddress: '',
+      clientAge: '',
+      clientContact: '',
+      clientAddress: '',
       nextOfKinName: '',
       nextOfKinAddress: '',
       nextOfKinContact: '',
@@ -7755,7 +8502,7 @@ export class ConsultationV2Component implements OnInit, OnDestroy {
       !this.showCreateVisitModal &&
       !this.showChooseVisitModal &&
       !this.showEditVisitModal &&
-      !this.showEditPatientModal &&
+      !this.showEditClientModal &&
       !this.showQueueClientModal &&
       !this.showPayAllDebtModal &&
       !this.showCloseVisitModal &&
